@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>レジシステム</title>
+<style>
+/* ===== 全体 ===== */
+html, body {
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+}
+.app {
+  width: 100%;
+  height: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+}
+header {
+  background: #333;
+  color: white;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header h1 { margin: 0; font-size: 20px; font-weight: bold; }
+
+/* ===== ボタン ===== */
+button {
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn { padding: 10px 16px; color: white; }
+.btn-green { background: #22c55e; } .btn-green:hover { background: #16a34a; }
+.btn-red { background: #ef4444; } .btn-red:hover { background: #b91c1c; }
+.btn-blue { background: #3b82f6; } .btn-blue:hover { background: #1d4ed8; }
+.btn-orange { background: #f97316; } .btn-orange:hover { background: #c2410c; }
+.btn-purple { background: #9333ea; } .btn-purple:hover { background: #6b21a8; }
+.btn-yellow { background: #eab308; } .btn-yellow:hover { background: #ca8a04; }
+.btn-gray { background: #aaa; }
+
+/* ===== レイアウト ===== */
+main {
+  flex-grow: 1;
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+  overflow: hidden;
+}
+#screen1 main { grid-template-columns: 1fr; }
+@media (min-width: 768px) {
+  #screen1 main { grid-template-columns: 2fr 1fr; }
+}
+#screen2 main { grid-template-columns: 1fr; }
+@media (min-width: 768px) {
+  #screen2 main { grid-template-columns: 1fr 1fr; align-items: center; }
+}
+
+/* ===== 商品リスト ===== */
+#product-list {
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  overflow-y: auto;
+}
+.product {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+  padding: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.product:hover { background: #eef6ff; }
+.product .name { font-weight: 600; }
+.product .price { color: #555; margin-top: 4px; }
+
+/* ===== カート ===== */
+#cart {
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+#cart h2 {
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #ccc;
+}
+.cart-item {
+  background: white;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+.cart-item.selected {
+  background: #eef6ff;
+  border: 2px solid royalblue;
+}
+.cart-summary {
+  margin-top: auto;
+  border-top: 2px solid #ccc;
+  padding-top: 12px;
+}
+
+/* ===== 支払い画面 ===== */
+.payment-box {
+  background: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+}
+.payment-box p { margin: 8px 0; font-size: 28px; font-weight: bold; }
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 200px;
+  margin: 0 auto;
+}
+.keypad button {
+  font-size: 20px;
+  padding: 16px;
+  border-radius: 8px;
+  background: #ddd;
+}
+.keypad button:hover { background: #ccc; }
+
+/* ===== 会計完了画面 ===== */
+#screen3 main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#screen3 .box { max-width: 400px; width: 100%; text-align: center; }
+#screen3 h2 { margin: 8px 0; }
+
+/* ===== 取引履歴・商品管理 ===== */
+.list-box {
+  background: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-y: auto;
+}
+.history-item {
+  background: white;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+input[type="text"], input[type="number"], input[type="search"] {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin: 4px 0;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 商品選択画面 -->
+  <div id="screen1">
+    <header>
+      <h1>レジ１：商品選択</h1>
+      <div>
+        <button class="btn btn-purple" id="show-product-manager-button">商品管理</button>
+        <button class="btn btn-blue" id="show-history-button">取引履歴</button>
+      </div>
+    </header>
+    <main>
+      <div id="product-list"></div>
+      <div id="cart">
+        <h2>ご注文内容</h2>
+        <div id="cart-items"><p>商品が選択されていません。</p></div>
+        <div class="cart-summary">
+          <p>合計: <span id="total-amount-display">¥0</span></p>
+          <button class="btn btn-red" id="remove-selected-btn" disabled>選択商品を1つ減らす</button>
+          <button class="btn btn-green" id="checkout-button">会計へ進む</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 支払い画面 -->
+  <div id="screen2" style="display:none;">
+    <header>
+      <h1>レジ２：お支払い</h1>
+      <button class="btn btn-red" id="back-to-screen1-button">戻る</button>
+    </header>
+    <main>
+      <div class="payment-box">
+        <p>お支払い金額: <span id="payment-due">¥0</span></p>
+        <p>お預かり金額: <span id="amount-tendered-display">¥0</span></p>
+        <p>おつり: <span id="change-due-display">¥0</span></p>
+      </div>
+      <div style="text-align:center;">
+        <div class="keypad">
+          <button class="keypad-btn">7</button><button class="keypad-btn">8</button><button class="keypad-btn">9</button>
+          <button class="keypad-btn">4</button><button class="keypad-btn">5</button><button class="keypad-btn">6</button>
+          <button class="keypad-btn">1</button><button class="keypad-btn">2</button><button class="keypad-btn">3</button>
+          <button class="keypad-btn" style="grid-column: span 2;">0</button>
+          <button id="clear-keypad" class="btn btn-yellow">C</button>
+        </div>
+        <button id="calculate-change-button" class="btn btn-green" style="margin-top:16px;" disabled>小計</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- 会計完了画面 -->
+  <div id="screen3" style="display:none;">
+    <header><h1>レジ３：お会計完了</h1></header>
+    <main>
+      <div class="box">
+        <h2>受付番号</h2>
+        <p id="final-order-number" style="font-size:48px; color:red;">0</p>
+        <h2>おつり合計</h2>
+        <p id="final-change-amount" style="font-size:36px; color:green;">¥0</p>
+        <h3>内訳</h3>
+        <div id="change-breakdown"></div>
+        <h3>ご購入内容</h3>
+        <div id="final-order-summary" class="list-box" style="max-height:120px;"></div>
+        <button id="new-transaction-button" class="btn btn-blue" style="margin-top:16px;">次の会計へ</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- 取引履歴 -->
+  <div id="screen4" style="display:none;">
+    <header>
+      <h1>レジ４：取引履歴</h1>
+      <button id="back-to-screen1-from-history" class="btn btn-blue">戻る</button>
+    </header>
+    <main style="display:flex; flex-direction:column;">
+      <input type="search" id="history-search-input" placeholder="受付番号で検索">
+      <div id="history-summary" class="list-box"></div>
+      <div id="history-list" class="list-box" style="flex-grow:1;"></div>
+      <button id="clear-history-button" class="btn btn-red">履歴を消去</button>
+    </main>
+  </div>
+
+  <!-- 商品管理 -->
+  <div id="screen5" style="display:none;">
+    <header>
+      <h1>レジ５：商品管理</h1>
+      <button id="back-to-screen1-from-manager" class="btn btn-purple">戻る</button>
+    </header>
+    <main style="display:flex; flex-direction:column;">
+      <div class="list-box">
+        <h2>新しい商品を追加</h2>
+        <input type="text" id="new-product-name" placeholder="商品名">
+        <input type="number" id="new-product-price" placeholder="価格 (円)">
+        <button id="add-product-btn" class="btn btn-blue">追加</button>
+      </div>
+      <h2>登録済み商品リスト</h2>
+      <div id="product-management-list" class="list-box" style="flex-grow:1;"></div>
+    </main>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ===== 状態管理 =====
+  let cart = [], subtotal = 0, amountTendered = 0, selectedProductId = null;
+  let transactionHistory = [], lastOrderNumber = 0, discountAmount = 0, couponCount = 0;
+  let products = [];
+  const defaultProducts = [
+    {id:1, name:"フリフリポテト(こんそめ)", price:300},
+    {id:2, name:"フリフリポテト(塩コショウ)", price:300},
+    {id:3, name:"フリフリポテト(バター醤油)", price:300},
+    {id:4, name:"たこ焼き（ソース）", price:250},
+    {id:5, name:"カラフルゼリードリンク（サイダー）", price:250},
+    {id:6, name:"カラフルゼリードリンク（カルピス）", price:250}
+  ];
+
+  // ===== 画面要素 =====
+  const screen1 = document.getElementById("screen1"),
+        screen2 = document.getElementById("screen2"),
+        screen3 = document.getElementById("screen3"),
+        screen4 = document.getElementById("screen4"),
+        screen5 = document.getElementById("screen5"),
+        screens = [screen1, screen2, screen3, screen4, screen5];
+
+  const productListContainer = document.getElementById("product-list"),
+        cartItemsContainer = document.getElementById("cart-items"),
+        totalAmountDisplay = document.getElementById("total-amount-display"),
+        checkoutButton = document.getElementById("checkout-button"),
+        removeSelectedBtn = document.getElementById("remove-selected-btn"),
+        backToScreen1Button = document.getElementById("back-to-screen1-button"),
+        paymentDueDisplay = document.getElementById("payment-due"),
+        amountTenderedDisplay = document.getElementById("amount-tendered-display"),
+        changeDueDisplay = document.getElementById("change-due-display"),
+        keypadButtons = document.querySelectorAll(".keypad-btn"),
+        clearKeypadButton = document.getElementById("clear-keypad"),
+        calculateChangeButton = document.getElementById("calculate-change-button"),
+        finalOrderNumberDisplay = document.getElementById("final-order-number"),
+        finalChangeAmountDisplay = document.getElementById("final-change-amount"),
+        changeBreakdownContainer = document.getElementById("change-breakdown"),
+        finalOrderSummaryContainer = document.getElementById("final-order-summary"),
+        newTransactionButton = document.getElementById("new-transaction-button"),
+        showHistoryButton = document.getElementById("show-history-button"),
+        historyListContainer = document.getElementById("history-list"),
+        historySummaryContainer = document.getElementById("history-summary"),
+        backToScreen1FromHistory = document.getElementById("back-to-screen1-from-history"),
+        clearHistoryButton = document.getElementById("clear-history-button"),
+        historySearchInput = document.getElementById("history-search-input"),
+        showProductManagerButton = document.getElementById("show-product-manager-button"),
+        backToScreen1FromManager = document.getElementById("back-to-screen1-from-manager"),
+        productManagementList = document.getElementById("product-management-list"),
+        newProductName = document.getElementById("new-product-name"),
+        newProductPrice = document.getElementById("new-product-price"),
+        addProductBtn = document.getElementById("add-product-btn");
+
+  const formatCurrency = e => `¥${e.toLocaleString()}`;
+
+  // ===== 画面切替 =====
+  const switchScreen = (screenToShowId) => {
+    screens.forEach(screen => {
+      screen.style.display = (screen.id === screenToShowId) ? "block" : "none";
+    });
+  };
+
+  // ===== 商品データ保存 =====
+  const saveProductsToLocalStorage = () => {
+    localStorage.setItem("posProducts", JSON.stringify(products));
+  };
+  const loadProductsFromLocalStorage = () => {
+    const e = localStorage.getItem("posProducts");
+    products = e ? JSON.parse(e) : [...defaultProducts];
+  };
+
+  // ===== 商品表示 =====
+  const renderProducts = () => {
+    productListContainer.innerHTML = "";
+    products.forEach(e => {
+      const o = document.createElement("div");
+      o.className = "product";
+      o.innerHTML = `
+        <div class="name">${e.name}</div>
+        <div class="price">${formatCurrency(e.price)}</div>
+      `;
+      o.addEventListener("click", () => addProductToCart(e.id));
+      productListContainer.appendChild(o);
+    });
+  };
+
+  // ===== カート更新 =====
+  const updateCartView = () => {
+    cartItemsContainer.innerHTML = "";
+    subtotal = 0;
+
+    if(cart.length === 0){
+      cartItemsContainer.innerHTML = '<p>商品が選択されていません。</p>';
+      selectedProductId = null;
+      couponCount = 0;
+    } else {
+      cart.sort((a,b)=>a.id-b.id);
+      cart.forEach(item=>{
+        const p = products.find(x=>x.id===item.id);
+        subtotal += p.price * item.quantity;
+        const div = document.createElement("div");
+        div.className = "cart-item" + (p.id===selectedProductId ? " selected":"");
+        div.dataset.productId = p.id;
+        div.innerHTML = `
+          <div>
+            <div>${p.name}</div>
+            <div class="text-sm">${item.quantity}点</div>
+          </div>
+          <span>${formatCurrency(p.price*item.quantity)}</span>
+        `;
+        div.addEventListener("click", ()=>{ selectedProductId = p.id; updateCartView(); });
+        cartItemsContainer.appendChild(div);
+      });
+    }
+
+    totalAmountDisplay.textContent = formatCurrency(subtotal - discountAmount);
+    removeSelectedBtn.disabled = (selectedProductId===null);
+  };
+
+  const addProductToCart = id => {
+    const found = cart.find(x=>x.id===id);
+    if(found){ found.quantity++; }
+    else { cart.push({id,quantity:1}); }
+    selectedProductId = id;
+    updateCartView();
+  };
+
+  const removeProductFromCart = id => {
+    if(id===null) return;
+    const idx = cart.findIndex(x=>x.id===id);
+    if(idx>-1){
+      cart[idx].quantity--;
+      if(cart[idx].quantity===0){ cart.splice(idx,1); selectedProductId=null; }
+    }
+    updateCartView();
+  };
+
+  const updatePaymentScreen = () => {
+    const due = subtotal - discountAmount;
+    paymentDueDisplay.textContent = formatCurrency(due);
+    amountTenderedDisplay.textContent = formatCurrency(amountTendered);
+    const change = Math.max(0, amountTendered-due);
+    changeDueDisplay.textContent = formatCurrency(change);
+    calculateChangeButton.disabled = amountTendered < due;
+  };
+
+  const resetTransaction = () => {
+    cart = []; subtotal=0; amountTendered=0; selectedProductId=null;
+    discountAmount=0; couponCount=0;
+    updateCartView();
+    switchScreen("screen1");
+  };
+
+  // ===== 履歴保存 =====
+  const saveToLocalStorage = () => {
+    localStorage.setItem("posHistory", JSON.stringify(transactionHistory));
+    localStorage.setItem("posLastOrderNumber", lastOrderNumber.toString());
+  };
+  const loadFromLocalStorage = () => {
+    const h = localStorage.getItem("posHistory"),
+          o = localStorage.getItem("posLastOrderNumber");
+    if(h) transactionHistory = JSON.parse(h);
+    if(o) lastOrderNumber = parseInt(o,10);
+  };
+
+  const saveCurrentTransaction = () => {
+    lastOrderNumber++;
+    const t = {
+      orderNumber:lastOrderNumber,
+      date:(new Date).toLocaleString("ja-JP"),
+      items:[...cart],
+      subtotal:subtotal,
+      discount:discountAmount,
+      couponCount:couponCount,
+      total:subtotal-discountAmount,
+      tendered:amountTendered,
+      change:amountTendered-(subtotal-discountAmount)
+    };
+    transactionHistory.unshift(t);
+    saveToLocalStorage();
+  };
+
+  // ===== 履歴表示 =====
+  const renderHistoryScreen = keyword => {
+    const total = transactionHistory.reduce((s,x)=>s+x.total,0);
+    historySummaryContainer.innerHTML = `
+      <h3>売上集計</h3>
+      <p>総売上: ${formatCurrency(total)}</p>
+      <p>取引件数: ${transactionHistory.length} 件</p>
+    `;
+    const list = transactionHistory.filter(x=>x.orderNumber.toString().includes((keyword||"").trim()));
+    historyListContainer.innerHTML = "";
+    if(list.length===0){
+      historyListContainer.innerHTML = `<p>${keyword?"該当する履歴はありません。":"取引履歴はありません。"}</p>`;
+    } else {
+      list.forEach(t=>{
+        const div = document.createElement("div");
+        div.className = "history-item";
+        let itemsHtml = t.items.map(i=>{
+          const p = products.find(x=>x.id===i.id)||{name:"不明な商品"};
+          return `<li>${p.name} x ${i.quantity}</li>`;
+        }).join("");
+        div.innerHTML = `
+          <h4>受付番号: ${t.orderNumber}</h4>
+          <p>合計: ${formatCurrency(t.total)}</p>
+          <p>${t.date}</p>
+          <ul>${itemsHtml}</ul>
+        `;
+        historyListContainer.appendChild(div);
+      });
+    }
+  };
+
+  // ===== 会計完了画面更新 =====
+  const updateChangeScreen = () => {
+    const orderNo = lastOrderNumber+1;
+    const change = amountTendered-(subtotal-discountAmount);
+    finalOrderNumberDisplay.textContent = orderNo;
+    finalChangeAmountDisplay.textContent = formatCurrency(change);
+    changeBreakdownContainer.innerHTML="";
+    finalOrderSummaryContainer.innerHTML="";
+    const units = [10000,5000,1000,500,100,50,10,5,1];
+    let remain = change;
+    if(change===0){
+      changeBreakdownContainer.innerHTML = "<p>おつりはありません</p>";
+    } else {
+      units.forEach(u=>{
+        const c = Math.floor(remain/u);
+        if(c>0){
+          const row = document.createElement("div");
+          row.innerHTML = `${u}円: ${c}枚`;
+          changeBreakdownContainer.appendChild(row);
+          remain %= u;
+        }
+      });
+    }
+    cart.forEach(i=>{
+      const p = products.find(x=>x.id===i.id);
+      const row = document.createElement("div");
+      row.innerHTML = `${p.name} x ${i.quantity} = ${formatCurrency(p.price*i.quantity)}`;
+      finalOrderSummaryContainer.appendChild(row);
+    });
+  };
+
+  // ===== 商品管理 =====
+  const renderProductManagementList = () => {
+    productManagementList.innerHTML="";
+    products.forEach(p=>{
+      const div=document.createElement("div");
+      div.className="cart-item";
+      div.innerHTML=`
+        <div>
+          <p>${p.name}</p>
+          <p>${formatCurrency(p.price)}</p>
+        </div>
+        <div>
+          <button class="btn btn-yellow edit-product-btn" data-id="${p.id}">編集</button>
+          <button class="btn btn-red delete-product-btn" data-id="${p.id}">削除</button>
+        </div>
+      `;
+      productManagementList.appendChild(div);
+    });
+  };
+
+  // ===== イベント =====
+  checkoutButton.addEventListener("click", ()=>{
+    if(cart.length>0){
+      amountTendered=0;
+      updatePaymentScreen();
+      switchScreen("screen2");
+    } else {
+      alert("商品が選択されていません。");
+    }
+  });
+  removeSelectedBtn.addEventListener("click", ()=>removeProductFromCart(selectedProductId));
+  backToScreen1Button.addEventListener("click", ()=>switchScreen("screen1"));
+  keypadButtons.forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const v = btn.textContent;
+      if(amountTendered.toString().length<9){
+        const n = parseInt(`${amountTendered}${v}`,10);
+        if(!isNaN(n)) amountTendered = n;
+      }
+      updatePaymentScreen();
+    });
+  });
+  clearKeypadButton.addEventListener("click", ()=>{ amountTendered=0; updatePaymentScreen(); });
+  calculateChangeButton.addEventListener("click", ()=>{
+    if(calculateChangeButton.disabled) return;
+    updateChangeScreen();
+    switchScreen("screen3");
+  });
+  newTransactionButton.addEventListener("click", ()=>{
+    saveCurrentTransaction();
+    resetTransaction();
+  });
+  showHistoryButton.addEventListener("click", ()=>{
+    historySearchInput.value="";
+    renderHistoryScreen();
+    switchScreen("screen4");
+  });
+  backToScreen1FromHistory.addEventListener("click", ()=>switchScreen("screen1"));
+  clearHistoryButton.addEventListener("click", ()=>{
+    if(confirm("本当にすべての履歴を消去しますか？")){
+      transactionHistory=[];
+      lastOrderNumber=0;
+      saveToLocalStorage();
+      renderHistoryScreen();
+    }
+  });
+  historySearchInput.addEventListener("input", e=>renderHistoryScreen(e.target.value));
+  showProductManagerButton.addEventListener("click", ()=>{
+    renderProductManagementList();
+    switchScreen("screen5");
+  });
+  backToScreen1FromManager.addEventListener("click", ()=>{
+    renderProducts();
+    switchScreen("screen1");
+  });
+  addProductBtn.addEventListener("click", ()=>{
+    const n = newProductName.value.trim(),
+          p = parseInt(newProductPrice.value,10);
+    if(!n || isNaN(p) || p<0){
+      alert("有効な商品名と価格を入力してください。");
+      return;
+    }
+    products.push({id:Date.now(), name:n, price:p});
+    saveProductsToLocalStorage();
+    renderProducts();
+    renderProductManagementList();
+    newProductName.value=""; newProductPrice.value="";
+  });
+  productManagementList.addEventListener("click", e=>{
+    const delBtn = e.target.closest(".delete-product-btn");
+    if(delBtn){
+      const id = parseInt(delBtn.dataset.id,10);
+      if(confirm("この商品を削除しますか？")){
+        products = products.filter(p=>p.id!==id);
+        saveProductsToLocalStorage();
+        renderProducts();
+        renderProductManagementList();
+      }
+    }
+    const editBtn = e.target.closest(".edit-product-btn");
+    if(editBtn){
+      const id = parseInt(editBtn.dataset.id,10);
+      const prod = products.find(p=>p.id===id);
+      if(!prod) return;
+      const newName = prompt("新しい商品名を入力してください:", prod.name);
+      const newPrice = prompt("新しい価格を入力してください:", prod.price);
+      if(newName!==null && newPrice!==null){
+        const priceInt = parseInt(newPrice,10);
+        if(newName.trim() && !isNaN(priceInt) && priceInt>=0){
+          prod.name=newName.trim();
+          prod.price=priceInt;
+          saveProductsToLocalStorage();
+          renderProducts();
+          renderProductManagementList();
+        } else {
+          alert("無効な入力です。");
+        }
+      }
+    }
+  });
+
+  // ===== 初期化 =====
+  loadFromLocalStorage();
+  loadProductsFromLocalStorage();
+  renderProducts();
+  updateCartView();
+});
+</script>
+</body>
+</html>
