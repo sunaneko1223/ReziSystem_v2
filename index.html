@@ -36,7 +36,8 @@ html, body {
   <div id="product-list" class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg overflow-y-auto no-scrollbar"></div>
 
   <!-- ご注文内容 -->
-  <div class="md:col-span-1 bg-gray-100 p-4 rounded-lg flex flex-col">
+  <div class="md:col-span-1 bg-gray-100 p-4 rounded-lg flex flex-col h-full">
+    <!-- タイトル固定 -->
     <h2 class="text-lg font-bold border-b pb-2 mb-4 flex-shrink-0">ご注文内容</h2>
 
     <!-- リストだけスクロール -->
@@ -44,7 +45,7 @@ html, body {
       <p class="text-gray-500">商品が選択されていません。</p>
     </div>
 
-    <!-- 下部固定エリア -->
+    <!-- 下部固定 -->
     <div class="mt-3 flex-shrink-0 space-y-2">
       <!-- 無料券操作 -->
       <div class="flex items-center justify-between w-full bg-orange-500 text-white font-bold py-1 rounded-lg">
