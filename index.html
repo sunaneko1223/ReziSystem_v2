@@ -22,7 +22,7 @@ html, body {
 <div class="w-full h-full max-w-4xl mx-auto bg-white shadow-2xl rounded-lg flex flex-col">
 
 <!-- Screen 1: 商品選択画面 -->
-<div id="screen1" class="w-full flex-grow flex flex-col">
+<div id="screen1" class="w-full flex-grow flex flex-col h-full">
 <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
   <h1 class="text-xl font-bold">レジ１：商品選択</h1>
   <div>
@@ -41,8 +41,10 @@ html, body {
     <h2 class="text-lg font-bold border-b pb-2 mb-4 flex-shrink-0">ご注文内容</h2>
 
     <!-- リストだけスクロール -->
-    <div id="cart-items" class="flex-grow min-h-0 space-y-2 overflow-y-auto no-scrollbar">
-      <p class="text-gray-500">商品が選択されていません。</p>
+    <div class="flex-grow min-h-0">
+      <div id="cart-items" class="h-full space-y-2 overflow-y-auto no-scrollbar">
+        <p class="text-gray-500">商品が選択されていません。</p>
+      </div>
     </div>
 
     <!-- 下部固定 -->
