@@ -78,9 +78,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let subtotal = 0, discountAmount = 0, couponCount = 0;
   let selectedProductId = null;
   let products = [
-    {id:1, name:"ポテト", price:300},
-    {id:2, name:"たこ焼き", price:250},
-    {id:3, name:"ドリンク", price:200}
+    {id:1, name:"ポテト（塩）", price:300},
+    {id:2, name:"ポテト（コンソメ）", price:300},
+    {id:3, name:"ポテト（バター醤油）", price:300},
+    {id:4, name:"たこ焼き（ソース）", price:250},
+    {id:5, name:"たこ焼き（しょうゆ）", price:250},
+    {id:6, name:"たこ焼き（塩）", price:250},
+    {id:7, name:"ドリンク（コーラ）", price:200},
+    {id:8, name:"ドリンク（カルピス）", price:200},
+    {id:9, name:"ドリンク（サイダー）", price:200}
   ];
 
   const productListContainer = document.getElementById("product-list");
