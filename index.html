@@ -79,15 +79,27 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
 </div>
 
 <script>
+// ダブルタップ拡大禁止
 document.addEventListener('DOMContentLoaded', () => {
   let lastTouchEnd = 0;
+
+  // 全体のダブルタップ拡大防止
   document.addEventListener('touchend', function (event) {
     const now = Date.now();
     if (now - lastTouchEnd <= 300) {
-      event.preventDefault(); // ダブルタップによる拡大を防止
+      event.preventDefault();
     }
     lastTouchEnd = now;
   }, { passive: false });
+
+  // 特にボタンに適用（＋をダブルタップしても拡大しない）
+  document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('touchstart', function (event) {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+  });
 });
 
 document.addEventListener('DOMContentLoaded', () => {
