@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
-<title>レジシステム（レジ1 最終版）</title>
+<title>レジシステム（最終版）</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロール禁止 */
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     productListContainer.innerHTML = "";
     products.forEach(p=>{
       const btn = document.createElement("div");
-      btn.className = "bg-white p-4 rounded-lg shadow-md cursor-pointer hover:shadow-lg hover:bg-blue-50 transition-all duration-200 flex flex-col items-center justify-center text-center h-28";
+      btn.className = "bg-white p-3 rounded-lg shadow-md cursor-pointer hover:shadow-lg hover:bg-blue-50 transition-all duration-200 flex flex-col items-center justify-center text-center h-28";
       btn.innerHTML = `<div class="font-semibold text-base">${p.name}</div><div class="text-sm text-gray-600">${p.flavor}</div><div class="text-gray-600 mt-2">${formatCurrency(p.price)}</div>`;
       btn.addEventListener("click", ()=> addProductToCart(p.id));
       productListContainer.appendChild(btn);
@@ -261,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lastTouchEnd = now;
   }, { passive: false });
 
+  // 特にボタンでのダブルタップ拡大防止
   document.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('touchstart', function (event) {
       if (event.touches.length > 1) {
