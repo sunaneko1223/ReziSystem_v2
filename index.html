@@ -80,6 +80,17 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function (event) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault(); // ダブルタップによる拡大を防止
+    }
+    lastTouchEnd = now;
+  }, { passive: false });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
   let cart = [];
   let subtotal = 0, discountAmount = 0, couponCount = 0;
   let selectedProductId = null;
