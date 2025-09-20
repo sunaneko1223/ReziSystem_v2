@@ -42,7 +42,7 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
       <div id="change-amount" class="text-3xl font-bold">¥0</div>
     </div>
 
-    <!-- テンキー -->
+    <!-- テンキー（修正版） -->
     <div class="grid grid-cols-3 gap-2 flex-shrink-0">
       <button class="key">7</button>
       <button class="key">8</button>
@@ -80,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   totalAmountDisplay.textContent = `¥${total.toLocaleString()}`;
 
-  // 金額更新
   function updateDisplay(){
     const inputValue = input === "" ? 0 : parseInt(input);
     inputAmountDisplay.textContent = `¥${inputValue.toLocaleString()}`;
@@ -88,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
     changeAmountDisplay.textContent = change >= 0 ? `¥${change.toLocaleString()}` : "¥0";
   }
 
-  // テンキー動作
   document.querySelectorAll(".key").forEach(btn => {
     btn.addEventListener("click", () => {
       const val = btn.textContent;
