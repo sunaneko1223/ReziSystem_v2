@@ -3,14 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
-<title>統合版レジシステム</title>
+<title>統合版レジシステム（修正版）</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-/* 本家と同じスタイル（全体スクロール禁止・スクロールバー非表示） */
 html, body { height: 100%; margin: 0; overflow: hidden; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-/* 本家で使っていた cart-item.selected カラーもキープ */
 .cart-item.selected { background-color: #dbeafe; border: 2px solid #3b82f6; }
 </style>
 </head>
@@ -19,33 +17,20 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
 <div class="w-full max-w-4xl mx-auto bg-white shadow-2xl rounded-lg flex flex-col"
      style="height:100vh; height:100dvh;">
 
-  <!-- ===== Screen1: 商品選択（本家のまま） ===== -->
+  <!-- ===== Screen1: 商品選択 ===== -->
   <div id="screen1" class="w-full flex-grow flex flex-col">
     <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
       <h1 class="text-xl font-bold">レジ：商品選択</h1>
-      <div>
-        <button class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition mr-2">商品管理</button>
-        <button class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition">取引履歴</button>
-      </div>
     </header>
-
     <main class="flex-grow p-4 grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0">
       <!-- 商品一覧 -->
-      <div id="product-list"
-           class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-0 p-1 bg-gray-50 rounded-lg overflow-auto no-scrollbar min-h-0">
-        <!-- JSで追加 -->
-      </div>
-
+      <div id="product-list" class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 bg-gray-50 rounded-lg overflow-auto no-scrollbar"></div>
       <!-- ご注文内容 -->
       <div class="md:col-span-1 bg-gray-100 p-4 rounded-lg flex flex-col min-h-0">
         <h2 class="text-lg font-bold border-b pb-2 mb-4 flex-shrink-0">ご注文内容</h2>
-
-        <!-- リストだけスクロール -->
         <div id="cart-items" class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0">
           <p class="text-gray-500">商品が選択されていません。</p>
         </div>
-
-        <!-- 下部パネル -->
         <div class="mt-3 flex-shrink-0 space-y-2">
           <!-- 無料券操作 -->
           <div class="flex items-center justify-between w-full bg-orange-500 text-white font-bold py-1 rounded-lg">
@@ -53,13 +38,11 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
             <span class="flex-grow text-center">無料券 <span id="coupon-count">0</span>枚</span>
             <button id="increase-coupon-btn" class="text-2xl px-4 py-1 rounded-r-lg hover:bg-orange-600 transition">+</button>
           </div>
-
           <!-- 削除ボタン -->
           <button id="remove-selected-btn"
                   class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition disabled:bg-gray-400"
                   disabled>削除</button>
-
-          <!-- 合計表示＋会計 -->
+          <!-- 合計表示 -->
           <div class="border-t pt-4">
             <div id="discount-row" class="flex justify-between items-center text-lg text-red-500 hidden">
               <span>割引 (無料券)</span>
@@ -70,16 +53,15 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
               <span id="total-amount-display">¥0</span>
             </div>
             <button id="checkout-button"
-                    class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-4 transition">
-              会計へ進む
-            </button>
+                    class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-4 transition disabled:bg-gray-400"
+                    disabled>会計へ進む</button>
           </div>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- ===== Screen2: 支払い（本家のまま、テンキーは✕追加済） ===== -->
+  <!-- ===== Screen2: 支払い ===== -->
   <div id="screen2" class="w-full hidden flex-grow flex flex-col">
     <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
       <h1 class="text-xl font-bold">レジ２：お支払い</h1>
@@ -100,22 +82,17 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
           <p id="change-due-display" class="text-4xl font-bold text-green-600">¥0</p>
         </div>
       </div>
-
       <div class="flex flex-col items-center justify-center">
         <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
           <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">7</button>
           <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">8</button>
           <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">9</button>
-
           <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">4</button>
           <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">5</button>
           <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">6</button>
-
           <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">1</button>
           <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">2</button>
           <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">3</button>
-
-          <!-- 本家と同じ見た目で、0 ✕ C に変更 -->
           <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">0</button>
           <button id="backspace-keypad" class="text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">✕</button>
           <button id="clear-keypad" class="text-2xl p-6 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition">C</button>
@@ -125,7 +102,7 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
     </main>
   </div>
 
-  <!-- ===== Screen3: お会計完了（本家のまま、内訳・購入内容はスクロール可） ===== -->
+  <!-- ===== Screen3: 完了 ===== -->
   <div id="screen3" class="w-full hidden flex-grow flex flex-col">
     <header class="bg-gray-800 text-white p-4 flex-shrink-0">
       <h1 class="text-xl font-bold">レジ３：お会計完了</h1>
@@ -138,13 +115,10 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
         </div>
         <h2 class="text-2xl font-semibold mb-2">おつり合計</h2>
         <p id="final-change-amount" class="text-5xl font-bold text-green-600 mb-4">¥0</p>
-
         <h3 class="text-lg font-semibold mb-2 border-b pb-1">内訳</h3>
         <div id="change-breakdown" class="space-y-1 text-lg max-h-32 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg"></div>
-
         <h3 class="text-lg font-semibold mt-4 mb-2 border-b pb-1">ご購入内容</h3>
         <div id="final-order-summary" class="space-y-1 text-left text-sm max-h-32 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg"></div>
-
         <button id="new-transaction-button" class="w-full max-w-xs mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-4 rounded-lg transition">
           次の会計へ
         </button>
@@ -154,330 +128,193 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
 
 </div>
 
-<!-- ===== 統合スクリプト（本家のロジックを維持、画面切替化） ===== -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
-  /* ---------- 画面切替ヘルパー ---------- */
   function showScreen(id) {
-    ["screen1","screen2","screen3"].forEach(s => {
-      document.getElementById(s).classList.add("hidden");
-    });
+    ["screen1","screen2","screen3"].forEach(s => document.getElementById(s).classList.add("hidden"));
     document.getElementById(id).classList.remove("hidden");
   }
 
-  /* ---------- Screen1 ロジック（本家のまま） ---------- */
+  /* === レジ1 === */
   let cart = [];
-  let subtotal = 0, discountAmount = 0, couponCount = 0;
-  let selectedProductId = null;
-
+  let couponCount = 0;
   const products = [
     {id:1, name:"ポテト", flavor:"塩", price:300},
     {id:2, name:"ポテト", flavor:"コンソメ", price:300},
-    {id:3, name:"ポテト", flavor:"バター醤油", price:300},
-    {id:4, name:"たこ焼き", flavor:"ソース", price:250},
-    {id:5, name:"たこ焼き", flavor:"しょうゆ", price:250},
-    {id:6, name:"たこ焼き", flavor:"塩", price:250},
-    {id:7, name:"ドリンク", flavor:"コーラ", price:200},
-    {id:8, name:"ドリンク", flavor:"カルピス", price:200},
-    {id:9, name:"ドリンク", flavor:"サイダー", price:200}
+    {id:3, name:"たこ焼き", flavor:"ソース", price:400},
+    {id:4, name:"ジュース", flavor:"コーラ", price:150}
   ];
 
-  const productListContainer = document.getElementById("product-list");
-  const cartItemsContainer = document.getElementById("cart-items");
+  const productList = document.getElementById("product-list");
+  const cartItems = document.getElementById("cart-items");
   const totalAmountDisplay = document.getElementById("total-amount-display");
-  const couponCountDisplay = document.getElementById("coupon-count");
   const discountRow = document.getElementById("discount-row");
   const discountAmountDisplay = document.getElementById("discount-amount");
-  const removeSelectedBtn = document.getElementById("remove-selected-btn");
+  const checkoutBtn = document.getElementById("checkout-button");
+  const couponCountDisplay = document.getElementById("coupon-count");
 
-  const formatCurrency = (v) => `¥${v.toLocaleString()}`;
+  const fmt = v => `¥${v.toLocaleString()}`;
 
-  function renderProducts(){
-    productListContainer.innerHTML = "";
-    products.forEach(p=>{
-      const btn = document.createElement("div");
-      btn.className = "bg-white p-3 rounded-lg shadow-md cursor-pointer hover:shadow-lg hover:bg-blue-50 transition-all duration-200 flex flex-col items-center justify-center text-center h-28";
-      btn.innerHTML = `<div class="font-semibold text-base">${p.name}</div><div class="text-sm text-gray-600">${p.flavor}</div><div class="text-gray-600 mt-2">${formatCurrency(p.price)}</div>`;
-      btn.addEventListener("click", ()=> addProductToCart(p.id));
-      productListContainer.appendChild(btn);
-    });
-  }
+  products.forEach(p=>{
+    const btn = document.createElement("button");
+    btn.className="bg-white p-3 rounded-lg shadow hover:bg-blue-50";
+    btn.textContent=`${p.name}(${p.flavor}) ¥${p.price}`;
+    btn.onclick=()=>{ 
+      const found=cart.find(c=>c.id===p.id);
+      if(found) found.quantity++;
+      else cart.push({...p, quantity:1, freeCount:0});
+      renderCart();
+    };
+    productList.appendChild(btn);
+  });
 
-  function updateCartView(){
-    cartItemsContainer.innerHTML = "";
-    subtotal = 0;
-    discountAmount = 0;
-
-    if(cart.length === 0){
-      cartItemsContainer.innerHTML = '<p class="text-gray-500">商品が選択されていません。</p>';
-      totalAmountDisplay.textContent = "¥0";
-      discountRow.classList.add("hidden");
-      removeSelectedBtn.disabled = true;
+  function renderCart(){
+    cartItems.innerHTML="";
+    if(cart.length===0){
+      cartItems.innerHTML="<p class='text-gray-500'>商品が選択されていません。</p>";
+      totalAmountDisplay.textContent="¥0";
+      checkoutBtn.disabled=true;
       return;
     }
-
-    cart.forEach(item => {
-      const product = products.find(p=>p.id===item.id);
-      if(!product) return;
-      subtotal += product.price * item.quantity;
-      discountAmount += product.price * (item.freeCount || 0);
-
-      const totalPrice = product.price * item.quantity;
-
-      const row = document.createElement("div");
-      row.className = `cart-item bg-white p-3 rounded-lg ${item.id===selectedProductId ? "selected" : ""}`;
-
-      row.innerHTML = `
-        <div class="flex justify-between items-center">
-          <div class="font-medium">${product.name}</div>
-          <div class="text-2xl font-bold text-gray-800">${formatCurrency(totalPrice)}</div>
-        </div>
-        <div class="text-sm text-gray-500 mt-1">${product.flavor}</div>
-        <div class="flex justify-between items-center mt-2">
-          <span class="text-sm">数量 ${item.quantity}点</span>
-          <div class="flex gap-2">
-            <button class="minus bg-gray-300 px-3 py-1 rounded">－</button>
-            <button class="plus bg-gray-300 px-3 py-1 rounded">＋</button>
-            <button class="remove bg-red-500 text-white px-3 py-1 rounded">×</button>
-          </div>
-        </div>
-        ${item.freeCount > 0
-          ? `<div class="text-sm text-red-500 mt-1 text-right">- ${formatCurrency(product.price * item.freeCount)}</div>`
-          : ""}
-      `;
-
-      row.querySelector(".minus").addEventListener("click", (e) => {
-        e.stopPropagation();
-        if(item.quantity > 1) item.quantity--;
-        else cart = cart.filter(c=>c.id!==item.id);
-        if(item.freeCount > item.quantity){
-          couponCount -= (item.freeCount - item.quantity);
-          item.freeCount = item.quantity;
-        }
-        updateCartView();
-      });
-      row.querySelector(".plus").addEventListener("click", (e) => {
-        e.stopPropagation();
-        item.quantity++;
-        updateCartView();
-      });
-      row.querySelector(".remove").addEventListener("click", (e) => {
-        e.stopPropagation();
-        if(item.freeCount) couponCount -= item.freeCount;
-        cart = cart.filter(c=>c.id!==item.id);
-        if(selectedProductId === item.id) selectedProductId = null;
-        updateCartView();
-      });
-
-      row.addEventListener("click", () => {
-        selectedProductId = item.id===selectedProductId ? null : item.id;
-        updateCartView();
-      });
-
-      cartItemsContainer.appendChild(row);
+    let subtotal=0, discount=0;
+    cart.forEach(item=>{
+      subtotal += item.price * item.quantity;
+      discount += item.price * (item.freeCount||0);
+      const div=document.createElement("div");
+      div.className="bg-white p-2 rounded";
+      div.textContent=`${item.name}(${item.flavor}) ×${item.quantity} = ${fmt(item.price*item.quantity)}`;
+      cartItems.appendChild(div);
     });
-
-    if(discountAmount > 0){
-      discountAmountDisplay.textContent = `-${formatCurrency(discountAmount)}`;
+    if(discount>0){
+      discountAmountDisplay.textContent=`-¥${discount}`;
       discountRow.classList.remove("hidden");
     } else {
       discountRow.classList.add("hidden");
     }
-
-    totalAmountDisplay.textContent = formatCurrency(subtotal - discountAmount);
-    couponCountDisplay.textContent = couponCount;
-    removeSelectedBtn.disabled = (selectedProductId === null);
+    totalAmountDisplay.textContent=fmt(subtotal-discount);
+    checkoutBtn.disabled=false;
   }
 
-  function addProductToCart(id){
-    const found = cart.find(c=>c.id===id);
-    if(found) found.quantity++;
-    else cart.push({id:id, quantity:1, freeCount:0});
-    selectedProductId = id;
-    updateCartView();
-  }
-
-  removeSelectedBtn.addEventListener("click", () => {
-    if(selectedProductId === null) return;
-    const item = cart.find(c=>c.id===selectedProductId);
-    if(item && item.freeCount) couponCount -= item.freeCount;
-    cart = cart.filter(c=>c.id!==selectedProductId);
-    selectedProductId = null;
-    updateCartView();
-  });
-
-  document.getElementById("increase-coupon-btn").addEventListener("click", () => {
-    if(!selectedProductId) return;
-    const item = cart.find(c=>c.id===selectedProductId);
-    if(item && item.freeCount < item.quantity){
-      item.freeCount++;
+  document.getElementById("increase-coupon-btn").onclick=()=>{
+    if(cart.length>0){
+      cart[0].freeCount++;
       couponCount++;
-      updateCartView();
+      couponCountDisplay.textContent=couponCount;
+      renderCart();
     }
-  });
-  document.getElementById("decrease-coupon-btn").addEventListener("click", () => {
-    if(!selectedProductId) return;
-    const item = cart.find(c=>c.id===selectedProductId);
-    if(item && item.freeCount > 0){
-      item.freeCount--;
+  };
+  document.getElementById("decrease-coupon-btn").onclick=()=>{
+    if(couponCount>0 && cart.length>0){
+      cart[0].freeCount--;
       couponCount--;
-      updateCartView();
+      couponCountDisplay.textContent=couponCount;
+      renderCart();
     }
-  });
+  };
 
-  // 初期レンダリング（Screen1表示時）
-  renderProducts();
-  updateCartView();
-
-  // Checkout ボタン（Screen1 -> Screen2）
-  document.getElementById("checkout-button").addEventListener("click", () => {
-    const total = cart.reduce((sum, item) => {
-      const p = products.find(x => x.id === item.id);
-      return sum + (p ? p.price * item.quantity : 0);
-    }, 0);
-    // 本家の保存キー名を維持：paymentDue, orderSummary
+  checkoutBtn.onclick=()=>{
+    let subtotal=0, discount=0;
+    cart.forEach(item=>{
+      subtotal += item.price*item.quantity;
+      discount += item.price*(item.freeCount||0);
+    });
+    const total=subtotal-discount;
     localStorage.setItem("paymentDue", total);
     localStorage.setItem("orderSummary", JSON.stringify(cart));
     showScreen("screen2");
-    // Screen2 初期化用に呼び出す
     initScreen2();
-  });
+  };
 
-  /* ---------- Screen2 ロジック（本家のまま、localStorageの支払い金額を読む） ---------- */
-  let amountTendered = "0";
-  let paymentDue = 0; // レジ1から受け取るため初期は0
+  /* === レジ2 === */
+  let amountTendered="0";
+  let paymentDue=0;
+  const pDue=document.getElementById("payment-due");
+  const aTender=document.getElementById("amount-tendered-display");
+  const cDue=document.getElementById("change-due-display");
 
-  const paymentDueDisplay = document.getElementById("payment-due");
-  const amountTenderedDisplay = document.getElementById("amount-tendered-display");
-  const changeDueDisplay = document.getElementById("change-due-display");
+  const fmt2=v=>`¥${Number(v).toLocaleString()}`;
 
-  const formatCurrency2 = (v) => `¥${Number(v).toLocaleString()}`;
-
-  function updateTenderedDisplay() {
-    paymentDueDisplay.textContent = formatCurrency2(paymentDue);
-    amountTenderedDisplay.textContent = formatCurrency2(amountTendered);
-    const change = Number(amountTendered) - paymentDue;
-    changeDueDisplay.textContent = formatCurrency2(change >= 0 ? change : 0);
-    document.getElementById("calculate-change-button").disabled = (Number(amountTendered) < paymentDue);
+  function updateTendered(){
+    pDue.textContent=fmt2(paymentDue);
+    aTender.textContent=fmt2(amountTendered);
+    const ch=Number(amountTendered)-paymentDue;
+    cDue.textContent=fmt2(ch>=0?ch:0);
+    document.getElementById("calculate-change-button").disabled=(Number(amountTendered)<paymentDue);
   }
-
   function initScreen2(){
-    // paymentDue を localStorage から取得（保持している場合）
-    paymentDue = Number(localStorage.getItem("paymentDue")) || 0;
-    amountTendered = "0";
-    updateTenderedDisplay();
+    paymentDue=Number(localStorage.getItem("paymentDue"))||0;
+    amountTendered="0";updateTendered();
   }
 
-  // 数字ボタン（委譲せず個別に登録）
-  document.querySelectorAll(".keypad-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const value = btn.textContent;
-      if (!isNaN(value)) {
-        if (amountTendered === "0") {
-          amountTendered = value;
-        } else {
-          amountTendered += value;
-        }
-        updateTenderedDisplay();
+  document.querySelectorAll(".keypad-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      const v=btn.textContent;
+      if(!isNaN(v)){
+        if(amountTendered==="0") amountTendered=v;
+        else amountTendered+=v;
+        updateTendered();
       }
-    });
+    };
   });
-
-  // バックスペース（✕）
-  document.getElementById("backspace-keypad").addEventListener("click", () => {
-    amountTendered = amountTendered.slice(0, -1);
-    if (amountTendered === "" || amountTendered === "-") {
-      amountTendered = "0";
-    }
-    updateTenderedDisplay();
-  });
-
-  // クリア（C）
-  document.getElementById("clear-keypad").addEventListener("click", () => {
-    amountTendered = "0";
-    updateTenderedDisplay();
-  });
-
-  // 小計（Screen2 -> Screen3）
-  document.getElementById("calculate-change-button").addEventListener("click", () => {
-    const change = Number(amountTendered) - paymentDue;
-    localStorage.setItem("paymentData", JSON.stringify({
-      orderNumber: Math.floor(Math.random() * 1000),
+  document.getElementById("backspace-keypad").onclick=()=>{
+    amountTendered=amountTendered.slice(0,-1)||"0";
+    updateTendered();
+  };
+  document.getElementById("clear-keypad").onclick=()=>{amountTendered="0";updateTendered();};
+  document.getElementById("calculate-change-button").onclick=()=>{
+    const change=Number(amountTendered)-paymentDue;
+    // 受付番号を連番で管理
+    let orderNumber=Number(localStorage.getItem("orderCounter")||"0")+1;
+    localStorage.setItem("orderCounter",orderNumber);
+    localStorage.setItem("paymentData",JSON.stringify({
+      orderNumber,
       paymentDue,
-      amountTendered: Number(amountTendered),
+      amountTendered:Number(amountTendered),
       change,
-      orderSummary: JSON.parse(localStorage.getItem("orderSummary")) || [],
-      changeBreakdown: [
-        { label: "100円", count: 2 },
-        { label: "50円", count: 1 }
-      ]
+      orderSummary:JSON.parse(localStorage.getItem("orderSummary"))||[],
+      changeBreakdown: change>0 ? [
+        {label:"100円",count:Math.floor(change/100)},
+      ] : []
     }));
-    // show screen3 and render final
     showScreen("screen3");
     renderFinal();
-  });
+  };
+  document.getElementById("back-to-screen1-button").onclick=()=>showScreen("screen1");
 
-  document.getElementById("back-to-screen1-button").addEventListener("click", () => {
-    showScreen("screen1");
-  });
-
-  /* ---------- Screen3 ロジック（本家のまま） ---------- */
-  function renderFinal() {
-    const data = JSON.parse(localStorage.getItem("paymentData"));
-    if (!data) return;
-    document.getElementById("final-order-number").textContent = data.orderNumber;
-    document.getElementById("final-change-amount").textContent = `¥${data.change.toLocaleString()}`;
-    const breakdownEl = document.getElementById("change-breakdown");
-    breakdownEl.innerHTML = "";
-    data.changeBreakdown.forEach(item => {
-      const p = document.createElement("p");
-      p.textContent = `${item.label} × ${item.count}`;
-      breakdownEl.appendChild(p);
-    });
-    const orderEl = document.getElementById("final-order-summary");
-    orderEl.innerHTML = "";
-    data.orderSummary.forEach(item => {
-      const p = document.createElement("p");
-      p.textContent = `${item.name} ¥${item.price.toLocaleString()}`;
-      orderEl.appendChild(p);
+  /* === レジ3 === */
+  function renderFinal(){
+    const data=JSON.parse(localStorage.getItem("paymentData"));
+    if(!data)return;
+    document.getElementById("final-order-number").textContent=data.orderNumber;
+    document.getElementById("final-change-amount").textContent=fmt2(data.change);
+    const bEl=document.getElementById("change-breakdown");
+    bEl.innerHTML="";
+    if(data.change===0){
+      bEl.innerHTML="<p class='text-gray-500'>お釣りはありません</p>";
+    }else{
+      data.changeBreakdown.forEach(it=>{
+        if(it.count>0){
+          const p=document.createElement("p");
+          p.textContent=`${it.label} × ${it.count}`;
+          bEl.appendChild(p);
+        }
+      });
+    }
+    const oEl=document.getElementById("final-order-summary");
+    oEl.innerHTML="";
+    data.orderSummary.forEach(it=>{
+      const p=document.createElement("p");
+      p.textContent=`${it.name}(${it.flavor}) ×${it.quantity} = ¥${(it.price*it.quantity).toLocaleString()}`;
+      oEl.appendChild(p);
     });
   }
 
-  document.getElementById("new-transaction-button").addEventListener("click", () => {
-    localStorage.removeItem("paymentData");
-    localStorage.removeItem("paymentDue");
-    localStorage.removeItem("orderSummary");
-    cart = [];
-    couponCount = 0;
-    selectedProductId = null;
-    updateCartView();
+  document.getElementById("new-transaction-button").onclick=()=>{
     showScreen("screen1");
-  });
+  };
 
-  /* ---------- 最初は screen1 を表示 ---------- */
   showScreen("screen1");
-
-  /* ---------- ダブルタップ拡大禁止（本家コード） ---------- */
-  let lastTouchEnd = 0;
-  document.addEventListener('touchend', function (event) {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) {
-      event.preventDefault();
-    }
-    lastTouchEnd = now;
-  }, { passive: false });
-
-  document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('touchstart', function (event) {
-      if (event.touches.length > 1) {
-        event.preventDefault();
-      }
-    }, { passive: false });
-  });
-
 });
 </script>
-
 </body>
 </html>
