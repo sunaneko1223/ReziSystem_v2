@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
-<title>レジ2：お支払い</title>
+<title>レジ3：お会計完了</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロール禁止 */
@@ -17,112 +17,44 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
      style="height:100vh; height:100dvh;">
 
   <!-- ヘッダー -->
-  <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-    <h1 class="text-xl font-bold">レジ2：お支払い</h1>
-    <button onclick="history.back()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">戻る</button>
+  <header class="bg-gray-800 text-white p-4 flex-shrink-0">
+    <h1 class="text-xl font-bold">レジ３：お会計完了</h1>
   </header>
 
-  <!-- メイン -->
-  <main class="flex-grow p-4 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-
-    <!-- 支払い情報 -->
-    <div class="space-y-6 bg-gray-50 p-6 rounded-lg">
-      <div>
-        <label class="text-lg text-gray-600">お支払い金額</label>
-        <p id="payment-due" class="text-4xl font-bold text-gray-800 border-b-2 pb-2">¥0</p>
+  <!-- メイン（スクロール可能エリア） -->
+  <main class="flex-grow overflow-y-auto no-scrollbar p-6">
+    <div class="w-full max-w-md mx-auto">
+      <!-- 受付番号 -->
+      <div class="mb-4">
+        <h2 class="text-xl font-semibold">受付番号</h2>
+        <p id="final-order-number" class="text-7xl font-bold text-red-500">0</p>
       </div>
-      <div>
-        <label class="text-lg text-gray-600">お預かり金額</label>
-        <p id="amount-tendered-display" class="text-4xl font-bold text-blue-600 border-b-2 pb-2">¥0</p>
+
+      <!-- おつり -->
+      <h2 class="text-2xl font-semibold mb-2">おつり合計</h2>
+      <p id="final-change-amount" class="text-5xl font-bold text-green-600 mb-4">¥0</p>
+
+      <!-- 内訳 -->
+      <h3 class="text-lg font-semibold mb-2 border-b pb-1">内訳</h3>
+      <div id="change-breakdown" class="space-y-1 text-lg">
+        <!-- 明細がここに入る -->
       </div>
-      <div>
-        <label class="text-lg text-gray-600">おつり</label>
-        <p id="change-due-display" class="text-4xl font-bold text-green-600">¥0</p>
+
+      <!-- ご購入内容 -->
+      <h3 class="text-lg font-semibold mt-4 mb-2 border-b pb-1">ご購入内容</h3>
+      <div id="final-order-summary" class="space-y-1 text-left text-sm bg-gray-50 p-3 rounded-lg">
+        <!-- 商品リストがここに入る -->
       </div>
-    </div>
-
-    <!-- テンキー -->
-    <div class="flex flex-col items-center justify-center">
-      <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
-        <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">7</button>
-        <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">8</button>
-        <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">9</button>
-
-        <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">4</button>
-        <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">5</button>
-        <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">6</button>
-
-        <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">1</button>
-        <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">2</button>
-        <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">3</button>
-
-        <!-- ここを変更：0 ✕ C -->
-        <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">0</button>
-        <button id="backspace-keypad" class="text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">✕</button>
-        <button id="clear-keypad" class="text-2xl p-6 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition">C</button>
-      </div>
-      <button id="calculate-change-button" class="w-full max-w-xs mt-4 bg-green-500 text-white font-bold py-4 px-4 rounded-lg transition disabled:bg-gray-400" disabled>小計</button>
     </div>
   </main>
+
+  <!-- フッター（常に下に固定） -->
+  <footer class="p-4 bg-white shadow-inner flex-shrink-0">
+    <button id="new-transaction-button" class="w-full max-w-xs mx-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-4 rounded-lg transition">
+      次の会計へ
+    </button>
+  </footer>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  let amountTendered = "0"; // 入力値
-  let paymentDue = 300;     // 本来は前画面から受け取る
-
-  const paymentDueDisplay = document.getElementById("payment-due");
-  const amountTenderedDisplay = document.getElementById("amount-tendered-display");
-  const changeDueDisplay = document.getElementById("change-due-display");
-
-  const formatCurrency = (v) => `¥${Number(v).toLocaleString()}`;
-
-  function updateTenderedDisplay() {
-    paymentDueDisplay.textContent = formatCurrency(paymentDue);
-    amountTenderedDisplay.textContent = formatCurrency(amountTendered);
-    const change = Number(amountTendered) - paymentDue;
-    changeDueDisplay.textContent = formatCurrency(change >= 0 ? change : 0);
-    document.getElementById("calculate-change-button").disabled = (Number(amountTendered) < paymentDue);
-  }
-
-  // 数字ボタン
-  document.querySelectorAll(".keypad-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const value = btn.textContent;
-      if (!isNaN(value)) {
-        if (amountTendered === "0") {
-          amountTendered = value;
-        } else {
-          amountTendered += value;
-        }
-        updateTenderedDisplay();
-      }
-    });
-  });
-
-  // バックスペース（✕）
-  document.getElementById("backspace-keypad").addEventListener("click", () => {
-    amountTendered = amountTendered.slice(0, -1);
-    if (amountTendered === "" || amountTendered === "-") {
-      amountTendered = "0";
-    }
-    updateTenderedDisplay();
-  });
-
-  // クリア（C）
-  document.getElementById("clear-keypad").addEventListener("click", () => {
-    amountTendered = "0";
-    updateTenderedDisplay();
-  });
-
-  // 小計
-  document.getElementById("calculate-change-button").addEventListener("click", () => {
-    alert("おつり計算しました！"); // 本来は次の画面に進む
-  });
-
-  updateTenderedDisplay();
-});
-</script>
 
 <!-- ダブルタップ拡大禁止 -->
 <script>
