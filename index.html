@@ -19,25 +19,36 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
 
   <!-- Screen 1: 商品選択 -->
   <div id="screen1" class="w-full flex-grow flex flex-col">
-    <!-- レジ1.html の中身ここに貼り付け -->
-    <!-- 商品一覧・合計金額・「お支払いへ」ボタン -->
-    <!-- 例: -->
     <header class="bg-gray-800 text-white p-4 flex-shrink-0">
       <h1 class="text-xl font-bold">レジ１：商品選択</h1>
     </header>
-    <main class="flex-grow p-6">
-      <!-- 商品リスト表示エリア（仮） -->
-      <div id="product-list"></div>
-      <div class="mt-4">
-        <p class="text-xl">合計: <span id="total-amount">¥0</span></p>
+    <main class="flex-grow p-6 flex flex-col">
+      <!-- 商品ボタン -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <button class="product-btn bg-blue-500 text-white font-bold py-6 rounded-lg" data-name="やきそば" data-price="400">やきそば ¥400</button>
+        <button class="product-btn bg-green-500 text-white font-bold py-6 rounded-lg" data-name="ジュース" data-price="150">ジュース ¥150</button>
+        <button class="product-btn bg-yellow-500 text-white font-bold py-6 rounded-lg" data-name="たこ焼き" data-price="500">たこ焼き ¥500</button>
+        <button class="product-btn bg-red-500 text-white font-bold py-6 rounded-lg" data-name="かき氷" data-price="300">かき氷 ¥300</button>
       </div>
-      <button id="to-screen2-button" class="w-full max-w-xs mt-6 bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-lg transition">お支払いへ</button>
+
+      <!-- 注文内容表示 -->
+      <div class="bg-gray-50 p-4 rounded-lg flex-grow overflow-y-auto no-scrollbar mb-6">
+        <h2 class="text-lg font-semibold mb-2">ご注文内容</h2>
+        <div id="order-summary-list" class="space-y-1"></div>
+      </div>
+
+      <!-- 合計金額 -->
+      <p class="text-xl font-bold mb-4">合計: <span id="total-amount">¥0</span></p>
+
+      <!-- 支払いへボタン -->
+      <button id="to-screen2-button" class="w-full max-w-xs bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-lg transition self-center">
+        お支払いへ
+      </button>
     </main>
   </div>
 
   <!-- Screen 2: お支払い -->
   <div id="screen2" class="w-full hidden flex-grow flex flex-col">
-    <!-- レジ2.html の中身ここに貼り付け -->
     <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
       <h1 class="text-xl font-bold">レジ２：お支払い</h1>
       <button id="back-to-screen1-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">戻る</button>
@@ -79,7 +90,6 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
 
   <!-- Screen 3: お会計完了 -->
   <div id="screen3" class="w-full hidden flex-grow flex flex-col">
-    <!-- レジ3.html の中身ここに貼り付け -->
     <header class="bg-gray-800 text-white p-4 flex-shrink-0">
       <h1 class="text-xl font-bold">レジ３：お会計完了</h1>
     </header>
@@ -104,9 +114,7 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
 </div>
 
 <script>
-// -----------------------------------------------------
-// 画面切り替え処理
-// -----------------------------------------------------
+// 共通: 画面切り替え
 function showScreen(id) {
   ["screen1","screen2","screen3"].forEach(s => {
     document.getElementById(s).classList.add("hidden");
@@ -114,22 +122,39 @@ function showScreen(id) {
   document.getElementById(id).classList.remove("hidden");
 }
 
-// -----------------------------------------------------
-// レジ1 → レジ2
-// -----------------------------------------------------
+// レジ1: 商品選択処理
+let orderSummary = [];
+function updateOrderDisplay() {
+  const list = document.getElementById("order-summary-list");
+  list.innerHTML = "";
+  let total = 0;
+  orderSummary.forEach(item => {
+    const p = document.createElement("p");
+    p.textContent = `${item.name} ¥${item.price}`;
+    list.appendChild(p);
+    total += item.price;
+  });
+  document.getElementById("total-amount").textContent = `¥${total.toLocaleString()}`;
+  localStorage.setItem("orderSummary", JSON.stringify(orderSummary));
+  localStorage.setItem("paymentDue", total);
+}
+document.querySelectorAll(".product-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const name = btn.dataset.name;
+    const price = Number(btn.dataset.price);
+    orderSummary.push({ name, price });
+    updateOrderDisplay();
+  });
+});
 document.getElementById("to-screen2-button").addEventListener("click", () => {
-  // 商品データ保存（仮の例）
-  localStorage.setItem("paymentDue", 550);
-  localStorage.setItem("orderSummary", JSON.stringify([
-    { name: "やきそば", price: 400 },
-    { name: "ジュース", price: 150 }
-  ]));
+  if (orderSummary.length === 0) {
+    alert("商品を選択してください");
+    return;
+  }
   showScreen("screen2");
 });
 
-// -----------------------------------------------------
-// レジ2処理
-// -----------------------------------------------------
+// レジ2: 支払い処理
 let amountTendered = "0";
 let paymentDue = Number(localStorage.getItem("paymentDue")) || 0;
 const paymentDueDisplay = document.getElementById("payment-due");
@@ -138,6 +163,7 @@ const changeDueDisplay = document.getElementById("change-due-display");
 const formatCurrency = (v) => `¥${Number(v).toLocaleString()}`;
 
 function updateTenderedDisplay() {
+  paymentDue = Number(localStorage.getItem("paymentDue")) || 0;
   paymentDueDisplay.textContent = formatCurrency(paymentDue);
   amountTenderedDisplay.textContent = formatCurrency(amountTendered);
   const change = Number(amountTendered) - paymentDue;
@@ -180,6 +206,7 @@ document.getElementById("calculate-change-button").addEventListener("click", () 
       { label: "50円", count: 1 }
     ]
   }));
+  loadScreen3();
   showScreen("screen3");
 });
 document.getElementById("back-to-screen1-button").addEventListener("click", () => {
@@ -187,9 +214,7 @@ document.getElementById("back-to-screen1-button").addEventListener("click", () =
 });
 updateTenderedDisplay();
 
-// -----------------------------------------------------
-// レジ3処理
-// -----------------------------------------------------
+// レジ3: 完了画面
 function loadScreen3() {
   const data = JSON.parse(localStorage.getItem("paymentData"));
   if (!data) return;
@@ -214,9 +239,12 @@ document.getElementById("new-transaction-button").addEventListener("click", () =
   localStorage.removeItem("paymentData");
   localStorage.removeItem("orderSummary");
   localStorage.removeItem("paymentDue");
+  orderSummary = [];
+  updateOrderDisplay();
+  amountTendered = "0";
+  updateTenderedDisplay();
   showScreen("screen1");
 });
-document.getElementById("screen3").addEventListener("transitionstart", loadScreen3);
 </script>
 
 </body>
