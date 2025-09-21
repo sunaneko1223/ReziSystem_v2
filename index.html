@@ -3,13 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
-<title>レジ2：お支払い（テスト用）</title>
+<title>レジ2：お支払い</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-html, body { height: 100%; margin: 0; overflow: hidden; }
-.keypad-btn {
-  @apply text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition;
-}
+html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロール禁止 */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center overflow-hidden">
@@ -20,85 +19,112 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
   <!-- ヘッダー -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
     <h1 class="text-xl font-bold">レジ2：お支払い</h1>
+    <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">戻る</button>
   </header>
 
-  <!-- メイン（横並び：テンキー＋金額表示） -->
-  <main class="flex-grow p-4 grid grid-cols-2 gap-4 min-h-0">
-
-    <!-- テンキー -->
-    <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
-      <button class="keypad-btn">7</button>
-      <button class="keypad-btn">8</button>
-      <button class="keypad-btn">9</button>
-
-      <button class="keypad-btn">4</button>
-      <button class="keypad-btn">5</button>
-      <button class="keypad-btn">6</button>
-
-      <button class="keypad-btn">1</button>
-      <button class="keypad-btn">2</button>
-      <button class="keypad-btn">3</button>
-
-      <button class="keypad-btn">0</button>
-      <button id="backspace-keypad" class="keypad-btn bg-red-500 text-white">×</button>
-      <button id="clear-keypad" class="keypad-btn bg-yellow-500 text-white">C</button>
+  <!-- メイン -->
+  <main class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- 左：支払い情報 -->
+    <div class="flex flex-col justify-center bg-gray-50 rounded-lg p-6 space-y-4">
+      <div>
+        <div class="text-gray-600">お支払い金額</div>
+        <div id="pay-amount" class="text-3xl font-bold text-black">¥0</div>
+      </div>
+      <div>
+        <div class="text-gray-600">お預かり金額</div>
+        <div id="deposit-amount" class="text-2xl font-bold text-blue-600">¥0</div>
+      </div>
+      <div>
+        <div class="text-gray-600">おつり</div>
+        <div id="change-amount" class="text-3xl font-bold text-green-600">¥0</div>
+      </div>
     </div>
 
-    <!-- 金額表示＋決済 -->
-    <div class="flex flex-col gap-4">
-      <div class="bg-gray-100 p-4 rounded-lg">
-        <div class="text-lg">合計</div>
-        <div id="total-amount" class="text-3xl font-bold">¥1,200</div>
-      </div>
-      <div class="bg-gray-100 p-4 rounded-lg">
-        <div class="text-lg">お預かり</div>
-        <div id="input-amount" class="text-3xl font-bold">¥0</div>
-      </div>
-      <div class="bg-gray-100 p-4 rounded-lg">
-        <div class="text-lg">おつり</div>
-        <div id="change-amount" class="text-3xl font-bold">¥0</div>
-      </div>
-      <button id="confirm-button"
-              class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition">
-        決済確定
-      </button>
+    <!-- 右：テンキー -->
+    <div class="grid grid-cols-3 gap-3 content-center">
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">7</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">8</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">9</button>
+
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">4</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">5</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">6</button>
+
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">1</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">2</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">3</button>
+
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">0</button>
+      <button id="backspace" class="bg-gray-200 rounded-lg py-6 text-2xl">✕</button>
+      <button id="clear" class="bg-yellow-400 rounded-lg py-6 text-2xl">C</button>
     </div>
   </main>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const total = 1200; // 仮の合計金額
-  let input = "";
+  let inputValue = "";
+  const payAmount = 300; // ★テスト用。レジ1から受け渡すときは動的に変更する
 
-  const totalAmountDisplay = document.getElementById("total-amount");
-  const inputAmountDisplay = document.getElementById("input-amount");
-  const changeAmountDisplay = document.getElementById("change-amount");
+  const payAmountEl = document.getElementById("pay-amount");
+  const depositAmountEl = document.getElementById("deposit-amount");
+  const changeAmountEl = document.getElementById("change-amount");
 
-  totalAmountDisplay.textContent = `¥${total.toLocaleString()}`;
+  payAmountEl.textContent = `¥${payAmount.toLocaleString()}`;
 
-  function updateDisplay(){
-    const inputValue = input === "" ? 0 : parseInt(input);
-    inputAmountDisplay.textContent = `¥${inputValue.toLocaleString()}`;
-    const change = inputValue - total;
-    changeAmountDisplay.textContent = change >= 0 ? `¥${change.toLocaleString()}` : "¥0";
+  function updateDisplay() {
+    const deposit = Number(inputValue || 0);
+    depositAmountEl.textContent = `¥${deposit.toLocaleString()}`;
+    const change = deposit - payAmount;
+    changeAmountEl.textContent = `¥${change > 0 ? change.toLocaleString() : 0}`;
   }
 
-  document.querySelectorAll(".keypad-btn").forEach(btn => {
+  // 数字キー
+  document.querySelectorAll(".key").forEach(btn => {
     btn.addEventListener("click", () => {
       const val = btn.textContent;
-      if(val === "C"){
-        input = "";
-      } else if(val === "×"){
-        input = input.slice(0, -1);
-      } else {
-        input += val;
+      if (!isNaN(val)) {
+        inputValue += val;
+        updateDisplay();
       }
-      updateDisplay();
     });
   });
 
+  // バックスペース（✕）
+  document.getElementById("backspace").addEventListener("click", () => {
+    inputValue = inputValue.slice(0, -1);
+    updateDisplay();
+  });
+
+  // クリア（C）
+  document.getElementById("clear").addEventListener("click", () => {
+    inputValue = "";
+    updateDisplay();
+  });
+
   updateDisplay();
+});
+</script>
+
+<!-- ダブルタップ拡大禁止 -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function (event) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, { passive: false });
+
+  document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('touchstart', function (event) {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+  });
 });
 </script>
 </body>
