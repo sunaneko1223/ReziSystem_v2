@@ -21,9 +21,9 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
     <h1 class="text-xl font-bold">レジ３：お会計完了</h1>
   </header>
 
-  <!-- メイン（スクロール可能エリア） -->
-  <main class="flex-grow overflow-y-auto no-scrollbar p-6">
-    <div class="w-full max-w-md mx-auto">
+  <!-- メイン -->
+  <main class="flex-grow p-6 flex flex-col justify-center items-center">
+    <div class="w-full max-w-md">
       <!-- 受付番号 -->
       <div class="mb-4">
         <h2 class="text-xl font-semibold">受付番号</h2>
@@ -36,24 +36,22 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
 
       <!-- 内訳 -->
       <h3 class="text-lg font-semibold mb-2 border-b pb-1">内訳</h3>
-      <div id="change-breakdown" class="space-y-1 text-lg">
+      <div id="change-breakdown" class="space-y-1 text-lg max-h-32 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg">
         <!-- 明細がここに入る -->
       </div>
 
       <!-- ご購入内容 -->
       <h3 class="text-lg font-semibold mt-4 mb-2 border-b pb-1">ご購入内容</h3>
-      <div id="final-order-summary" class="space-y-1 text-left text-sm bg-gray-50 p-3 rounded-lg">
+      <div id="final-order-summary" class="space-y-1 text-left text-sm max-h-32 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg">
         <!-- 商品リストがここに入る -->
       </div>
+
+      <!-- 次の会計へ -->
+      <button id="new-transaction-button" class="w-full max-w-xs mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-4 rounded-lg transition">
+        次の会計へ
+      </button>
     </div>
   </main>
-
-  <!-- フッター（常に下に固定） -->
-  <footer class="p-4 bg-white shadow-inner flex-shrink-0">
-    <button id="new-transaction-button" class="w-full max-w-xs mx-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-4 rounded-lg transition">
-      次の会計へ
-    </button>
-  </footer>
 </div>
 
 <!-- ダブルタップ拡大禁止 -->
