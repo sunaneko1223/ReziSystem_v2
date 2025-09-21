@@ -162,21 +162,20 @@ function renderCart() {
     const row = document.createElement("div");
     row.className = "bg-white p-3 rounded shadow space-y-1";
     row.innerHTML = `
-      <div class="flex justify-between items-center">
-        <div class="font-medium">${product.name}</div>
-        <div class="text-2xl font-bold text-gray-800">${formatCurrency(totalPrice)}</div>
-      </div>
-      <div class="text-sm text-gray-500 mt-1">${product.flavor}</div>
-      <div class="flex justify-between items-center mt-2">
-        <span class="text-sm">数量 ${item.quantity}点　券${item.freeCount || 0}枚</span>
-        <div class="flex gap-2">
-          <button class="minus bg-gray-300 px-3 py-1 rounded">－</button>
-          <button class="plus bg-gray-300 px-3 py-1 rounded">＋</button>
-          <button class="remove bg-red-500 text-white px-3 py-1 rounded">×</button>
-        </div>
-      </div>
-    `;
-
+  <div class="flex justify-between items-center">
+    <div class="font-medium">${product.name}</div>
+    <div class="text-xl font-bold text-gray-800">${formatCurrency(totalPrice)}</div>
+  </div>
+  <div class="text-sm text-gray-500 mt-1">${product.flavor || ""}</div>
+  <div class="flex justify-between items-center mt-2">
+    <span class="text-sm">数量 ${item.quantity} │ 無料券 ${item.freeCount || 0}</span>
+    <div class="flex gap-2">
+      <button class="minus bg-gray-300 px-3 py-1 rounded">－</button>
+      <button class="plus bg-gray-300 px-3 py-1 rounded">＋</button>
+      <button class="remove bg-red-500 text-white px-3 py-1 rounded">×</button>
+    </div>
+  </div>
+`;
     row.querySelector(".minus").addEventListener("click", () => {
       if(item.quantity > 1) item.quantity--;
       else {
