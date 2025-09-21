@@ -6,7 +6,7 @@
 <title>レジ3：お会計完了</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロール禁止 */
+html, body { height: 100%; margin: 0; overflow: hidden; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
@@ -24,29 +24,19 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
   <!-- メイン -->
   <main class="flex-grow p-6 flex flex-col justify-center items-center">
     <div class="w-full max-w-md">
-      <!-- 受付番号 -->
       <div class="mb-4">
         <h2 class="text-xl font-semibold">受付番号</h2>
         <p id="final-order-number" class="text-7xl font-bold text-red-500">0</p>
       </div>
-
-      <!-- おつり -->
       <h2 class="text-2xl font-semibold mb-2">おつり合計</h2>
       <p id="final-change-amount" class="text-5xl font-bold text-green-600 mb-4">¥0</p>
 
-      <!-- 内訳 -->
       <h3 class="text-lg font-semibold mb-2 border-b pb-1">内訳</h3>
-      <div id="change-breakdown" class="space-y-1 text-lg max-h-32 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg">
-        <!-- 明細がここに入る -->
-      </div>
+      <div id="change-breakdown" class="space-y-1 text-lg max-h-32 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg"></div>
 
-      <!-- ご購入内容 -->
       <h3 class="text-lg font-semibold mt-4 mb-2 border-b pb-1">ご購入内容</h3>
-      <div id="final-order-summary" class="space-y-1 text-left text-sm max-h-32 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg">
-        <!-- 商品リストがここに入る -->
-      </div>
+      <div id="final-order-summary" class="space-y-1 text-left text-sm max-h-32 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg"></div>
 
-      <!-- 次の会計へ -->
       <button id="new-transaction-button" class="w-full max-w-xs mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-4 rounded-lg transition">
         次の会計へ
       </button>
@@ -54,24 +44,31 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
   </main>
 </div>
 
-<!-- ダブルタップ拡大禁止 -->
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  let lastTouchEnd = 0;
-  document.addEventListener('touchend', function (event) {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) {
-      event.preventDefault();
-    }
-    lastTouchEnd = now;
-  }, { passive: false });
+document.addEventListener("DOMContentLoaded", () => {
+  const data = JSON.parse(localStorage.getItem("paymentData"));
+  if (!data) return;
 
-  document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('touchstart', function (event) {
-      if (event.touches.length > 1) {
-        event.preventDefault();
-      }
-    }, { passive: false });
+  document.getElementById("final-order-number").textContent = data.orderNumber;
+  document.getElementById("final-change-amount").textContent = `¥${data.change.toLocaleString()}`;
+
+  const breakdownEl = document.getElementById("change-breakdown");
+  data.changeBreakdown.forEach(item => {
+    const p = document.createElement("p");
+    p.textContent = `${item.label} × ${item.count}`;
+    breakdownEl.appendChild(p);
+  });
+
+  const orderEl = document.getElementById("final-order-summary");
+  data.orderSummary.forEach(item => {
+    const p = document.createElement("p");
+    p.textContent = `${item.name} ¥${item.price.toLocaleString()}`;
+    orderEl.appendChild(p);
+  });
+
+  document.getElementById("new-transaction-button").addEventListener("click", () => {
+    localStorage.removeItem("paymentData");
+    window.location.href = "レジ1.html";
   });
 });
 </script>
