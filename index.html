@@ -40,23 +40,32 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
       </div>
     </div>
 
-    <!-- 右：テンキー -->
-    <div class="grid grid-cols-3 gap-3 content-center">
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">7</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">8</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">9</button>
+    <!-- 右：テンキー＋小計 -->
+    <div class="flex flex-col justify-between">
+      <!-- テンキー -->
+      <div class="grid grid-cols-3 gap-3">
+        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">7</button>
+        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">8</button>
+        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">9</button>
 
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">4</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">5</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">6</button>
+        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">4</button>
+        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">5</button>
+        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">6</button>
 
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">1</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">2</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">3</button>
+        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">1</button>
+        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">2</button>
+        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">3</button>
 
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">0</button>
-      <button id="backspace" class="bg-gray-200 rounded-lg py-6 text-2xl">✕</button>
-      <button id="clear" class="bg-yellow-400 rounded-lg py-6 text-2xl">C</button>
+        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">0</button>
+        <button id="backspace" class="bg-gray-200 rounded-lg py-6 text-2xl">✕</button>
+        <button id="clear" class="bg-yellow-400 rounded-lg py-6 text-2xl">C</button>
+      </div>
+
+      <!-- 小計ボタン -->
+      <button id="subtotal-btn"
+              class="w-full mt-4 bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 rounded-lg transition">
+        小計
+      </button>
     </div>
   </main>
 </div>
@@ -100,6 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("clear").addEventListener("click", () => {
     inputValue = "";
     updateDisplay();
+  });
+
+  // 小計ボタン
+  document.getElementById("subtotal-btn").addEventListener("click", () => {
+    alert(`お預かり: ¥${Number(inputValue || 0).toLocaleString()}\nおつり: ${changeAmountEl.textContent}`);
   });
 
   updateDisplay();
