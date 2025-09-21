@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
-<title>レジ2：お支払い</title>
+<title>レジシステム</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロール禁止 */
@@ -23,49 +23,41 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
   </header>
 
   <!-- メイン -->
-  <main class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- 左：支払い情報 -->
-    <div class="flex flex-col justify-center bg-gray-50 rounded-lg p-6 space-y-4">
+  <main class="flex-grow p-4 grid grid-cols-1 md:grid-cols-2 gap-4 min-h-0">
+
+    <!-- 左：金額表示 -->
+    <div class="bg-gray-50 p-6 rounded-lg flex flex-col justify-center space-y-6">
       <div>
-        <div class="text-gray-600">お支払い金額</div>
-        <div id="pay-amount" class="text-3xl font-bold text-black">¥0</div>
+        <p class="text-gray-600 text-lg">お支払い金額</p>
+        <p id="pay-amount" class="text-3xl font-bold text-gray-900">¥0</p>
       </div>
       <div>
-        <div class="text-gray-600">お預かり金額</div>
-        <div id="deposit-amount" class="text-2xl font-bold text-blue-600">¥0</div>
+        <p class="text-gray-600 text-lg">お預かり金額</p>
+        <p id="deposit-amount" class="text-3xl font-bold text-blue-600">¥0</p>
       </div>
       <div>
-        <div class="text-gray-600">おつり</div>
-        <div id="change-amount" class="text-3xl font-bold text-green-600">¥0</div>
+        <p class="text-gray-600 text-lg">おつり</p>
+        <p id="change-amount" class="text-3xl font-bold text-green-600">¥0</p>
       </div>
     </div>
 
-    <!-- 右：テンキー＋小計 -->
-    <div class="flex flex-col justify-between">
-      <!-- テンキー -->
-      <div class="grid grid-cols-3 gap-3">
-        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">7</button>
-        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">8</button>
-        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">9</button>
+    <!-- 右：テンキー -->
+    <div class="grid grid-cols-3 gap-3 content-center">
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">7</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">8</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">9</button>
 
-        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">4</button>
-        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">5</button>
-        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">6</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">4</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">5</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">6</button>
 
-        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">1</button>
-        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">2</button>
-        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">3</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">1</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">2</button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">3</button>
 
-        <button class="key bg-gray-200 rounded-lg py-6 text-2xl">0</button>
-        <button id="backspace" class="bg-gray-200 rounded-lg py-6 text-2xl">✕</button>
-        <button id="clear" class="bg-yellow-400 rounded-lg py-6 text-2xl">C</button>
-      </div>
-
-      <!-- 小計ボタン -->
-      <button id="subtotal-btn"
-              class="w-full mt-4 bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 rounded-lg transition">
-        小計
-      </button>
+      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">0</button>
+      <button id="backspace" class="bg-gray-200 rounded-lg py-6 text-2xl">✕</button>
+      <button id="clear" class="bg-yellow-400 rounded-lg py-6 text-2xl">C</button>
     </div>
   </main>
 </div>
@@ -73,19 +65,19 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   let inputValue = "";
-  const payAmount = 300; // ★テスト用。レジ1から受け渡すときは動的に変更する
+  const payAmount = 300; // ★仮に固定。実際はレジ1から渡す
 
-  const payAmountEl = document.getElementById("pay-amount");
-  const depositAmountEl = document.getElementById("deposit-amount");
-  const changeAmountEl = document.getElementById("change-amount");
+  const payAmountDisplay = document.getElementById("pay-amount");
+  const depositAmountDisplay = document.getElementById("deposit-amount");
+  const changeAmountDisplay = document.getElementById("change-amount");
 
-  payAmountEl.textContent = `¥${payAmount.toLocaleString()}`;
+  payAmountDisplay.textContent = `¥${payAmount.toLocaleString()}`;
 
   function updateDisplay() {
     const deposit = Number(inputValue || 0);
-    depositAmountEl.textContent = `¥${deposit.toLocaleString()}`;
+    depositAmountDisplay.textContent = `¥${deposit.toLocaleString()}`;
     const change = deposit - payAmount;
-    changeAmountEl.textContent = `¥${change > 0 ? change.toLocaleString() : 0}`;
+    changeAmountDisplay.textContent = `¥${(change >= 0 ? change : 0).toLocaleString()}`;
   }
 
   // 数字キー
@@ -109,11 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("clear").addEventListener("click", () => {
     inputValue = "";
     updateDisplay();
-  });
-
-  // 小計ボタン
-  document.getElementById("subtotal-btn").addEventListener("click", () => {
-    alert(`お預かり: ¥${Number(inputValue || 0).toLocaleString()}\nおつり: ${changeAmountEl.textContent}`);
   });
 
   updateDisplay();
