@@ -9,17 +9,17 @@
 
   <!-- === レジ1: 商品選択画面 === -->
 <div id="screen1" class="w-full flex-grow flex flex-col">
-  
+
   <!-- ==== ヘッダー ==== -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
     <h1 class="text-xl font-bold">レジ：商品選択</h1>
     <div>
-      <!-- 商品管理ボタン（レジ4へ遷移） -->
+      <!-- 商品管理ボタン（レジ4へ切替予定） -->
       <button id="to-screen4-button"
               class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition mr-2">
         商品管理
       </button>
-      <!-- 取引履歴ボタン（レジ5へ遷移） -->
+      <!-- 取引履歴ボタン（レジ5へ切替予定） -->
       <button id="to-screen5-button"
               class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition">
         取引履歴
@@ -34,20 +34,22 @@
     <div id="product-list"
          class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-0 p-1
                 bg-gray-50 rounded-lg overflow-auto no-scrollbar min-h-0">
-      <!-- 商品はJSで生成 -->
+      <!-- 商品はスクリプトで生成 -->
     </div>
 
     <!-- === 右：ご注文内容 === -->
     <div class="md:col-span-1 bg-gray-100 p-4 rounded-lg flex flex-col min-h-0">
+
+      <!-- 見出し -->
       <h2 class="text-lg font-bold border-b pb-2 mb-4 flex-shrink-0">ご注文内容</h2>
 
-      <!-- ご注文リスト（スクロール可エリア） -->
+      <!-- ご注文リスト（スクロール可） -->
       <div id="cart-items"
            class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0">
         <p class="text-gray-500">商品が選択されていません。</p>
       </div>
 
-      <!-- 下部パネル（固定） -->
+      <!-- 下部操作パネル -->
       <div class="mt-3 flex-shrink-0 space-y-2">
 
         <!-- 無料券操作 -->
@@ -59,25 +61,27 @@
                   class="text-2xl px-4 py-1 rounded-r-lg hover:bg-orange-600 transition">+</button>
         </div>
 
-        <!-- 選択削除 -->
+        <!-- 選択削除ボタン -->
         <button id="remove-selected-btn"
                 class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition disabled:bg-gray-400"
                 disabled>削除</button>
 
         <!-- 合計・会計へ進む -->
         <div class="border-t pt-4">
-          <!-- 割引表示（無料券使用時のみ表示） -->
+          <!-- 割引行（無料券利用時に表示） -->
           <div id="discount-row"
                class="flex justify-between items-center text-lg text-red-500 hidden">
             <span>割引 (無料券)</span>
             <span id="discount-amount">¥0</span>
           </div>
+
           <!-- 合計金額 -->
           <div class="flex justify-between items-center text-2xl font-bold">
             <span>合計</span>
             <span id="total-amount-display">¥0</span>
           </div>
-          <!-- 会計ボタン -->
+
+          <!-- 会計へ進むボタン -->
           <button id="checkout-button"
                   class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-4 transition">
             会計へ進む
@@ -88,14 +92,14 @@
   </main>
 </div>
 
-<!-- ==== レジ1専用スクリプト ==== -->
+<!-- ===================== レジ1専用スクリプト ===================== -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   let cart = [];
   let subtotal = 0, discountAmount = 0, couponCount = 0;
   let selectedProductId = null;
 
-  // 商品データ（サンプル）
+  // 商品データ（例）
   const products = [
     {id:1, name:"ポテト", flavor:"塩", price:300},
     {id:2, name:"ポテト", flavor:"コンソメ", price:300},
@@ -108,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     {id:9, name:"ドリンク", flavor:"サイダー", price:200}
   ];
 
-  // DOM要素取得
+  // DOM取得
   const productListContainer = document.getElementById("product-list");
   const cartItemsContainer = document.getElementById("cart-items");
   const totalAmountDisplay = document.getElementById("total-amount-display");
@@ -119,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const formatCurrency = (v) => `¥${v.toLocaleString()}`;
 
-  // === 商品一覧生成 ===
+  // === 商品リスト生成 ===
   function renderProducts(){
     productListContainer.innerHTML = "";
     products.forEach(p=>{
@@ -134,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === カート表示更新 ===
+  // === カート更新 ===
   function updateCartView(){
     cartItemsContainer.innerHTML = "";
     subtotal = 0;
@@ -158,8 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const row = document.createElement("div");
       row.className = `cart-item bg-white p-3 rounded-lg ${item.id===selectedProductId ? "selected" : ""}`;
-
-      // === ご注文内容カード表示 ===
       row.innerHTML = `
         <div class="flex justify-between items-center">
           <div class="font-medium">${product.name}</div>
@@ -167,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="text-sm text-gray-500 mt-1">${product.flavor}</div>
         <div class="flex justify-between items-center mt-2">
-          <span class="text-sm">数量 ${item.quantity} │ 無料券 ${item.freeCount || 0}</span>
+          <span class="text-sm">数量 ${item.quantity}</span>
           <div class="flex gap-2">
             <button class="minus bg-gray-300 px-3 py-1 rounded">－</button>
             <button class="plus bg-gray-300 px-3 py-1 rounded">＋</button>
@@ -176,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
 
-      // --- 数量減少 ---
+      // 数量減少
       row.querySelector(".minus").addEventListener("click", (e) => {
         e.stopPropagation();
         if(item.quantity > 1) item.quantity--;
@@ -188,14 +190,14 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCartView();
       });
 
-      // --- 数量増加 ---
+      // 数量増加
       row.querySelector(".plus").addEventListener("click", (e) => {
         e.stopPropagation();
         item.quantity++;
         updateCartView();
       });
 
-      // --- 削除 ---
+      // 削除
       row.querySelector(".remove").addEventListener("click", (e) => {
         e.stopPropagation();
         if(item.freeCount) couponCount -= item.freeCount;
@@ -204,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCartView();
       });
 
-      // --- 選択状態切替 ---
+      // 選択切替
       row.addEventListener("click", () => {
         selectedProductId = item.id===selectedProductId ? null : item.id;
         updateCartView();
@@ -265,12 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 初期表示
+  // 初期化
   renderProducts();
   updateCartView();
 });
 </script>
-
   
   <!-- ===== レジ2: お支払い ===== -->
   <div id="screen2" class="hidden w-full flex-grow flex flex-col">
