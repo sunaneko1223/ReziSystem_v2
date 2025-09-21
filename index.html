@@ -127,7 +127,188 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
 </div>
 
 <script>
-// ✅ ここに前回のスクリプトをそのまま使って修正済みロジックを入れる（省略）
+document.addEventListener("DOMContentLoaded", () => {
+  function showScreen(id) {
+    ["screen1","screen2","screen3"].forEach(s => document.getElementById(s).classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+  }
+
+  /* === レジ1 === */
+  let cart = [];
+  let couponCount = 0;
+  const products = [
+    {id:1, name:"ポテト", flavor:"塩", price:300},
+    {id:2, name:"ポテト", flavor:"コンソメ", price:300},
+    {id:3, name:"たこ焼き", flavor:"ソース", price:400},
+    {id:4, name:"ジュース", flavor:"コーラ", price:150}
+  ];
+
+  const productList = document.getElementById("product-list");
+  const cartItems = document.getElementById("cart-items");
+  const totalAmountDisplay = document.getElementById("total-amount-display");
+  const discountRow = document.getElementById("discount-row");
+  const discountAmountDisplay = document.getElementById("discount-amount");
+  const checkoutBtn = document.getElementById("checkout-button");
+  const couponCountDisplay = document.getElementById("coupon-count");
+
+  const fmt = v => `¥${v.toLocaleString()}`;
+
+  products.forEach(p=>{
+    const btn = document.createElement("button");
+    btn.className="bg-white p-3 rounded-lg shadow hover:bg-blue-50";
+    btn.textContent=`${p.name}(${p.flavor}) ¥${p.price}`;
+    btn.onclick=()=>{ 
+      const found=cart.find(c=>c.id===p.id);
+      if(found) found.quantity++;
+      else cart.push({...p, quantity:1, freeCount:0});
+      renderCart();
+    };
+    productList.appendChild(btn);
+  });
+
+  function renderCart(){
+    cartItems.innerHTML="";
+    if(cart.length===0){
+      cartItems.innerHTML="<p class='text-gray-500'>商品が選択されていません。</p>";
+      totalAmountDisplay.textContent="¥0";
+      checkoutBtn.disabled=true;
+      return;
+    }
+    let subtotal=0, discount=0;
+    cart.forEach(item=>{
+      subtotal += item.price * item.quantity;
+      discount += item.price * (item.freeCount||0);
+      const div=document.createElement("div");
+      div.className="bg-white p-2 rounded";
+      div.textContent=`${item.name}(${item.flavor}) ×${item.quantity} = ${fmt(item.price*item.quantity)}`;
+      cartItems.appendChild(div);
+    });
+    if(discount>0){
+      discountAmountDisplay.textContent=`-¥${discount}`;
+      discountRow.classList.remove("hidden");
+    } else {
+      discountRow.classList.add("hidden");
+    }
+    totalAmountDisplay.textContent=fmt(subtotal-discount);
+    checkoutBtn.disabled=false;
+  }
+
+  document.getElementById("increase-coupon-btn").onclick=()=>{
+    if(cart.length>0){
+      cart[0].freeCount++;
+      couponCount++;
+      couponCountDisplay.textContent=couponCount;
+      renderCart();
+    }
+  };
+  document.getElementById("decrease-coupon-btn").onclick=()=>{
+    if(couponCount>0 && cart.length>0){
+      cart[0].freeCount--;
+      couponCount--;
+      couponCountDisplay.textContent=couponCount;
+      renderCart();
+    }
+  };
+
+  checkoutBtn.onclick=()=>{
+    let subtotal=0, discount=0;
+    cart.forEach(item=>{
+      subtotal += item.price*item.quantity;
+      discount += item.price*(item.freeCount||0);
+    });
+    const total=subtotal-discount;
+    localStorage.setItem("paymentDue", total);
+    localStorage.setItem("orderSummary", JSON.stringify(cart));
+    showScreen("screen2");
+    initScreen2();
+  };
+
+  /* === レジ2 === */
+  let amountTendered="0";
+  let paymentDue=0;
+  const pDue=document.getElementById("payment-due");
+  const aTender=document.getElementById("amount-tendered-display");
+  const cDue=document.getElementById("change-due-display");
+
+  const fmt2=v=>`¥${Number(v).toLocaleString()}`;
+
+  function updateTendered(){
+    pDue.textContent=fmt2(paymentDue);
+    aTender.textContent=fmt2(amountTendered);
+    const ch=Number(amountTendered)-paymentDue;
+    cDue.textContent=fmt2(ch>=0?ch:0);
+    document.getElementById("calculate-change-button").disabled=(Number(amountTendered)<paymentDue);
+  }
+  function initScreen2(){
+    paymentDue=Number(localStorage.getItem("paymentDue"))||0;
+    amountTendered="0";updateTendered();
+  }
+
+  document.querySelectorAll(".keypad-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      const v=btn.textContent;
+      if(!isNaN(v)){
+        if(amountTendered==="0") amountTendered=v;
+        else amountTendered+=v;
+        updateTendered();
+      }
+    };
+  });
+  document.getElementById("clear-keypad").onclick=()=>{amountTendered="0";updateTendered();};
+  document.getElementById("calculate-change-button").onclick=()=>{
+    const change=Number(amountTendered)-paymentDue;
+    // 受付番号を連番で管理
+    let orderNumber=Number(localStorage.getItem("orderCounter")||"0")+1;
+    localStorage.setItem("orderCounter",orderNumber);
+    localStorage.setItem("paymentData",JSON.stringify({
+      orderNumber,
+      paymentDue,
+      amountTendered:Number(amountTendered),
+      change,
+      orderSummary:JSON.parse(localStorage.getItem("orderSummary"))||[],
+      changeBreakdown: change>0 ? [
+        {label:"100円",count:Math.floor(change/100)},
+      ] : []
+    }));
+    showScreen("screen3");
+    renderFinal();
+  };
+  document.getElementById("back-to-screen1-button").onclick=()=>showScreen("screen1");
+
+  /* === レジ3 === */
+  function renderFinal(){
+    const data=JSON.parse(localStorage.getItem("paymentData"));
+    if(!data)return;
+    document.getElementById("final-order-number").textContent=data.orderNumber;
+    document.getElementById("final-change-amount").textContent=fmt2(data.change);
+    const bEl=document.getElementById("change-breakdown");
+    bEl.innerHTML="";
+    if(data.change===0){
+      bEl.innerHTML="<p class='text-gray-500'>お釣りはありません</p>";
+    }else{
+      data.changeBreakdown.forEach(it=>{
+        if(it.count>0){
+          const p=document.createElement("p");
+          p.textContent=`${it.label} × ${it.count}`;
+          bEl.appendChild(p);
+        }
+      });
+    }
+    const oEl=document.getElementById("final-order-summary");
+    oEl.innerHTML="";
+    data.orderSummary.forEach(it=>{
+      const p=document.createElement("p");
+      p.textContent=`${it.name}(${it.flavor}) ×${it.quantity} = ¥${(it.price*it.quantity).toLocaleString()}`;
+      oEl.appendChild(p);
+    });
+  }
+
+  document.getElementById("new-transaction-button").onclick=()=>{
+    showScreen("screen1");
+  };
+
+  showScreen("screen1");
+});
 </script>
 </body>
 </html>
