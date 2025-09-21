@@ -69,28 +69,44 @@
 
   <!-- ===== 共通処理 ===== -->
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    console.log("レジシステム起動");
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("レジシステム起動");
 
-    // 画面切り替え
-    window.showScreen = function(id) {
-      ["screen1","screen2","screen3","screen4","screen5"].forEach(s => {
-        document.getElementById(s)?.classList.add("hidden");
-      });
-      document.getElementById(id)?.classList.remove("hidden");
+  // ===== 全画面スクロール禁止 =====
+  document.body.addEventListener("touchmove", function(e) {
+    if (!e.target.closest(".allow-scroll")) { // .allow-scroll クラスが付いた要素だけスクロール許可
+      e.preventDefault();
+    }
+  }, { passive: false });
 
-      // 初期化処理呼び出し
-      if(id === "screen1") initScreen1();
-      if(id === "screen2") initScreen2();
-      if(id === "screen3") initScreen3();
-      if(id === "screen4") initScreen4();
-      if(id === "screen5") initScreen5();
-    };
+  // ===== ダブルタップ拡大禁止 =====
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", function(e) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
 
-    // 起動時はレジ1を表示
-    showScreen("screen1");
-  });
-  </script>
+  // ===== 画面切り替え =====
+  window.showScreen = function(id) {
+    ["screen1","screen2","screen3","screen4","screen5"].forEach(s => {
+      document.getElementById(s)?.classList.add("hidden");
+    });
+    document.getElementById(id)?.classList.remove("hidden");
 
+    // 初期化処理呼び出し
+    if(id === "screen1") initScreen1();
+    if(id === "screen2") initScreen2();
+    if(id === "screen3") initScreen3();
+    if(id === "screen4") initScreen4();
+    if(id === "screen5") initScreen5();
+  };
+
+  // ===== 起動時はレジ1を表示 =====
+  showScreen("screen1");
+});
+</script>
 </body>
 </html>
