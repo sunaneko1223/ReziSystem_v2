@@ -72,6 +72,39 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
   </main>
 </div>
 
+<script>
+/* ===== レジ1の商品データ（12個） ===== */
+const products = [
+  {id:1, name:"ポテト", flavor:"塩", price:300},
+  {id:2, name:"ポテト", flavor:"コンソメ", price:300},
+  {id:3, name:"ポテト", flavor:"のり塩", price:300},
+  {id:4, name:"たこ焼き", flavor:"ソース", price:400},
+  {id:5, name:"たこ焼き", flavor:"しょうゆ", price:400},
+  {id:6, name:"たこ焼き", flavor:"ねぎポン酢", price:450},
+  {id:7, name:"焼きそば", flavor:"ソース", price:500},
+  {id:8, name:"焼きそば", flavor:"塩だれ", price:500},
+  {id:9, name:"お好み焼き", flavor:"豚玉", price:600},
+  {id:10, name:"お好み焼き", flavor:"イカ玉", price:650},
+  {id:11, name:"ジュース", flavor:"コーラ", price:150},
+  {id:12, name:"ジュース", flavor:"オレンジ", price:150}
+];
+
+/* 商品ボタン生成 */
+const productList = document.getElementById("product-list");
+products.forEach(p => {
+  const btn = document.createElement("button");
+  btn.className = "bg-white p-3 rounded-lg shadow hover:bg-blue-50";
+  btn.textContent = `${p.name}(${p.flavor}) ¥${p.price}`;
+  btn.addEventListener("click", () => {
+    const found = cart.find(c => c.id === p.id);
+    if(found){ found.quantity++; }
+    else { cart.push({...p, quantity:1, freeCount:0}); }
+    renderCart();
+  });
+  productList.appendChild(btn);
+});
+</script>
+
   <!-- ===== レジ2: お支払い ===== -->
   <div id="screen2" class="w-full hidden flex-grow flex flex-col">
     <!-- ★アップロードされたレジ2.htmlのheader・mainをそのまま貼り付けてください -->
