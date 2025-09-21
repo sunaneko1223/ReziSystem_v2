@@ -12,18 +12,18 @@
   <header class="bg-gray-800 text-white p-4 flex-shrink-0">
     <h1 class="text-xl font-bold">レジ１：商品選択</h1>
   </header>
-  <main class="flex-grow p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-    <!-- 商品一覧 -->
+
+  <main class="flex-grow p-4 flex gap-4">
+    <!-- 左：商品リスト -->
     <div id="product-list"
-         class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto no-scrollbar allow-scroll">
-      <!-- 商品ボタンはJSで生成 -->
+         class="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg overflow-y-auto no-scrollbar allow-scroll">
     </div>
 
-    <!-- ご注文内容 -->
-    <div class="md:col-span-1 bg-gray-100 p-4 rounded-lg flex flex-col">
+    <!-- 右：ご注文内容 -->
+    <div class="w-1/3 bg-gray-100 p-4 rounded-lg flex flex-col">
       <h2 class="text-lg font-bold border-b pb-2 mb-4">ご注文内容</h2>
 
-      <!-- ✅ ご注文リストだけスクロール -->
+      <!-- ご注文リスト -->
       <div id="cart-items" class="flex-grow overflow-y-auto no-scrollbar space-y-2 allow-scroll">
         <p class="text-gray-500">商品が選択されていません。</p>
       </div>
@@ -31,7 +31,8 @@
       <!-- 下部固定 -->
       <div class="mt-3 space-y-2">
         <!-- 無料券操作 -->
-        <div class="flex items-center justify-between w-full font-bold py-1 rounded-lg
+        <div id="coupon-box"
+             class="flex items-center justify-between w-full font-bold py-1 rounded-lg
                     bg-orange-500 text-white disabled:bg-gray-400 disabled:text-gray-200">
           <button id="decrease-coupon-btn"
                   class="text-2xl px-4 py-1 rounded-l-lg transition">-</button>
@@ -40,7 +41,7 @@
                   class="text-2xl px-4 py-1 rounded-r-lg transition">+</button>
         </div>
 
-        <!-- 削除ボタン -->
+        <!-- 削除 -->
         <button id="remove-selected-btn"
                 class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition disabled:bg-gray-400"
                 disabled>削除</button>
@@ -57,8 +58,9 @@
             <span id="total-amount">¥0</span>
           </div>
           <button id="to-screen2-button"
-                  class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-4 transition disabled:bg-gray-400"
-                  disabled>会計へ進む</button>
+                  class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-4 transition">
+            会計へ進む
+          </button>
         </div>
       </div>
     </div>
@@ -84,6 +86,7 @@ const products = [
 
 const productList = document.getElementById("product-list");
 const cartItems = document.getElementById("cart-items");
+const couponBox = document.getElementById("coupon-box");
 const couponCountDisplay = document.getElementById("coupon-count");
 const discountRow = document.getElementById("discount-row");
 const discountAmount = document.getElementById("discount-amount");
@@ -120,19 +123,17 @@ function renderCart() {
   cartItems.innerHTML = "";
   if(cart.length === 0) {
     cartItems.innerHTML = "<p class='text-gray-500'>商品が選択されていません。</p>";
-    checkoutBtn.disabled = true;
     removeBtn.disabled = true;
     totalDisplay.textContent = "¥0";
     discountRow.classList.add("hidden");
     incCouponBtn.disabled = true;
     decCouponBtn.disabled = true;
+    couponBox.classList.add("bg-gray-400","text-gray-200");
+    couponBox.classList.remove("bg-orange-500","text-white");
     return;
   }
 
-  checkoutBtn.disabled = false;
-  let subtotal = 0, discount = 0;
-  let totalItems = 0;
-
+  let subtotal = 0, discount = 0, totalItems = 0;
   cart.forEach((item, idx) => {
     subtotal += item.price * item.quantity;
     discount += item.price * (item.freeCount || 0);
@@ -170,7 +171,10 @@ function renderCart() {
     // ボタン操作
     card.querySelector(".dec").addEventListener("click", () => {
       if(item.quantity > 1) item.quantity--;
-      else cart.splice(idx,1);
+      else {
+        couponCount -= item.freeCount; // 商品削除時に券分を戻す
+        cart.splice(idx,1);
+      }
       renderCart();
     });
     card.querySelector(".inc").addEventListener("click", () => {
@@ -178,6 +182,7 @@ function renderCart() {
       renderCart();
     });
     card.querySelector(".del").addEventListener("click", () => {
+      couponCount -= item.freeCount; // 商品削除時に券分を戻す
       cart.splice(idx,1);
       selectedIndex = null;
       renderCart();
@@ -187,8 +192,11 @@ function renderCart() {
   });
 
   // 無料券制御
-  incCouponBtn.disabled = (couponCount >= totalItems);
+  let totalItemsCount = cart.reduce((sum, i) => sum + i.quantity, 0);
+  incCouponBtn.disabled = (couponCount >= totalItemsCount);
   decCouponBtn.disabled = (couponCount <= 0);
+  couponBox.classList.remove("bg-gray-400","text-gray-200");
+  couponBox.classList.add("bg-orange-500","text-white");
 
   // 割引表示
   if(discount > 0) {
@@ -200,6 +208,7 @@ function renderCart() {
 
   const total = Math.max(0, subtotal - discount);
   totalDisplay.textContent = `¥${total.toLocaleString()}`;
+  couponCountDisplay.textContent = couponCount;
 }
 
 /* 無料券操作 */
@@ -208,7 +217,6 @@ incCouponBtn.addEventListener("click", () => {
   if(cart.length > 0 && couponCount < totalItems) {
     cart[0].freeCount++;
     couponCount++;
-    couponCountDisplay.textContent = couponCount;
     renderCart();
   }
 });
@@ -216,7 +224,6 @@ decCouponBtn.addEventListener("click", () => {
   if(couponCount > 0 && cart.length > 0) {
     cart[0].freeCount--;
     couponCount--;
-    couponCountDisplay.textContent = couponCount;
     renderCart();
   }
 });
@@ -224,6 +231,7 @@ decCouponBtn.addEventListener("click", () => {
 /* 削除 */
 removeBtn.addEventListener("click", () => {
   if(selectedIndex !== null) {
+    couponCount -= cart[selectedIndex].freeCount; // 削除時に券数調整
     cart.splice(selectedIndex,1);
     selectedIndex = null;
     removeBtn.disabled = true;
@@ -233,6 +241,11 @@ removeBtn.addEventListener("click", () => {
 
 /* 会計へ進む */
 checkoutBtn.addEventListener("click", () => {
+  if(cart.length === 0) {
+    alert("商品が選択されていません！");
+    return;
+  }
+
   let subtotal = 0, discount = 0;
   cart.forEach(item => {
     subtotal += item.price * item.quantity;
@@ -247,7 +260,7 @@ checkoutBtn.addEventListener("click", () => {
   initScreen2();
 });
 </script>
-
+  
   <!-- ===== レジ2: お支払い ===== -->
   <div id="screen2" class="hidden w-full flex-grow flex flex-col">
     <!-- ここにレジ2のUIを書く -->
