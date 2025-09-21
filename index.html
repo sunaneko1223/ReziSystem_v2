@@ -19,30 +19,30 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
   <!-- ヘッダー -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
     <h1 class="text-xl font-bold">レジ2：お支払い</h1>
-    <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">戻る</button>
+    <button onclick="history.back()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">戻る</button>
   </header>
 
   <!-- メイン -->
   <main class="flex-grow p-4 grid grid-cols-1 md:grid-cols-2 gap-4 min-h-0">
 
-    <!-- 左：金額表示 -->
-    <div class="bg-gray-50 p-6 rounded-lg flex flex-col justify-center space-y-6">
-      <div>
-        <p class="text-gray-600 text-lg">お支払い金額</p>
-        <p id="pay-amount" class="text-3xl font-bold text-gray-900">¥0</p>
+    <!-- 支払い情報 -->
+    <div class="bg-gray-50 p-6 rounded-lg flex flex-col justify-center">
+      <div class="mb-4">
+        <div class="text-gray-600">お支払い金額</div>
+        <div id="pay-amount" class="text-3xl font-bold text-gray-800">¥0</div>
+      </div>
+      <div class="mb-4">
+        <div class="text-gray-600">お預かり金額</div>
+        <div id="deposit-amount" class="text-3xl font-bold text-blue-600">¥0</div>
       </div>
       <div>
-        <p class="text-gray-600 text-lg">お預かり金額</p>
-        <p id="deposit-amount" class="text-3xl font-bold text-blue-600">¥0</p>
-      </div>
-      <div>
-        <p class="text-gray-600 text-lg">おつり</p>
-        <p id="change-amount" class="text-3xl font-bold text-green-600">¥0</p>
+        <div class="text-gray-600">おつり</div>
+        <div id="change-amount" class="text-3xl font-bold text-green-600">¥0</div>
       </div>
     </div>
 
-    <!-- 右：テンキー -->
-    <div class="grid grid-cols-3 gap-3 content-center">
+    <!-- テンキー -->
+    <div class="grid grid-cols-3 gap-2">
       <button class="key bg-gray-200 rounded-lg py-6 text-2xl">7</button>
       <button class="key bg-gray-200 rounded-lg py-6 text-2xl">8</button>
       <button class="key bg-gray-200 rounded-lg py-6 text-2xl">9</button>
@@ -59,25 +59,28 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
       <button id="backspace" class="bg-gray-200 rounded-lg py-6 text-2xl">✕</button>
       <button id="clear" class="bg-yellow-400 rounded-lg py-6 text-2xl">C</button>
     </div>
+
   </main>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // 支払い金額（本来はレジ1から受け取る）
+  let payAmount = 300; 
   let inputValue = "";
-  const payAmount = 300; // ★仮に固定。実際はレジ1から渡す
 
   const payAmountDisplay = document.getElementById("pay-amount");
   const depositAmountDisplay = document.getElementById("deposit-amount");
   const changeAmountDisplay = document.getElementById("change-amount");
 
-  payAmountDisplay.textContent = `¥${payAmount.toLocaleString()}`;
+  const formatCurrency = (v) => `¥${v.toLocaleString()}`;
 
   function updateDisplay() {
+    payAmountDisplay.textContent = formatCurrency(payAmount);
     const deposit = Number(inputValue || 0);
-    depositAmountDisplay.textContent = `¥${deposit.toLocaleString()}`;
+    depositAmountDisplay.textContent = formatCurrency(deposit);
     const change = deposit - payAmount;
-    changeAmountDisplay.textContent = `¥${(change >= 0 ? change : 0).toLocaleString()}`;
+    changeAmountDisplay.textContent = formatCurrency(change >= 0 ? change : 0);
   }
 
   // 数字キー
@@ -128,5 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
 </body>
 </html>
