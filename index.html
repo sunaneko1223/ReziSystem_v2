@@ -43,21 +43,21 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
 
     <!-- テンキー -->
     <div class="grid grid-cols-3 gap-2">
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">7</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">8</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">9</button>
+      <button class="key bg-gray-200 rounded-lg py-3 text-xl">7</button>
+      <button class="key bg-gray-200 rounded-lg py-3 text-xl">8</button>
+      <button class="key bg-gray-200 rounded-lg py-3 text-xl">9</button>
 
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">4</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">5</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">6</button>
+      <button class="key bg-gray-200 rounded-lg py-3 text-xl">4</button>
+      <button class="key bg-gray-200 rounded-lg py-3 text-xl">5</button>
+      <button class="key bg-gray-200 rounded-lg py-3 text-xl">6</button>
 
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">1</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">2</button>
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">3</button>
+      <button class="key bg-gray-200 rounded-lg py-3 text-xl">1</button>
+      <button class="key bg-gray-200 rounded-lg py-3 text-xl">2</button>
+      <button class="key bg-gray-200 rounded-lg py-3 text-xl">3</button>
 
-      <button class="key bg-gray-200 rounded-lg py-6 text-2xl">0</button>
-      <button id="backspace" class="bg-gray-200 rounded-lg py-6 text-2xl">✕</button>
-      <button id="clear" class="bg-yellow-400 rounded-lg py-6 text-2xl">C</button>
+      <button class="key bg-gray-200 rounded-lg py-3 text-xl">0</button>
+      <button id="backspace" class="bg-gray-200 rounded-lg py-3 text-xl">✕</button>
+      <button id="clear" class="bg-yellow-400 rounded-lg py-3 text-xl">C</button>
     </div>
 
   </main>
@@ -65,7 +65,7 @@ html, body { height: 100%; margin: 0; overflow: hidden; } /* 全体スクロー�
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // 支払い金額（本来はレジ1から受け取る）
+  // 支払い金額（本来はレジ1から渡す想定）
   let payAmount = 300; 
   let inputValue = "";
 
