@@ -2,10 +2,37 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>レジシステム</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 基本スタイル：全体スクロール禁止＆高さ固定 */
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+    /* フォント */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    /* スクロールバー非表示 */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ご注文リストの選択状態 */
+    .cart-item.selected {
+      background-color: #dbeafe; /* 薄い青 */
+      border: 2px solid #3b82f6; /* 青い枠 */
+    }
+  </style>
 </head>
-<body class="h-screen flex flex-col">
+<body class="bg-gray-100 flex items-center justify-center">
+
+<!-- レジ本体の枠 -->
+<div class="w-full h-full max-w-4xl mx-auto bg-white shadow-2xl rounded-lg flex flex-col">
 
   <!-- === レジ1: 商品選択画面 === -->
 <div id="screen1" class="w-full flex-grow flex flex-col">
