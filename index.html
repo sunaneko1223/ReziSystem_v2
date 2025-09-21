@@ -24,14 +24,13 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
   <main class="flex-grow p-4 grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0">
     <!-- 商品一覧 -->
     <div id="product-list"
-         class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 bg-gray-50 rounded-lg overflow-auto no-scrollbar">
-      <!-- 商品ボタンがここに生成される -->
+         class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 bg-gray-50 rounded-lg overflow-auto no-scrollbar items-start">
+      <!-- 商品カードがここに生成される -->
     </div>
 
     <!-- ご注文内容 -->
     <div class="md:col-span-1 bg-gray-100 p-4 rounded-lg flex flex-col min-h-0">
       <h2 class="text-lg font-bold border-b pb-2 mb-4 flex-shrink-0">ご注文内容</h2>
-      <!-- ✅ スクロール可能に変更 -->
       <div id="cart-items" class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0">
         <p class="text-gray-500">商品が選択されていません。</p>
       </div>
@@ -52,7 +51,6 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
 
         <!-- 合計表示 -->
         <div class="border-t pt-4">
-          <!-- ✅ 無料券の割引はここだけに表示 -->
           <div id="discount-row"
                class="flex justify-between items-center text-lg text-red-500 hidden">
             <span>割引 (無料券)</span>
@@ -62,7 +60,6 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
             <span>合計</span>
             <span id="total-amount">¥0</span>
           </div>
-          <!-- ✅ 空カートのときは disabled -->
           <button id="to-screen2-button"
                   class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-4 transition disabled:bg-gray-400"
                   disabled>会計へ進む</button>
@@ -82,19 +79,84 @@ const products = [
   {id:5, name:"たこ焼き", flavor:"しょうゆ", price:400},
 ];
 
-/* 商品ボタン生成 */
+/* DOM参照 */
 const productList = document.getElementById("product-list");
+const cartItems = document.getElementById("cart-items");
+const couponCountDisplay = document.getElementById("coupon-count");
+const discountRow = document.getElementById("discount-row");
+const discountAmount = document.getElementById("discount-amount");
+const totalDisplay = document.getElementById("total-amount");
+const checkoutBtn = document.getElementById("to-screen2-button");
+
+let cart = [];
+let couponCount = 0;
+
+/* 商品カード生成 */
 products.forEach(p => {
-  const btn = document.createElement("button");
-  btn.className = "bg-white p-3 rounded-lg shadow hover:bg-blue-50";
-  btn.textContent = `${p.name}(${p.flavor}) ¥${p.price}`;
-  btn.addEventListener("click", () => {
+  const card = document.createElement("button");
+  card.className = "bg-white p-3 rounded-lg shadow hover:bg-blue-50 flex flex-col items-center";
+  card.innerHTML = `
+    <span class="text-lg font-bold">${p.name}</span>
+    <span class="text-sm text-gray-600">${p.flavor || ""}</span>
+    <span class="text-base">¥${p.price}</span>
+  `;
+  card.addEventListener("click", () => {
     const found = cart.find(c => c.id === p.id);
     if(found){ found.quantity++; }
     else { cart.push({...p, quantity:1, freeCount:0}); }
     renderCart();
   });
-  productList.appendChild(btn);
+  productList.appendChild(card);
+});
+
+/* カート描画 */
+function renderCart() {
+  cartItems.innerHTML = "";
+  if(cart.length === 0) {
+    cartItems.innerHTML = "<p class='text-gray-500'>商品が選択されていません。</p>";
+    checkoutBtn.disabled = true;
+    totalDisplay.textContent = "¥0";
+    discountRow.classList.add("hidden");
+    return;
+  }
+
+  checkoutBtn.disabled = false;
+  let subtotal = 0, discount = 0;
+
+  cart.forEach(item => {
+    subtotal += item.price * item.quantity;
+    discount += item.price * (item.freeCount || 0);
+    const div = document.createElement("div");
+    div.textContent = `${item.name}${item.flavor ? "("+item.flavor+")":""} ×${item.quantity} = ¥${(item.price*item.quantity).toLocaleString()}`;
+    cartItems.appendChild(div);
+  });
+
+  if(discount > 0) {
+    discountAmount.textContent = `-¥${discount}`;
+    discountRow.classList.remove("hidden");
+  } else {
+    discountRow.classList.add("hidden");
+  }
+
+  totalDisplay.textContent = `¥${(subtotal-discount).toLocaleString()}`;
+}
+
+/* 無料券増減 */
+document.getElementById("increase-coupon-btn").addEventListener("click", () => {
+  if(cart.length > 0) {
+    cart[0].freeCount++;
+    couponCount++;
+    couponCountDisplay.textContent = couponCount;
+    renderCart();
+  }
+});
+document.getElementById("decrease-coupon-btn").addEventListener("click", () => {
+  if(couponCount > 0 && cart.length > 0) {
+    cart[0].freeCount--;
+    couponCount--;
+    couponCountDisplay.textContent = couponCount;
+    renderCart();
+  }
 });
 </script>
 
