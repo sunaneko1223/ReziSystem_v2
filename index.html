@@ -416,6 +416,9 @@ document.getElementById("checkout-button").addEventListener("click", () => {
 <!-- === レジ2専用スクリプト === -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  // === 新しい会計なので前回の paymentData をクリア ===
+  localStorage.removeItem("paymentData");
+
   const paymentDueEl = document.getElementById("payment-due");
   const tenderedEl = document.getElementById("amount-tendered-display");
   const changeEl = document.getElementById("change-due-display");
@@ -426,23 +429,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearBtn = document.getElementById("clear-keypad");
   const backspaceBtn = document.getElementById("backspace-keypad");
 
-  let tendered = "";
+  let tendered = "";   // 入力中の金額（文字列）
+  let paymentDue = 0;  // 支払い金額（合計）
 
   // === レジ1からデータ取得 ===
-  let data = JSON.parse(localStorage.getItem("cartData"));
+  const data = JSON.parse(localStorage.getItem("cartData"));
   if (data && data.total) {
-    paymentDueEl.textContent = "¥" + data.total.toLocaleString();
+    paymentDue = data.total;
+    paymentDueEl.textContent = "¥" + paymentDue.toLocaleString();
   }
 
-  // === お釣り計算 ===
+  // === お釣り計算＆表示更新 ===
   function updateDisplay() {
     const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
     tenderedEl.textContent = "¥" + tenderedNum.toLocaleString();
 
-    const change = tenderedNum - (data?.total || 0);
+    const change = tenderedNum - paymentDue;
     changeEl.textContent = change >= 0 ? "¥" + change.toLocaleString() : "¥0";
 
-    calcBtn.disabled = tenderedNum < (data?.total || 0);
+    calcBtn.disabled = tenderedNum < paymentDue; // 足りない場合は無効化
   }
 
   // === テンキー入力 ===
@@ -453,38 +458,40 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // バックスペース
+  // バックスペース（1文字削除）
   backspaceBtn.addEventListener("click", () => {
     tendered = tendered.slice(0, -1);
     updateDisplay();
   });
 
-  // クリア
+  // クリア（全削除）
   clearBtn.addEventListener("click", () => {
     tendered = "";
     updateDisplay();
   });
 
-  // 会計処理 → レジ3へ
+  // === 会計処理 ===
   calcBtn.addEventListener("click", () => {
     const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
-    const change = tenderedNum - (data?.total || 0);
+    const change = tenderedNum - paymentDue;
 
-    // cartDataに追加保存
-    if (data) {
-      data.tendered = tenderedNum;
-      data.change = change;
-      localStorage.setItem("cartData", JSON.stringify(data));
-    }
+    // レジ3へ渡すデータを保存
+    localStorage.setItem("paymentData", JSON.stringify({
+      tendered: tenderedNum,
+      change: change,
+      paymentDue: paymentDue,
+      cartData: data
+    }));
 
     showScreen("screen3");
   });
 
-  // 戻る → レジ1
+  // === 戻る → レジ1 ===
   backBtn.addEventListener("click", () => {
     showScreen("screen1");
   });
 
+  // 初期表示
   updateDisplay();
 });
 </script>
