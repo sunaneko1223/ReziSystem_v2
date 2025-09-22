@@ -126,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let subtotal = 0, discountAmount = 0, couponCount = 0;
   let selectedProductId = null;
 
-  // 商品データ（例）
   const products = [
     {id:1, name:"ポテト", flavor:"塩", price:300},
     {id:2, name:"ポテト", flavor:"コンソメ", price:300},
@@ -139,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
     {id:9, name:"ドリンク", flavor:"サイダー", price:200}
   ];
 
-  // DOM取得
   const productListContainer = document.getElementById("product-list");
   const cartItemsContainer = document.getElementById("cart-items");
   const totalAmountDisplay = document.getElementById("total-amount-display");
@@ -150,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const formatCurrency = (v) => `¥${v.toLocaleString()}`;
 
-  // === 商品リスト生成 ===
   function renderProducts(){
     productListContainer.innerHTML = "";
     products.forEach(p=>{
@@ -165,7 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === カート更新 ===
   function updateCartView(){
     cartItemsContainer.innerHTML = "";
     subtotal = 0;
@@ -178,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
       removeSelectedBtn.disabled = true;
       couponCount = 0;
       couponCountDisplay.textContent = couponCount;
-      
       return;
     }
 
@@ -191,65 +186,58 @@ document.addEventListener('DOMContentLoaded', () => {
       const totalPrice = product.price * item.quantity;
 
       const row = document.createElement("div");
-row.className = `cart-item bg-white p-3 rounded-lg ${item.id===selectedProductId ? "selected" : ""}`;
-row.innerHTML = `
-  <div class="flex justify-between items-center">
-    <div class="font-medium">${product.name}</div>
-    <div class="text-2xl font-bold text-gray-800">${formatCurrency(totalPrice)}</div>
-  </div>
-  <div class="text-sm text-gray-500 mt-1">${product.flavor}</div>
-  <div class="flex justify-between items-center mt-2">
-    <span class="text-sm">
-      ${item.quantity}点 │ <span class="text-red-500">${item.freeCount || 0}枚</span>
-    </span>
-    <div class="flex gap-2">
-      <button class="minus bg-gray-300 px-3 py-1 rounded">－</button>
-      <button class="plus bg-gray-300 px-3 py-1 rounded">＋</button>
-      <button class="remove bg-red-500 text-white px-3 py-1 rounded">×</button>
-    </div>
-  </div>
-`;
+      row.className = `cart-item bg-white p-3 rounded-lg ${item.id===selectedProductId ? "selected" : ""}`;
+      row.innerHTML = `
+        <div class="flex justify-between items-center">
+          <div class="font-medium">${product.name}</div>
+          <div class="text-2xl font-bold text-gray-800">${formatCurrency(totalPrice)}</div>
+        </div>
+        <div class="text-sm text-gray-500 mt-1">${product.flavor}</div>
+        <div class="flex justify-between items-center mt-2">
+          <span class="text-sm">
+            ${item.quantity}点 │ <span class="text-red-500">${item.freeCount || 0}枚</span>
+          </span>
+          <div class="flex gap-2">
+            <button class="minus bg-gray-300 px-3 py-1 rounded">－</button>
+            <button class="plus bg-gray-300 px-3 py-1 rounded">＋</button>
+            <button class="remove bg-red-500 text-white px-3 py-1 rounded">×</button>
+          </div>
+        </div>
+      `;
 
-// 数量減少
-row.querySelector(".minus").addEventListener("click", (e) => {
-  e.stopPropagation();
-  if(item.quantity > 1) item.quantity--;
-  else cart = cart.filter(c=>c.id!==item.id);
-  if(item.freeCount > item.quantity){
-    couponCount -= (item.freeCount - item.quantity);
-    item.freeCount = item.quantity;
-  }
-  updateCartView();
-});
+      row.querySelector(".minus").addEventListener("click", (e) => {
+        e.stopPropagation();
+        if(item.quantity > 1) item.quantity--;
+        else cart = cart.filter(c=>c.id!==item.id);
+        if(item.freeCount > item.quantity){
+          couponCount -= (item.freeCount - item.quantity);
+          item.freeCount = item.quantity;
+        }
+        updateCartView();
+      });
 
-// 数量増加
-row.querySelector(".plus").addEventListener("click", (e) => {
-  e.stopPropagation();
-  item.quantity++;
-  updateCartView();
-});
+      row.querySelector(".plus").addEventListener("click", (e) => {
+        e.stopPropagation();
+        item.quantity++;
+        updateCartView();
+      });
 
-// 削除
-row.querySelector(".remove").addEventListener("click", (e) => {
-  e.stopPropagation();
-  if(item.freeCount) couponCount -= item.freeCount;
-  cart = cart.filter(c=>c.id!==item.id);
-  if(selectedProductId === item.id) selectedProductId = null;
-  updateCartView();
-});
+      row.querySelector(".remove").addEventListener("click", (e) => {
+        e.stopPropagation();
+        if(item.freeCount) couponCount -= item.freeCount;
+        cart = cart.filter(c=>c.id!==item.id);
+        if(selectedProductId === item.id) selectedProductId = null;
+        updateCartView();
+      });
 
-// 選択切替
-row.addEventListener("click", () => {
-  selectedProductId = item.id===selectedProductId ? null : item.id;
-  updateCartView();
-});
-
-cartItemsContainer.appendChild(row);
+      row.addEventListener("click", () => {
+        selectedProductId = item.id===selectedProductId ? null : item.id;
+        updateCartView();
+      });
 
       cartItemsContainer.appendChild(row);
     });
 
-    // 割引行表示
     if(discountAmount > 0){
       discountAmountDisplay.textContent = `-${formatCurrency(discountAmount)}`;
       discountRow.classList.remove("hidden");
@@ -262,7 +250,6 @@ cartItemsContainer.appendChild(row);
     removeSelectedBtn.disabled = (selectedProductId === null);
   }
 
-  // === カートに商品追加 ===
   function addProductToCart(id){
     const found = cart.find(c=>c.id===id);
     if(found) found.quantity++;
@@ -271,7 +258,6 @@ cartItemsContainer.appendChild(row);
     updateCartView();
   }
 
-  // === 選択削除 ===
   removeSelectedBtn.addEventListener("click", () => {
     if(selectedProductId === null) return;
     const item = cart.find(c=>c.id===selectedProductId);
@@ -281,7 +267,6 @@ cartItemsContainer.appendChild(row);
     updateCartView();
   });
 
-  // === 無料券操作 ===
   document.getElementById("increase-coupon-btn").addEventListener("click", () => {
     if(!selectedProductId) return;
     const item = cart.find(c=>c.id===selectedProductId);
@@ -302,55 +287,34 @@ cartItemsContainer.appendChild(row);
   });
 
   // === 会計へ進む ===
-document.getElementById("checkout-button").addEventListener("click", () => {
-  // 最新の金額を再計算
-  subtotal = 0;
-  discountAmount = 0;
-  cart.forEach(item => {
-    const product = products.find(p => p.id === item.id);
-    if (product) {
-      subtotal += product.price * item.quantity;
-      discountAmount += product.price * (item.freeCount || 0);
-    }
+  document.getElementById("checkout-button").addEventListener("click", () => {
+    const data = {
+      cart: cart.map(item => {
+        const product = products.find(p => p.id === item.id);
+        return {
+          id: item.id,
+          name: product.name,
+          flavor: product.flavor,
+          price: product.price,
+          quantity: item.quantity,
+          freeCount: item.freeCount
+        };
+      }),
+      couponCount,
+      subtotal,
+      discountAmount,
+      total: subtotal - discountAmount
+    };
+
+    // 上書き保存
+    localStorage.setItem("currentTransaction", JSON.stringify(data));
+    showScreen("screen2");
   });
-  const total = subtotal - discountAmount;
 
-  // 会計中のトランザクションを作成
-  const transaction = {
-    orderNumber: null, // レジ3で発行
-    cart: cart.map(item => {
-      const product = products.find(p => p.id === item.id);
-      return {
-        id: item.id,
-        name: product.name,
-        flavor: product.flavor,
-        price: product.price,
-        quantity: item.quantity,
-        freeCount: item.freeCount
-      };
-    }),
-    couponCount,
-    subtotal,
-    discountAmount,
-    total,
-    tendered: 0,  // レジ2で更新
-    change: 0,    // レジ2で更新
-    timestamp: new Date().toISOString()
-  };
-
-  // 保存（会計中のみ → currentTransaction）
-  localStorage.setItem("currentTransaction", JSON.stringify(transaction));
-
-  // レジ2へ遷移
-  showScreen("screen2");
-});
-  
-  // 初期化
   renderProducts();
   updateCartView();
 });
 </script>
-
     <!-- === レジ2: お支払い画面 === -->
 <div id="screen2" class="w-full hidden flex-grow flex flex-col">
 
