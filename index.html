@@ -331,145 +331,58 @@ document.getElementById("checkout-button").addEventListener("click", () => {
 });
 </script>
 
-    <!-- === レジ2: お支払い画面 === -->
-<div id="screen2" class="w-full hidden flex-grow flex flex-col">
-
-  <!-- ヘッダー -->
-  <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-    <h1 class="text-xl font-bold">レジ2：お支払い</h1>
-    <button id="back-to-screen1-button"
-            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">
-      戻る
-    </button>
-  </header>
-
-  <!-- メイン -->
-  <main class="flex-grow p-4 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-
-    <!-- 支払情報 -->
-    <div class="space-y-6 bg-gray-50 p-6 rounded-lg">
-      <div>
-        <label class="text-lg text-gray-600">お支払い金額</label>
-        <p id="payment-due" class="text-4xl font-bold text-gray-800 border-b-2 pb-2">¥0</p>
-      </div>
-      <div>
-        <label class="text-lg text-gray-600">お預かり金額</label>
-        <p id="amount-tendered-display" class="text-4xl font-bold text-blue-600 border-b-2 pb-2">¥0</p>
-      </div>
-      <div>
-        <label class="text-lg text-gray-600">おつり</label>
-        <p id="change-due-display" class="text-4xl font-bold text-green-600">¥0</p>
-      </div>
-    </div>
-
-    <!-- テンキー -->
-    <div class="flex flex-col items-center justify-center">
-      <div class="grid grid-cols-3 gap-2 w-full max-w-xs">
-  <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">7</button>
-  <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">8</button>
-  <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">9</button>
-  <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">4</button>
-  <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">5</button>
-  <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">6</button>
-  <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">1</button>
-  <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">2</button>
-  <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">3</button>
-  <button class="keypad-btn text-2xl p-6 bg-gray-200 hover:bg-gray-300 rounded-lg transition">0</button>
-  <button class="keypad-btn text-2xl p-6 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition">×</button>
-  <button class="keypad-btn text-2xl p-6 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition">C</button>
-</div>
-
-      <button id="calculate-change-button"
-              class="w-full max-w-xs mt-4 bg-green-500 text-white font-bold py-4 px-4 rounded-lg transition disabled:bg-gray-400"
-              disabled>
-        小計
-      </button>
-    </div>
-  </main>
-</div>
-
-<!-- === レジ2スクリプト === -->
+    <!-- === レジ2専用スクリプト === -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // --- 状態管理 ---
-  let amountTendered = "0";  // 入力された金額
-  let paymentDue = 0;        // お支払い金額
+  // --- DOM取得 ---
+  const amountTenderedDisplay = document.getElementById("amount-tendered"); // 支払金額
+  const changeAmountDisplay = document.getElementById("change-amount");     // おつり
+  const dueAmountDisplay = document.getElementById("due-amount");           // 合計金額
+  const calcBtn = document.getElementById("calc-btn");                      // 会計へ進む
+  const backBtn = document.getElementById("back-to-screen1");               // 戻る
 
-  // --- DOM要素の取得 ---
-  const paymentDueDisplay = document.getElementById("payment-due");                // 支払い金額
-  const amountTenderedDisplay = document.getElementById("amount-tendered-display");// 預かり金額
-  const changeDueDisplay = document.getElementById("change-due-display");          // お釣り
-  const calcBtn = document.getElementById("calculate-change-button");              // 小計ボタン
-  const clearBtn = document.getElementById("clear-keypad");                        // Cボタン
-  const backBtn = document.getElementById("back-to-screen1-button");               // 戻るボタン
+  // --- レジ1のデータを取得 ---
+  const cartData = JSON.parse(localStorage.getItem("cartData") || "{}");
+  let paymentDue = cartData.total || 0; // 支払金額(合計)
+  dueAmountDisplay.textContent = `¥${paymentDue.toLocaleString()}`;
 
-  // 金額を「¥〇,〇〇〇」形式に変換
-  const formatYen = n => "¥" + Number(n).toLocaleString();
+  let amountTendered = ""; // 入力中の金額（文字列）
 
-  // --- localStorageから支払い金額を読み込み ---
-  function loadPaymentInfo() {
-    const cartData = JSON.parse(localStorage.getItem("cartData") || "{}");
-    paymentDue = Number(cartData.total) || 0;
-    paymentDueDisplay.textContent = formatYen(paymentDue);
+  // --- 表示更新 ---
+  function updateDisplays() {
+    amountTenderedDisplay.textContent = amountTendered === "" ? "¥0" : `¥${Number(amountTendered).toLocaleString()}`;
 
-    // 入力状態を初期化
-    amountTendered = "0";
-    amountTenderedDisplay.textContent = formatYen(0);
-    changeDueDisplay.textContent = formatYen(0);
-    calcBtn.disabled = true;
+    const tenderedNum = Number(amountTendered);
+    const change = tenderedNum - paymentDue;
+
+    if (tenderedNum > 0 && change >= 0) {
+      changeAmountDisplay.textContent = `¥${change.toLocaleString()}`;
+    } else {
+      changeAmountDisplay.textContent = "¥0";
+    }
   }
-
-  // ページ表示時に一度実行
-  loadPaymentInfo();
-
-  // 画面切り替え時に呼ばれる（レジ2が表示されたら再読み込み）
-  window.addEventListener("screenChanged", (e) => {
-    if (e.detail === "screen2") loadPaymentInfo();
-  });
 
   // --- テンキー処理 ---
-  const isBackspaceLabel = (s) => s === "×" || s === "✕" || s === "x" || s === "X" || s === "⌫";
-
-  document.querySelectorAll(".keypad-btn").forEach(btn => {
+  document.querySelectorAll(".key").forEach(btn => {
     btn.addEventListener("click", () => {
-      const raw = (btn.textContent || "").trim();
+      const val = btn.dataset.value;
 
-      if (/^\d+$/.test(raw)) {
-        // 数字キー
-        amountTendered = (amountTendered === "0") ? raw : amountTendered + raw;
-      } else if (isBackspaceLabel(raw)) {
+      if (val === "C") {
+        // 全クリア
+        amountTendered = "";
+      } else if (val === "back") {
         // バックスペース
-        amountTendered = amountTendered.slice(0, -1) || "0";
-      } else if (raw.toUpperCase() === "C") {
-        // クリア
-        amountTendered = "0";
+        amountTendered = amountTendered.slice(0, -1);
       } else {
-        return; // その他は無視
+        // 数字追加
+        amountTendered += val;
       }
 
-      const tendered = Number(amountTendered);
-      amountTenderedDisplay.textContent = formatYen(tendered);
-
-      // リアルタイムでお釣り計算
-      const change = tendered - paymentDue;
-      changeDueDisplay.textContent = change >= 0 ? formatYen(change) : formatYen(0);
-
-      // 金額が足りていれば「小計」ボタン有効化
-      calcBtn.disabled = (tendered < paymentDue);
+      updateDisplays();
     });
   });
 
-  // --- Cボタンの処理 ---
-  if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-      amountTendered = "0";
-      amountTenderedDisplay.textContent = formatYen(0);
-      changeDueDisplay.textContent = formatYen(0);
-      calcBtn.disabled = true;
-    });
-  }
-
-  // --- 小計ボタンの処理 ---
+  // --- 会計へ進む ---
   if (calcBtn) {
     calcBtn.addEventListener("click", () => {
       const tendered = Number(amountTendered);
@@ -480,6 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
         due: paymentDue,
         tendered: tendered,
         change: change >= 0 ? change : 0,
+        cart: cartData.cart || [],   // ← 商品リストも保存
         savedAt: new Date().toISOString()
       }));
 
@@ -494,7 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- 戻るボタンの処理 ---
+  // --- 戻るボタン ---
   if (backBtn) {
     backBtn.addEventListener("click", () => {
       if (typeof showScreen === "function") {
@@ -506,6 +420,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // 初期表示更新
+  updateDisplays();
 });
 </script>
     
