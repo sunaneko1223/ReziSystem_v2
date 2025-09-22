@@ -499,30 +499,36 @@ document.addEventListener("DOMContentLoaded", () => {
   const breakdownEl = document.getElementById("change-breakdown");
   const orderEl = document.getElementById("final-order-summary");
 
-  // データ読み込み処理
+  // レシート情報を読み込む
   function loadReceipt() {
     const cartData = JSON.parse(localStorage.getItem("cartData") || "{}");
     const result = JSON.parse(localStorage.getItem("paymentResult") || "{}");
 
-    // 受付番号（例: タイムスタンプ下4桁）
-    orderNumberEl.textContent = Date.now().toString().slice(-4);
+    // 受付番号（カウントアップ）
+    let orderNumber = parseInt(localStorage.getItem("orderNumber") || "0", 10);
+    orderNumber += 1;
+    localStorage.setItem("orderNumber", orderNumber);
+    orderNumberEl.textContent = orderNumber;
 
     // おつり合計
-    changeAmountEl.textContent = "¥" + (result.change || 0).toLocaleString();
+    const change = result.change || 0;
+    changeAmountEl.textContent = "¥" + change.toLocaleString();
 
-    // 内訳（ここでは単純に「おつり」を1行表示）
+    // 内訳
     breakdownEl.innerHTML = "";
-    if (result.change && result.change > 0) {
-      const p = document.createElement("p");
-      p.textContent = `¥${result.change.toLocaleString()}`;
-      breakdownEl.appendChild(p);
+    const p = document.createElement("p");
+    if (change > 0) {
+      p.textContent = `${change}円`;
+    } else {
+      p.textContent = "おつりがありません";
     }
+    breakdownEl.appendChild(p);
 
     // ご購入内容
     orderEl.innerHTML = "";
     if (cartData.cart) {
       cartData.cart.forEach(item => {
-        const productName = `商品ID:${item.id}`; // ★本来は商品名を取る
+        const productName = item.name || `商品ID:${item.id}`;
         const summary = `${item.quantity}点 (無料券${item.freeCount || 0}枚)`;
         const p = document.createElement("p");
         p.textContent = `${productName} - ${summary}`;
