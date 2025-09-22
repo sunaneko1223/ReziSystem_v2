@@ -301,6 +301,19 @@ cartItemsContainer.appendChild(row);
     }
   });
 
+  // === 会計へ進む ===
+document.getElementById("checkout-button").addEventListener("click", () => {
+  const data = {
+    cart: cart,
+    couponCount: couponCount,
+    subtotal: subtotal,
+    discountAmount: discountAmount,
+    total: subtotal - discountAmount
+  };
+  localStorage.setItem("cartData", JSON.stringify(data));
+  showScreen("screen2");
+});
+  
   // 初期化
   renderProducts();
   updateCartView();
