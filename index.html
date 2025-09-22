@@ -426,14 +426,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearBtn = document.getElementById("clear-keypad");
   const backspaceBtn = document.getElementById("backspace-keypad");
 
-  let tendered = "";   // 入力中の文字列
-  let paymentDue = 0;  // 支払い金額
+  let tendered = "";
 
   // === レジ1からデータ取得 ===
-  const cartData = JSON.parse(localStorage.getItem("cartData"));
-  if (cartData) {
-    paymentDue = cartData.total || 0;
-    paymentDueEl.textContent = "¥" + paymentDue.toLocaleString();
+  let data = JSON.parse(localStorage.getItem("cartData"));
+  if (data && data.total) {
+    paymentDueEl.textContent = "¥" + data.total.toLocaleString();
   }
 
   // === お釣り計算 ===
@@ -441,10 +439,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
     tenderedEl.textContent = "¥" + tenderedNum.toLocaleString();
 
-    const change = tenderedNum - paymentDue;
+    const change = tenderedNum - (data?.total || 0);
     changeEl.textContent = change >= 0 ? "¥" + change.toLocaleString() : "¥0";
 
-    calcBtn.disabled = tenderedNum < paymentDue; // 足りない場合は無効化
+    calcBtn.disabled = tenderedNum < (data?.total || 0);
   }
 
   // === テンキー入力 ===
@@ -467,28 +465,26 @@ document.addEventListener("DOMContentLoaded", () => {
     updateDisplay();
   });
 
-  // === 会計処理 ===
+  // 会計処理 → レジ3へ
   calcBtn.addEventListener("click", () => {
     const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
-    const change = tenderedNum - paymentDue;
+    const change = tenderedNum - (data?.total || 0);
 
-    // 保存してレジ3へ
-    localStorage.setItem("paymentData", JSON.stringify({
-      tendered: tenderedNum,
-      change: change,
-      paymentDue: paymentDue,
-      cartData: cartData
-    }));
+    // cartDataに追加保存
+    if (data) {
+      data.tendered = tenderedNum;
+      data.change = change;
+      localStorage.setItem("cartData", JSON.stringify(data));
+    }
 
     showScreen("screen3");
   });
 
-  // === 戻る → レジ1 ===
+  // 戻る → レジ1
   backBtn.addEventListener("click", () => {
     showScreen("screen1");
   });
 
-  // 初期表示更新
   updateDisplay();
 });
 </script>
