@@ -512,83 +512,62 @@ document.addEventListener("DOMContentLoaded", () => {
 <!-- === レジ3専用スクリプト === -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // --- DOM取得 ---
-  const orderList = document.getElementById("order-list");       // ご購入内容
-  const breakdownList = document.getElementById("breakdown-list"); // 内訳
-  const totalDisplay = document.getElementById("total-display");   // 合計
-  const tenderedDisplay = document.getElementById("tendered-display"); // 支払額
-  const changeDisplay = document.getElementById("change-display"); // おつり
-  const receiptNumberDisplay = document.getElementById("receipt-number"); // 受付番号
-  const nextButton = document.getElementById("next-transaction"); // 次の会計へ
+  const orderNumberEl = document.getElementById("final-order-number");
+  const changeAmountEl = document.getElementById("final-change-amount");
+  const breakdownEl = document.getElementById("change-breakdown");
+  const orderSummaryEl = document.getElementById("final-order-summary");
+  const newTransactionBtn = document.getElementById("new-transaction-button");
 
-  // --- localStorageから読み込み ---
-  const paymentResult = JSON.parse(localStorage.getItem("paymentResult") || "{}");
+  // === 受付番号をカウントアップ ===
+  let lastNumber = parseInt(localStorage.getItem("lastOrderNumber") || "0", 10);
+  lastNumber++;
+  localStorage.setItem("lastOrderNumber", lastNumber);
+  orderNumberEl.textContent = lastNumber;
 
-  const due = paymentResult.due || 0;
-  const tendered = paymentResult.tendered || 0;
-  const change = paymentResult.change || 0;
-  const cart = paymentResult.cart || [];
+  // === レジ2からデータ取得 ===
+  const paymentData = JSON.parse(localStorage.getItem("paymentData"));
 
-  // --- 表示反映 ---
-  totalDisplay.textContent = `¥${due.toLocaleString()}`;
-  tenderedDisplay.textContent = `¥${tendered.toLocaleString()}`;
-  changeDisplay.textContent = `¥${change.toLocaleString()}`;
+  if (paymentData) {
+    // 合計表示
+    changeAmountEl.textContent = "¥" + paymentData.change.toLocaleString();
 
-  // --- 受付番号（連番管理） ---
-  let receiptNumber = parseInt(localStorage.getItem("receiptNumber") || "0", 10);
-  receiptNumber += 1;
-  localStorage.setItem("receiptNumber", receiptNumber);
-  receiptNumberDisplay.textContent = receiptNumber;
-
-  // --- ご購入内容表示 ---
-  orderList.innerHTML = "";
-  if (cart.length === 0) {
-    orderList.innerHTML = `<p class="text-gray-500">購入商品がありません。</p>`;
-  } else {
-    cart.forEach(item => {
-      const row = document.createElement("div");
-      row.className = "flex justify-between items-center border-b py-1";
-      row.innerHTML = `
-        <span>${item.name}${item.flavor ? " ("+item.flavor+")" : ""} × ${item.quantity}</span>
-        <span>¥${(item.price * item.quantity).toLocaleString()}</span>
-      `;
-      orderList.appendChild(row);
-    });
-  }
-
-  // --- おつり内訳表示 ---
-  breakdownList.innerHTML = "";
-  if (change <= 0) {
-    breakdownList.innerHTML = `<p class="text-gray-500">おつりがありません。</p>`;
-  } else {
-    const units = [10000, 5000, 2000, 1000, 500, 100, 50, 10, 5, 1];
-    let remaining = change;
-
-    units.forEach(unit => {
-      const count = Math.floor(remaining / unit);
-      if (count > 0) {
-        const row = document.createElement("div");
-        row.className = "flex justify-between items-center";
-        row.innerHTML = `<span>${unit}円</span><span>${count}枚</span>`;
-        breakdownList.appendChild(row);
-        remaining -= unit * count;
-      }
-    });
-  }
-
-  // --- 次の会計へ ---
-  nextButton.addEventListener("click", () => {
-    // データをリセット
-    localStorage.removeItem("cartData");
-    localStorage.removeItem("paymentResult");
-
-    if (typeof showScreen === "function") {
-      showScreen("screen1");
+    // 内訳
+    breakdownEl.innerHTML = "";
+    if (paymentData.change > 0) {
+      // 簡易的にお釣りの金種分け（例：100円単位のみ）
+      let remain = paymentData.change;
+      const coins = [1000, 500, 100, 50, 10];
+      coins.forEach(c => {
+        const count = Math.floor(remain / c);
+        if (count > 0) {
+          const div = document.createElement("div");
+          div.textContent = `${c}円 × ${count}`;
+          breakdownEl.appendChild(div);
+          remain -= c * count;
+        }
+      });
     } else {
-      document.getElementById("screen3")?.classList.add("hidden");
-      document.getElementById("screen1")?.classList.remove("hidden");
-      window.dispatchEvent(new CustomEvent("screenChanged", { detail: "screen1" }));
+      breakdownEl.innerHTML = "<p class='text-gray-500'>おつりがありません</p>";
     }
+
+    // ご購入内容
+    orderSummaryEl.innerHTML = "";
+    if (paymentData.cartData && paymentData.cartData.cart.length > 0) {
+      paymentData.cartData.cart.forEach(item => {
+        const p = document.createElement("p");
+        p.textContent = `${item.name || "商品"} × ${item.quantity}点 (無料券${item.freeCount || 0}枚)`;
+        orderSummaryEl.appendChild(p);
+      });
+    } else {
+      orderSummaryEl.innerHTML = "<p class='text-gray-500'>購入商品がありません。</p>";
+    }
+  }
+
+  // === 新しい会計へ ===
+  newTransactionBtn.addEventListener("click", () => {
+    localStorage.removeItem("cartData");
+    localStorage.removeItem("paymentData");
+    showScreen("screen1");
   });
 });
 </script>
