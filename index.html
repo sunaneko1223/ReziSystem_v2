@@ -26,106 +26,132 @@
 
     <!-- レジ1: 商品選択 -->
     <div id="screen1" class="w-full h-full hidden flex flex-col">
+      <!-- ヘッダー -->
       <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-        <h1 class="text-xl font-bold">レジ1：商品選択</h1>
-        <button onclick="proceedToPayment()"
-                class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition">
-          会計へ進む
-        </button>
+        <h1 class="text-xl font-bold">レジ：商品選択</h1>
+        <div>
+          <button onclick="showScreen('screen4')"
+                  class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition mr-2">
+            商品管理
+          </button>
+          <button onclick="showScreen('screen5')"
+                  class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition">
+            取引履歴
+          </button>
+        </div>
       </header>
 
+      <!-- メイン -->
       <main class="flex-grow p-4 grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0">
-        <!-- 左側: 商品一覧 -->
-        <div class="md:col-span-2 bg-white p-4 rounded-lg shadow">
-          <h2 class="text-lg font-bold border-b pb-2 mb-4">商品一覧</h2>
-          <div id="product-list" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <!-- 商品カードはJSでここに追加 -->
-          </div>
+        <!-- 商品一覧 -->
+        <div id="product-list"
+             class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-0 p-1 bg-gray-50 rounded-lg overflow-auto no-scrollbar min-h-0">
         </div>
 
-        <!-- 右側: ご注文内容 -->
+        <!-- ご注文内容 -->
         <div class="md:col-span-1 bg-gray-100 p-4 rounded-lg flex flex-col min-h-0">
-          <h2 class="flex-shrink-0 text-lg font-bold border-b pb-2 mb-4">ご注文内容</h2>
+          <h2 class="text-lg font-bold border-b pb-2 mb-4 flex-shrink-0">ご注文内容</h2>
 
-          <!-- ご注文リスト（スクロール可） -->
-          <div id="cart-items"
-               class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0 allow-scroll"
-               style="-webkit-overflow-scrolling: touch;">
+          <!-- リストだけスクロール -->
+          <div id="cart-items" class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0">
             <p class="text-gray-500">商品が選択されていません。</p>
           </div>
 
           <!-- 下部パネル -->
-          <div class="flex-shrink-0 mt-3 space-y-2">
-            <button id="apply-discount" 
-                    class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition">
-              無料券を使う
-            </button>
-            <button id="clear-cart" 
-                    class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">
-              ご注文を削除
-            </button>
-            <div class="text-right text-xl font-bold">合計: <span id="total-amount">¥0</span></div>
+          <div class="mt-3 flex-shrink-0 space-y-2">
+            <!-- 無料券操作 -->
+            <div class="flex items-center justify-between w-full bg-orange-500 text-white font-bold py-1 rounded-lg">
+              <button id="decrease-coupon-btn" class="text-2xl px-4 py-1 rounded-l-lg hover:bg-orange-600 transition">-</button>
+              <span class="flex-grow text-center">無料券 <span id="coupon-count">0</span>枚</span>
+              <button id="increase-coupon-btn" class="text-2xl px-4 py-1 rounded-r-lg hover:bg-orange-600 transition">+</button>
+            </div>
+
+            <!-- 削除ボタン -->
+            <button id="remove-selected-btn"
+                    class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition disabled:bg-gray-400"
+                    disabled>削除</button>
+
+            <!-- 合計表示＋会計 -->
+            <div class="border-t pt-4">
+              <div id="discount-row" class="flex justify-between items-center text-lg text-red-500 hidden">
+                <span>割引 (無料券)</span>
+                <span id="discount-amount">¥0</span>
+              </div>
+              <div class="flex justify-between items-center text-2xl font-bold">
+                <span>合計</span>
+                <span id="total-amount-display">¥0</span>
+              </div>
+              <button id="checkout-button"
+                      onclick="showScreen('screen2')"
+                      class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-4 transition">
+                会計へ進む
+              </button>
+            </div>
           </div>
         </div>
       </main>
     </div>
 
+    <!-- レジ1専用スクリプト -->
     <script>
-      // ===== レジ1専用スクリプト =====
-
-      // 商品データ例（後で商品管理と連携可能）
+      // 商品データ（例）
       const products = [
-        { id: 1, name: "りんご", price: 100, flavor: "" },
-        { id: 2, name: "ジュース", price: 150, flavor: "オレンジ" },
-        { id: 3, name: "パン", price: 200, flavor: "" },
+        { id: 1, name: "りんご", flavor: "", price: 100 },
+        { id: 2, name: "ジュース", flavor: "オレンジ", price: 150 },
+        { id: 3, name: "パン", flavor: "", price: 200 },
       ];
 
       let cart = [];
-      let discountCount = 0;
+      let selectedItemId = null;
+      let couponCount = 0;
 
-      const productListEl = document.getElementById("product-list");
-      const cartItemsEl = document.getElementById("cart-items");
-      const totalAmountEl = document.getElementById("total-amount");
+      const productList = document.getElementById("product-list");
+      const cartItems = document.getElementById("cart-items");
+      const totalAmountDisplay = document.getElementById("total-amount-display");
+      const discountRow = document.getElementById("discount-row");
+      const discountAmount = document.getElementById("discount-amount");
+      const couponCountEl = document.getElementById("coupon-count");
+      const removeSelectedBtn = document.getElementById("remove-selected-btn");
 
-      // 商品一覧を表示
+      // 商品一覧表示
       function renderProducts() {
-        productListEl.innerHTML = "";
-        products.forEach(product => {
+        productList.innerHTML = "";
+        products.forEach(p => {
           const card = document.createElement("div");
           card.className = "p-3 border rounded-lg shadow hover:bg-gray-50 cursor-pointer";
           card.innerHTML = `
-            <div class="font-bold">${product.name}</div>
-            <div class="text-sm text-gray-500">${product.flavor || ""}</div>
-            <div class="text-gray-800">¥${product.price}</div>
+            <div class="font-bold">${p.name}</div>
+            <div class="text-sm text-gray-500">${p.flavor || ""}</div>
+            <div class="text-gray-800">¥${p.price}</div>
           `;
-          card.onclick = () => addToCart(product);
-          productListEl.appendChild(card);
+          card.onclick = () => addToCart(p);
+          productList.appendChild(card);
         });
       }
 
       // カートに追加
       function addToCart(product) {
-        const item = cart.find(i => i.id === product.id);
-        if (item) {
-          item.quantity++;
+        const existing = cart.find(i => i.id === product.id);
+        if (existing) {
+          existing.quantity++;
         } else {
-          cart.push({ ...product, quantity: 1, discount: 0 });
+          cart.push({ ...product, quantity: 1, coupon: 0 });
         }
         renderCart();
       }
 
-      // カートを表示
+      // カート描画
       function renderCart() {
-        cartItemsEl.innerHTML = "";
+        cartItems.innerHTML = "";
         if (cart.length === 0) {
-          cartItemsEl.innerHTML = `<p class="text-gray-500">商品が選択されていません。</p>`;
-          totalAmountEl.textContent = "¥0";
+          cartItems.innerHTML = `<p class="text-gray-500">商品が選択されていません。</p>`;
+          updateTotal();
           return;
         }
 
         cart.forEach(item => {
           const row = document.createElement("div");
-          row.className = "p-2 border rounded bg-white";
+          row.className = `p-2 border rounded bg-white cart-item ${selectedItemId === item.id ? "selected" : ""}`;
 
           row.innerHTML = `
             <div class="flex justify-between">
@@ -134,7 +160,7 @@
             </div>
             <div class="text-sm text-gray-500">${item.flavor || ""}</div>
             <div class="flex items-center justify-between mt-1 text-sm">
-              <span>数量: ${item.quantity} │ 券: ${item.discount}</span>
+              <span>数量: ${item.quantity} │ 券: ${item.coupon}</span>
               <div class="space-x-1">
                 <button class="px-2 py-1 bg-gray-200 rounded">－</button>
                 <button class="px-2 py-1 bg-gray-200 rounded">＋</button>
@@ -143,54 +169,73 @@
             </div>
           `;
 
-          const [btnMinus, btnPlus, btnRemove] = row.querySelectorAll("button");
-          btnMinus.onclick = () => { if (item.quantity > 1) item.quantity--; else cart = cart.filter(i => i.id !== item.id); renderCart(); };
-          btnPlus.onclick = () => { item.quantity++; renderCart(); };
-          btnRemove.onclick = () => { cart = cart.filter(i => i.id !== item.id); renderCart(); };
+          row.onclick = () => {
+            selectedItemId = (selectedItemId === item.id) ? null : item.id;
+            renderCart();
+          };
 
-          cartItemsEl.appendChild(row);
+          const [btnMinus, btnPlus, btnRemove] = row.querySelectorAll("button");
+          btnMinus.onclick = e => { e.stopPropagation(); if (item.quantity > 1) item.quantity--; else cart = cart.filter(i => i.id !== item.id); renderCart(); };
+          btnPlus.onclick = e => { e.stopPropagation(); item.quantity++; renderCart(); };
+          btnRemove.onclick = e => { e.stopPropagation(); cart = cart.filter(i => i.id !== item.id); renderCart(); };
+
+          cartItems.appendChild(row);
         });
 
+        removeSelectedBtn.disabled = selectedItemId === null;
         updateTotal();
       }
 
-      // 合計金額を計算
+      // 合計計算
       function updateTotal() {
         let total = 0;
+        let discount = 0;
         cart.forEach(item => {
           total += item.price * item.quantity;
-          total -= item.discount * item.price; // 割引適用
+          discount += item.coupon * item.price;
         });
-        totalAmountEl.textContent = "¥" + total;
-      }
 
-      // 無料券を適用
-      document.getElementById("apply-discount").onclick = () => {
-        if (cart.length === 0) return alert("商品がありません");
-        const target = cart[0]; // とりあえず最初の商品に適用
-        if (target.discount < target.quantity) {
-          target.discount++;
-          renderCart();
+        if (discount > 0) {
+          discountRow.classList.remove("hidden");
+          discountAmount.textContent = "¥" + discount;
         } else {
-          alert("これ以上無料券を使えません");
+          discountRow.classList.add("hidden");
         }
-      };
 
-      // カートをクリア
-      document.getElementById("clear-cart").onclick = () => {
-        cart = [];
-        renderCart();
-      };
-
-      // レジ2へ進む
-      function proceedToPayment() {
-        if (cart.length === 0) {
-          alert("商品がありません");
-          return;
-        }
-        localStorage.setItem("cart", JSON.stringify(cart));
-        showScreen("screen2");
+        totalAmountDisplay.textContent = "¥" + (total - discount);
       }
+
+      // 無料券増減
+      document.getElementById("increase-coupon-btn").onclick = () => {
+        if (cart.length === 0) return;
+        const target = cart[0];
+        if (target.coupon < target.quantity) {
+          target.coupon++;
+          couponCount++;
+          couponCountEl.textContent = couponCount;
+          renderCart();
+        }
+      };
+
+      document.getElementById("decrease-coupon-btn").onclick = () => {
+        if (cart.length === 0) return;
+        const target = cart[0];
+        if (target.coupon > 0) {
+          target.coupon--;
+          couponCount--;
+          couponCountEl.textContent = couponCount;
+          renderCart();
+        }
+      };
+
+      // 選択削除
+      removeSelectedBtn.onclick = () => {
+        if (selectedItemId !== null) {
+          cart = cart.filter(i => i.id !== selectedItemId);
+          selectedItemId = null;
+          renderCart();
+        }
+      };
 
       // 初期化
       renderProducts();
