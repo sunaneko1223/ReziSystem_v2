@@ -511,12 +511,9 @@ document.addEventListener("DOMContentLoaded", () => {
     
     <!-- Screen 3: お会計完了画面 -->
 <div id="screen3" class="w-full hidden flex-grow flex flex-col">
-  <!-- ==== ヘッダー ==== -->
   <header class="bg-gray-800 text-white p-4 flex-shrink-0">
     <h1 class="text-xl font-bold">レジ３：お会計完了</h1>
   </header>
-
-  <!-- ==== メインコンテンツ ==== -->
   <main class="flex-grow p-6 flex flex-col justify-center items-center">
     <div class="w-full max-w-md">
       <!-- 受付番号 -->
@@ -531,15 +528,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       <!-- 内訳 -->
       <h3 class="text-lg font-semibold mb-2 border-b pb-1">内訳</h3>
-      <div id="change-breakdown" class="space-y-1 text-lg">
-        <!-- JSで追加 -->
-      </div>
+      <div id="change-breakdown" class="space-y-1 text-lg"></div>
 
-      <!-- ご購入内容 -->
+      <!-- ご購入内容（スクロール可能） -->
       <h3 class="text-lg font-semibold mt-4 mb-2 border-b pb-1">ご購入内容</h3>
       <div id="final-order-summary"
            class="space-y-1 text-left text-sm max-h-32 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg">
-        <!-- JSで追加 -->
       </div>
 
       <!-- 次の会計へ -->
@@ -551,67 +545,85 @@ document.addEventListener("DOMContentLoaded", () => {
   </main>
 </div>
 
-<!-- ==== レジ3専用スクリプト ==== -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const orderNumberEl = document.getElementById("final-order-number");
   const changeAmountEl = document.getElementById("final-change-amount");
   const breakdownEl = document.getElementById("change-breakdown");
-  const orderEl = document.getElementById("final-order-summary");
+  const orderSummaryEl = document.getElementById("final-order-summary");
+  const newTransactionBtn = document.getElementById("new-transaction-button");
 
-  // レシート情報を読み込む
-  function loadReceipt() {
-    const cartData = JSON.parse(localStorage.getItem("cartData") || "{}");
+  const formatYen = n => "¥" + Number(n).toLocaleString();
+
+  // レジ3表示時に更新
+  window.addEventListener("screenChanged", (e) => {
+    if (e.detail !== "screen3") return;
+
+    // --- 支払い結果データを読み込み ---
     const result = JSON.parse(localStorage.getItem("paymentResult") || "{}");
-
-    // 受付番号（カウントアップ）
-    let orderNumber = parseInt(localStorage.getItem("orderNumber") || "0", 10);
-    orderNumber += 1;
-    localStorage.setItem("orderNumber", orderNumber);
-    orderNumberEl.textContent = orderNumber;
-
-    // おつり合計
+    const cart = result.cart?.cart || []; // レジ1で保存した商品リスト
     const change = result.change || 0;
-    changeAmountEl.textContent = "¥" + change.toLocaleString();
 
-    // 内訳
+    // --- 受付番号カウントアップ ---
+    let lastOrderNumber = Number(localStorage.getItem("lastOrderNumber") || 0);
+    lastOrderNumber++;
+    localStorage.setItem("lastOrderNumber", lastOrderNumber);
+    orderNumberEl.textContent = lastOrderNumber;
+
+    // --- おつり合計 ---
+    changeAmountEl.textContent = formatYen(change);
+
+    // --- 内訳（お釣りがない場合メッセージ） ---
     breakdownEl.innerHTML = "";
-    const p = document.createElement("p");
-    if (change > 0) {
-      p.textContent = `${change}円`;
+    if (change === 0) {
+      breakdownEl.innerHTML = `<p class="text-gray-500">おつりはありません</p>`;
     } else {
-      p.textContent = "おつりがありません";
+      let remain = change;
+      const units = [10000, 5000, 1000, 500, 100, 50, 10, 5, 1];
+      units.forEach(u => {
+        const count = Math.floor(remain / u);
+        if (count > 0) {
+          const div = document.createElement("div");
+          div.className = "flex justify-between items-baseline";
+          div.innerHTML = `<span>${u}円</span><span class="font-bold">${count}枚</span>`;
+          breakdownEl.appendChild(div);
+          remain %= u;
+        }
+      });
     }
-    breakdownEl.appendChild(p);
 
-    // ご購入内容
-orderEl.innerHTML = "";
-if (cartData.cart) {
-  cartData.cart.forEach(item => {
-    const productName = item.name || `商品ID:${item.id}`;
-    const flavor = item.flavor ? `（${item.flavor}）` : "";
-    const summary = `${item.quantity}点 (無料券${item.freeCount || 0}枚)`;
-    const p = document.createElement("p");
-    p.textContent = `${productName}${flavor} - ${summary}`;
-    orderEl.appendChild(p);
+    // --- ご購入内容 ---
+    orderSummaryEl.innerHTML = "";
+    if (cart.length === 0) {
+      orderSummaryEl.innerHTML = `<p class="text-gray-500">購入商品はありません</p>`;
+    } else {
+      cart.forEach(item => {
+        const flavor = item.flavor ? `（${item.flavor}）` : "";
+        const line = document.createElement("div");
+        line.className = "flex justify-between items-center";
+        line.innerHTML = `
+          <span>${item.name}${flavor} ${item.quantity}点 / 無料券${item.freeCount || 0}枚</span>
+          <span class="font-medium">${formatYen(item.price * item.quantity)}</span>
+        `;
+        orderSummaryEl.appendChild(line);
+      });
+    }
   });
-}
 
-    // 初回ロード
-    loadReceipt();
-
-    // 画面切替イベントで再読み込み
-    window.addEventListener("screenChanged", (e) => {
-      if (e.detail === "screen3") {
-        loadReceipt();
-      }
-    });
-
-  // 次の会計へ
-  document.getElementById("new-transaction-button").addEventListener("click", () => {
+  // --- 次の会計へ ---
+  newTransactionBtn.addEventListener("click", () => {
+    // データ初期化
     localStorage.removeItem("cartData");
     localStorage.removeItem("paymentResult");
-    showScreen("screen1");
+
+    // レジ1へ戻る
+    if (typeof showScreen === "function") {
+      showScreen("screen1");
+    } else {
+      document.getElementById("screen3").classList.add("hidden");
+      document.getElementById("screen1").classList.remove("hidden");
+      window.dispatchEvent(new CustomEvent("screenChanged", { detail: "screen1" }));
+    }
   });
 });
 </script>
