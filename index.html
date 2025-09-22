@@ -391,76 +391,80 @@ document.getElementById("checkout-button").addEventListener("click", () => {
 <!-- === レジ2スクリプト === -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  let amountTendered = "0";
-  let paymentDue = 0;
+  // LocalStorageから読み込み（レジ1で保存された内容）
+  const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+  const paymentDue = savedCart.total || 0; // 合計金額
+  let amountTendered = "0"; // 入力金額（文字列で管理）
 
+  // DOM要素
   const paymentDueDisplay = document.getElementById("payment-due");
-  const amountTenderedDisplay = document.getElementById("amount-tendered-display");
-  const changeDueDisplay = document.getElementById("change-due-display");
-  const calcBtn = document.getElementById("calculate-change-button");
+  const amountTenderedDisplay = document.getElementById("amount-tendered");
+  const changeDueDisplay = document.getElementById("change-due");
+  const calcBtn = document.getElementById("calc-btn");
+  const backToScreen1 = document.getElementById("back-to-screen1");
 
-  // localStorage から最新の合計を読み込む関数
-  function loadPaymentInfo() {
-    const cartData = JSON.parse(localStorage.getItem("cartData") || "{}");
-    paymentDue = Number(cartData.total) || 0;
-    paymentDueDisplay.textContent = "¥" + paymentDue.toLocaleString();
-    amountTendered = "0";
-    amountTenderedDisplay.textContent = "¥0";
-    changeDueDisplay.textContent = "¥0";
-    calcBtn.disabled = true;
-  }
+  // 金額を整形する関数
+  const formatCurrency = (num) => "¥" + Number(num).toLocaleString();
 
-  // 初回ロード
-  loadPaymentInfo();
+  // 初期表示
+  paymentDueDisplay.textContent = formatCurrency(paymentDue);
+  amountTenderedDisplay.textContent = "¥0";
+  changeDueDisplay.textContent = "¥0";
 
-  // 画面切替イベントを受け取ったとき
-  window.addEventListener("screenChanged", (e) => {
-    if (e.detail === "screen2") {
-      loadPaymentInfo();
-    }
-  });
-
-  // 戻るボタン → レジ1へ
-  document.getElementById("back-to-screen1-button").addEventListener("click", () => {
-    showScreen("screen1");
-  });
-
-  // テンキー入力
+  // === テンキー処理 ===
   document.querySelectorAll(".keypad-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const val = btn.textContent;
+
       if (!isNaN(val)) {
+        // 数字
         amountTendered = amountTendered === "0" ? val : amountTendered + val;
+      } else if (val === "×") {
+        // バックスペース（1文字削除、空なら0に戻す）
+        amountTendered = amountTendered.slice(0, -1) || "0";
+      } else if (val === "C") {
+        // 全クリア
+        amountTendered = "0";
       }
-      amountTenderedDisplay.textContent = "¥" + Number(amountTendered).toLocaleString();
-      calcBtn.disabled = (Number(amountTendered) < paymentDue);
+
+      // 入力金額表示
+      const tendered = Number(amountTendered);
+      amountTenderedDisplay.textContent = formatCurrency(tendered);
+
+      // お釣り計算（リアルタイム）
+      const change = tendered - paymentDue;
+      changeDueDisplay.textContent = change >= 0 ? formatCurrency(change) : "¥0";
+
+      // 会計ボタン有効化
+      calcBtn.disabled = (tendered < paymentDue);
     });
   });
 
-  // クリア
-  document.getElementById("clear-keypad").addEventListener("click", () => {
-    amountTendered = "0";
-    amountTenderedDisplay.textContent = "¥0";
-    changeDueDisplay.textContent = "¥0";
-    calcBtn.disabled = true;
-  });
-
-  // 小計ボタン → レジ3へ
+  // === 会計ボタン押下 ===
   calcBtn.addEventListener("click", () => {
     const tendered = Number(amountTendered);
     const change = tendered - paymentDue;
 
-    localStorage.setItem("paymentResult", JSON.stringify({
-      due: paymentDue,
-      tendered: tendered,
-      change: change >= 0 ? change : 0
+    // レジ3用に保存
+    localStorage.setItem("transaction", JSON.stringify({
+      cart: savedCart,
+      tendered,
+      change,
+      timestamp: new Date().toISOString()
     }));
 
-    showScreen("screen3");
+    // 画面切り替え（レジ3へ）
+    document.getElementById("screen2").classList.add("hidden");
+    document.getElementById("screen3").classList.remove("hidden");
+  });
+
+  // === 戻るボタン ===
+  backToScreen1.addEventListener("click", () => {
+    document.getElementById("screen2").classList.add("hidden");
+    document.getElementById("screen1").classList.remove("hidden");
   });
 });
 </script>
-
     <!-- Screen 3: お会計完了画面 -->
 <div id="screen3" class="w-full hidden flex-grow flex flex-col">
   <!-- ==== ヘッダー ==== -->
