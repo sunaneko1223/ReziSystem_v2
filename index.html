@@ -381,9 +381,6 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- === レジ2専用スクリプト === -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // === 前回のお預かり金額データはリセット ===
-  localStorage.removeItem("paymentData");
-
   const paymentDueEl = document.getElementById("payment-due");
   const tenderedEl = document.getElementById("amount-tendered-display");
   const changeEl = document.getElementById("change-due-display");
@@ -394,21 +391,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearBtn = document.getElementById("clear-keypad");
   const backspaceBtn = document.getElementById("backspace-keypad");
 
-  let tendered = ""; // 入力中の金額
+  let tendered = "";
   let paymentDue = 0;
-  let transaction = null;
 
-  // === レジ1からトランザクション取得 ===
-  const current = JSON.parse(localStorage.getItem("currentTransaction"));
-  if (current) {
-    transaction = current;
-    paymentDue = transaction.total;
+  const data = JSON.parse(localStorage.getItem("currentTransaction"));
+  if (data && data.total) {
+    paymentDue = data.total;
     paymentDueEl.textContent = "¥" + paymentDue.toLocaleString();
-  } else {
-    paymentDueEl.textContent = "¥0";
   }
 
-  // === 表示更新 ===
   function updateDisplay() {
     const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
     tenderedEl.textContent = "¥" + tenderedNum.toLocaleString();
@@ -419,7 +410,6 @@ document.addEventListener("DOMContentLoaded", () => {
     calcBtn.disabled = tenderedNum < paymentDue;
   }
 
-  // === テンキー入力 ===
   keypadBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       tendered += btn.textContent;
@@ -427,44 +417,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // バックスペース
   backspaceBtn.addEventListener("click", () => {
     tendered = tendered.slice(0, -1);
     updateDisplay();
   });
 
-  // クリア
   clearBtn.addEventListener("click", () => {
     tendered = "";
     updateDisplay();
   });
 
-  // === 会計処理 ===
   calcBtn.addEventListener("click", () => {
     const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
     const change = tenderedNum - paymentDue;
 
-    // currentTransaction を更新
-    if (transaction) {
-      transaction.tendered = tenderedNum;
-      transaction.change = change;
+    let updated = {
+      ...data,
+      tendered: tenderedNum,
+      change: change
+    };
 
-      localStorage.setItem("currentTransaction", JSON.stringify(transaction));
-    }
-
-    // レジ3へ遷移
+    localStorage.setItem("currentTransaction", JSON.stringify(updated));
     showScreen("screen3");
   });
 
-  // === 戻る → レジ1 ===
   backBtn.addEventListener("click", () => {
     showScreen("screen1");
   });
-  
+
   updateDisplay();
 });
-</script>
-    
+</script>    
     <!-- Screen 3: お会計完了画面 -->
 <div id="screen3" class="w-full hidden flex-grow flex flex-col">
   <header class="bg-gray-800 text-white p-4 flex-shrink-0">
