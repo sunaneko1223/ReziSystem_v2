@@ -411,9 +411,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let paymentDue = 0;  // 支払い金額
 
   // === レジ1からデータ取得 ===
-  const data = JSON.parse(localStorage.getItem("cartData"));
-  if (data && data.total) {
-    paymentDue = data.total;
+  const cartData = JSON.parse(localStorage.getItem("cartData"));
+  if (cartData) {
+    paymentDue = cartData.total || 0;
     paymentDueEl.textContent = "¥" + paymentDue.toLocaleString();
   }
 
@@ -448,7 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateDisplay();
   });
 
-  // 会計処理
+  // === 会計処理 ===
   calcBtn.addEventListener("click", () => {
     const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
     const change = tenderedNum - paymentDue;
@@ -458,17 +458,18 @@ document.addEventListener("DOMContentLoaded", () => {
       tendered: tenderedNum,
       change: change,
       paymentDue: paymentDue,
-      cartData: data
+      cartData: cartData
     }));
 
     showScreen("screen3");
   });
 
-  // 戻る → レジ1
+  // === 戻る → レジ1 ===
   backBtn.addEventListener("click", () => {
     showScreen("screen1");
   });
 
+  // 初期表示更新
   updateDisplay();
 });
 </script>
