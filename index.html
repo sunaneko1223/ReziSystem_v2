@@ -308,9 +308,9 @@ document.getElementById("checkout-button").addEventListener("click", () => {
       const product = products.find(p => p.id === item.id);
       return {
         id: item.id,
-        name: product.name,      
-        flavor: product.flavor, 
-        price: product.price,    
+        name: product.name,      // ★商品名を保存
+        flavor: product.flavor,  // ★味も保存
+        price: product.price,    // ★単価も保存
         quantity: item.quantity,
         freeCount: item.freeCount
       };
