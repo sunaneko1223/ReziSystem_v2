@@ -380,20 +380,35 @@ document.getElementById("checkout-button").addEventListener("click", () => {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   let amountTendered = "0";
+  let paymentDue = 0;
 
-  // localStorage から支払金額を取得
-  let cartData = JSON.parse(localStorage.getItem("cartData") || "{}");
-  let paymentDue = cartData.total !== undefined ? cartData.total : 0;
-
-  // 表示更新
   const paymentDueDisplay = document.getElementById("payment-due");
   const amountTenderedDisplay = document.getElementById("amount-tendered-display");
   const changeDueDisplay = document.getElementById("change-due-display");
   const calcBtn = document.getElementById("calculate-change-button");
 
-  paymentDueDisplay.textContent = "¥" + paymentDue.toLocaleString();
+  // localStorage から最新の合計を読み込む関数
+  function loadPaymentInfo() {
+    const cartData = JSON.parse(localStorage.getItem("cartData") || "{}");
+    paymentDue = Number(cartData.total) || 0;
+    paymentDueDisplay.textContent = "¥" + paymentDue.toLocaleString();
+    amountTendered = "0";
+    amountTenderedDisplay.textContent = "¥0";
+    changeDueDisplay.textContent = "¥0";
+    calcBtn.disabled = true;
+  }
 
-  // 戻るボタン（レジ1へ）
+  // 初回ロード
+  loadPaymentInfo();
+
+  // 画面切替イベントを受け取ったとき
+  window.addEventListener("screenChanged", (e) => {
+    if (e.detail === "screen2") {
+      loadPaymentInfo();
+    }
+  });
+
+  // 戻るボタン → レジ1へ
   document.getElementById("back-to-screen1-button").addEventListener("click", () => {
     showScreen("screen1");
   });
@@ -418,24 +433,21 @@ document.addEventListener("DOMContentLoaded", () => {
     calcBtn.disabled = true;
   });
 
-  // 小計（レジ3へ進む）
+  // 小計ボタン → レジ3へ
   calcBtn.addEventListener("click", () => {
     const tendered = Number(amountTendered);
     const change = tendered - paymentDue;
 
-    // 支払い結果を保存
     localStorage.setItem("paymentResult", JSON.stringify({
       due: paymentDue,
       tendered: tendered,
       change: change >= 0 ? change : 0
     }));
 
-    // レジ3へ遷移
     showScreen("screen3");
   });
 });
 </script>
-
     <!-- レジ3: お会計完了 -->
     <div id="screen3" class="w-full h-full hidden flex flex-col">
       <!-- ここにレジ3の中身を入れる -->
