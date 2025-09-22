@@ -529,13 +529,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const paymentData = JSON.parse(localStorage.getItem("paymentData"));
 
   if (paymentData) {
-    // 合計表示
-    changeAmountEl.textContent = "¥" + paymentData.change.toLocaleString();
+    // 合計金額（支払い金額）
+    const total = paymentData.paymentDue || 0;
 
-    // 内訳
+    // 合計を表示
+    changeAmountEl.textContent = "¥" + total.toLocaleString();
+
+    // 内訳（お釣り）
     breakdownEl.innerHTML = "";
     if (paymentData.change > 0) {
-      // 簡易的にお釣りの金種分け（例：100円単位のみ）
       let remain = paymentData.change;
       const coins = [1000, 500, 100, 50, 10];
       coins.forEach(c => {
@@ -572,7 +574,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
     <!-- レジ4: 商品管理 -->
     <div id="screen4" class="w-full h-full hidden flex flex-col">
       <!-- ここにレジ4の中身を入れる -->
