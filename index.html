@@ -304,12 +304,23 @@ cartItemsContainer.appendChild(row);
   // === 会計へ進む ===
 document.getElementById("checkout-button").addEventListener("click", () => {
   const data = {
-    cart: cart,
-    couponCount: couponCount,
-    subtotal: subtotal,
-    discountAmount: discountAmount,
+    cart: cart.map(item => {
+      const product = products.find(p => p.id === item.id);
+      return {
+        id: item.id,
+        name: product.name,      
+        flavor: product.flavor, 
+        price: product.price,    
+        quantity: item.quantity,
+        freeCount: item.freeCount
+      };
+    }),
+    couponCount,
+    subtotal,
+    discountAmount,
     total: subtotal - discountAmount
   };
+
   localStorage.setItem("cartData", JSON.stringify(data));
   showScreen("screen2");
 });
