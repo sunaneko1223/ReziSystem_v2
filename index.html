@@ -176,6 +176,9 @@ document.addEventListener('DOMContentLoaded', () => {
       totalAmountDisplay.textContent = "¥0";
       discountRow.classList.add("hidden");
       removeSelectedBtn.disabled = true;
+      couponCount = 0;
+      couponCountDisplay.textContent = couponCount;
+      
       return;
     }
 
