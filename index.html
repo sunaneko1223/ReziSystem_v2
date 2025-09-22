@@ -303,14 +303,27 @@ cartItemsContainer.appendChild(row);
 
   // === 会計へ進む ===
 document.getElementById("checkout-button").addEventListener("click", () => {
+  // 最新の金額を再計算（安全のため）
+  subtotal = 0;
+  discountAmount = 0;
+  cart.forEach(item => {
+    const product = products.find(p => p.id === item.id);
+    if (product) {
+      subtotal += product.price * item.quantity;
+      discountAmount += product.price * (item.freeCount || 0);
+    }
+  });
+  const total = subtotal - discountAmount;
+
+  // 保存データ
   const data = {
     cart: cart.map(item => {
       const product = products.find(p => p.id === item.id);
       return {
         id: item.id,
-        name: product.name,      // ★商品名を保存
-        flavor: product.flavor,  // ★味も保存
-        price: product.price,    // ★単価も保存
+        name: product.name,
+        flavor: product.flavor,
+        price: product.price,
         quantity: item.quantity,
         freeCount: item.freeCount
       };
@@ -318,10 +331,16 @@ document.getElementById("checkout-button").addEventListener("click", () => {
     couponCount,
     subtotal,
     discountAmount,
-    total: subtotal - discountAmount
+    total,
+    tendered: 0,   // レジ2で更新
+    change: 0,     // レジ2で更新
+    orderNumber: null // レジ3で更新
   };
 
+  // 保存
   localStorage.setItem("cartData", JSON.stringify(data));
+
+  // レジ2へ移動
   showScreen("screen2");
 });
   
