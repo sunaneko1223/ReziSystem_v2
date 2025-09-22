@@ -536,27 +536,27 @@ document.addEventListener("DOMContentLoaded", () => {
     breakdownEl.appendChild(p);
 
     // ご購入内容
-    orderEl.innerHTML = "";
-    if (cartData.cart) {
-      cartData.cart.forEach(item => {
-        const productName = item.name || `商品ID:${item.id}`;
-        const summary = `${item.quantity}点 (無料券${item.freeCount || 0}枚)`;
-        const p = document.createElement("p");
-        p.textContent = `${productName} - ${summary}`;
-        orderEl.appendChild(p);
-      });
-    }
-  }
-
-  // 初回ロード
-  loadReceipt();
-
-  // 画面切替イベントで再読み込み
-  window.addEventListener("screenChanged", (e) => {
-    if (e.detail === "screen3") {
-      loadReceipt();
-    }
+orderEl.innerHTML = "";
+if (cartData.cart) {
+  cartData.cart.forEach(item => {
+    const productName = item.name || `商品ID:${item.id}`;
+    const flavor = item.flavor ? `（${item.flavor}）` : "";
+    const summary = `${item.quantity}点 (無料券${item.freeCount || 0}枚)`;
+    const p = document.createElement("p");
+    p.textContent = `${productName}${flavor} - ${summary}`;
+    orderEl.appendChild(p);
   });
+}
+
+    // 初回ロード
+    loadReceipt();
+
+    // 画面切替イベントで再読み込み
+    window.addEventListener("screenChanged", (e) => {
+      if (e.detail === "screen3") {
+        loadReceipt();
+      }
+    });
 
   // 次の会計へ
   document.getElementById("new-transaction-button").addEventListener("click", () => {
