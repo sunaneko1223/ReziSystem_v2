@@ -303,7 +303,7 @@ cartItemsContainer.appendChild(row);
 
   // === 会計へ進む ===
 document.getElementById("checkout-button").addEventListener("click", () => {
-  // 最新の金額を再計算（安全のため）
+  // 最新の金額を再計算
   subtotal = 0;
   discountAmount = 0;
   cart.forEach(item => {
@@ -315,8 +315,9 @@ document.getElementById("checkout-button").addEventListener("click", () => {
   });
   const total = subtotal - discountAmount;
 
-  // 保存データ
-  const data = {
+  // 会計中のトランザクションを作成
+  const transaction = {
+    orderNumber: null, // レジ3で発行
     cart: cart.map(item => {
       const product = products.find(p => p.id === item.id);
       return {
@@ -332,15 +333,15 @@ document.getElementById("checkout-button").addEventListener("click", () => {
     subtotal,
     discountAmount,
     total,
-    tendered: 0,   // レジ2で更新
-    change: 0,     // レジ2で更新
-    orderNumber: null // レジ3で更新
+    tendered: 0,  // レジ2で更新
+    change: 0,    // レジ2で更新
+    timestamp: new Date().toISOString()
   };
 
-  // 保存
-  localStorage.setItem("cartData", JSON.stringify(data));
+  // 保存（会計中のみ → currentTransaction）
+  localStorage.setItem("currentTransaction", JSON.stringify(transaction));
 
-  // レジ2へ移動
+  // レジ2へ遷移
   showScreen("screen2");
 });
   
