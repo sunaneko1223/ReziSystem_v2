@@ -191,10 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const totalPrice = product.price * item.quantity;
 
       const row = document.createElement("div");
-      row.className = `cart-item bg-white p-3 rounded-lg ${item.id===selectedProductId ? "selected" : ""}`;
-      row.innerHTML = `
-        <div class="flex justify-between items-center">
-          const row = document.createElement("div");
 row.className = `cart-item bg-white p-3 rounded-lg ${item.id===selectedProductId ? "selected" : ""}`;
 row.innerHTML = `
   <div class="flex justify-between items-center">
@@ -214,39 +210,41 @@ row.innerHTML = `
   </div>
 `;
 
-      // 数量減少
-      row.querySelector(".minus").addEventListener("click", (e) => {
-        e.stopPropagation();
-        if(item.quantity > 1) item.quantity--;
-        else cart = cart.filter(c=>c.id!==item.id);
-        if(item.freeCount > item.quantity){
-          couponCount -= (item.freeCount - item.quantity);
-          item.freeCount = item.quantity;
-        }
-        updateCartView();
-      });
+// 数量減少
+row.querySelector(".minus").addEventListener("click", (e) => {
+  e.stopPropagation();
+  if(item.quantity > 1) item.quantity--;
+  else cart = cart.filter(c=>c.id!==item.id);
+  if(item.freeCount > item.quantity){
+    couponCount -= (item.freeCount - item.quantity);
+    item.freeCount = item.quantity;
+  }
+  updateCartView();
+});
 
-      // 数量増加
-      row.querySelector(".plus").addEventListener("click", (e) => {
-        e.stopPropagation();
-        item.quantity++;
-        updateCartView();
-      });
+// 数量増加
+row.querySelector(".plus").addEventListener("click", (e) => {
+  e.stopPropagation();
+  item.quantity++;
+  updateCartView();
+});
 
-      // 削除
-      row.querySelector(".remove").addEventListener("click", (e) => {
-        e.stopPropagation();
-        if(item.freeCount) couponCount -= item.freeCount;
-        cart = cart.filter(c=>c.id!==item.id);
-        if(selectedProductId === item.id) selectedProductId = null;
-        updateCartView();
-      });
+// 削除
+row.querySelector(".remove").addEventListener("click", (e) => {
+  e.stopPropagation();
+  if(item.freeCount) couponCount -= item.freeCount;
+  cart = cart.filter(c=>c.id!==item.id);
+  if(selectedProductId === item.id) selectedProductId = null;
+  updateCartView();
+});
 
-      // 選択切替
-      row.addEventListener("click", () => {
-        selectedProductId = item.id===selectedProductId ? null : item.id;
-        updateCartView();
-      });
+// 選択切替
+row.addEventListener("click", () => {
+  selectedProductId = item.id===selectedProductId ? null : item.id;
+  updateCartView();
+});
+
+cartItemsContainer.appendChild(row);
 
       cartItemsContainer.appendChild(row);
     });
