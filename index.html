@@ -25,7 +25,7 @@
   <div class="w-full h-full max-w-4xl mx-auto bg-white shadow-2xl rounded-lg flex flex-col min-h-0">
 
     <!-- === レジ1: 商品選択画面 === -->
-<div id="screen1" class="w-full flex-grow flex flex-col">
+<div id="screen1" class="w-full flex-grow flex flex-col min-h-0">
 
   <!-- ==== ヘッダー ==== -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
@@ -60,52 +60,55 @@
       <!-- 見出し -->
       <h2 class="text-lg font-bold border-b pb-2 mb-4 flex-shrink-0">ご注文内容</h2>
 
-<!-- ご注文リスト -->
-<div id="cart-items"
-     class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0"
-     style="-webkit-overflow-scrolling: touch;">
-  <p class="text-gray-500">商品が選択されていません。</p>
-</div>
-
-<!-- 下部操作パネル（固定） -->
-<div class="mt-3 flex-shrink-0">
-  <div class="space-y-2">
-    <!-- 無料券 -->
-    <div class="flex items-center justify-between w-full bg-orange-500 text-white font-bold py-1 rounded-lg">
-      <button id="decrease-coupon-btn"
-              class="text-2xl px-4 py-1 rounded-l-lg hover:bg-orange-600 transition">-</button>
-      <span class="flex-grow text-center">無料券 <span id="coupon-count">0</span>枚</span>
-      <button id="increase-coupon-btn"
-              class="text-2xl px-4 py-1 rounded-r-lg hover:bg-orange-600 transition">+</button>
-    </div>
-
-    <!-- 削除ボタン -->
-    <button id="remove-selected-btn"
-            class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition disabled:bg-gray-400"
-            disabled>削除</button>
-
-    <!-- 合計・会計へ進む -->
-    <div class="border-t pt-4">
-      <!-- 割引行 -->
-      <div id="discount-row"
-           class="flex justify-between items-center text-lg text-red-500 hidden">
-        <span>割引 (無料券)</span>
-        <span id="discount-amount">¥0</span>
+      <!-- ご注文リスト（スクロール可） -->
+      <div id="cart-items"
+           class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0 allow-scroll"
+           style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
+        <p class="text-gray-500">商品が選択されていません。</p>
       </div>
 
-      <!-- 合計金額 -->
-      <div class="flex justify-between items-center text-2xl font-bold">
-        <span>合計</span>
-        <span id="total-amount-display">¥0</span>
-      </div>
+      <!-- 下部操作パネル（固定） -->
+      <div class="mt-3 flex-shrink-0">
+        <div class="space-y-2">
+          <!-- 無料券 -->
+          <div class="flex items-center justify-between w-full bg-orange-500 text-white font-bold py-1 rounded-lg">
+            <button id="decrease-coupon-btn"
+                    class="text-2xl px-4 py-1 rounded-l-lg hover:bg-orange-600 transition">-</button>
+            <span class="flex-grow text-center">無料券 <span id="coupon-count">0</span>枚</span>
+            <button id="increase-coupon-btn"
+                    class="text-2xl px-4 py-1 rounded-r-lg hover:bg-orange-600 transition">+</button>
+          </div>
 
-      <!-- 会計へ進むボタン -->
-      <button id="checkout-button"
-              class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-4 transition">
-        会計へ進む
-      </button>
+          <!-- 削除ボタン -->
+          <button id="remove-selected-btn"
+                  class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition disabled:bg-gray-400"
+                  disabled>削除</button>
+
+          <!-- 合計・会計へ進む -->
+          <div class="border-t pt-4">
+            <!-- 割引行 -->
+            <div id="discount-row"
+                 class="flex justify-between items-center text-lg text-red-500 hidden">
+              <span>割引 (無料券)</span>
+              <span id="discount-amount">¥0</span>
+            </div>
+
+            <!-- 合計金額 -->
+            <div class="flex justify-between items-center text-2xl font-bold">
+              <span>合計</span>
+              <span id="total-amount-display">¥0</span>
+            </div>
+
+            <!-- 会計へ進むボタン -->
+            <button id="checkout-button"
+                    class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-4 transition">
+              会計へ進む
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </main>
 </div>
 
 <!-- ===================== 選択状態のカスタムCSS ===================== -->
