@@ -462,9 +462,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 画面切り替え関数
     function showScreen(id) {
-      document.querySelectorAll("body > div > div").forEach(div => div.classList.add("hidden"));
-      document.getElementById(id).classList.remove("hidden");
-    }
+    // すべて非表示にする
+    document.querySelectorAll("main > div, body > div > div").forEach(div => div.classList.add("hidden"));
+  
+    // 指定画面だけ表示
+    const el = document.getElementById(id);
+    if (el) el.classList.remove("hidden");
+
+    // 画面切替イベントを発火（誰でも受け取れる）
+    window.dispatchEvent(new CustomEvent('screenChanged', { detail: id }));
+  }
 
     // ===== 全画面スクロール禁止 =====
     document.body.addEventListener("touchmove", function(e) {
