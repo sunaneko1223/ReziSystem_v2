@@ -2,52 +2,398 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>スクロールテスト</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>レジシステム</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* 基本スタイル：全体スクロール禁止＆高さ固定 */
     html, body {
       height: 100%;
+      overflow: hidden;
       width: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden; /* 全体スクロール禁止 */
+    }
+    /* フォント */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    /* スクロールバー非表示 */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ご注文リストの選択状態 */
+    .cart-item.selected {
+      background-color: #dbeafe; /* 薄い青 */
+      border: 2px solid #3b82f6; /* 青い枠 */
     }
   </style>
 </head>
 <body class="h-full bg-gray-100 overflow-hidden">
 
-  <div class="w-full h-full max-w-md mx-auto bg-white shadow-lg rounded-lg flex flex-col min-h-0">
-    <!-- 上部固定 -->
-    <div class="flex-shrink-0 bg-gray-400 p-2">タイトル固定</div>
+<!-- レジ本体の枠 -->
+<div class="w-full h-full max-w-4xl mx-auto bg-white shadow-2xl rounded-lg flex flex-col">
 
-    <!-- 中央（スクロール可） -->
-    <div class="flex-grow overflow-y-auto min-h-0 bg-white space-y-2"
-         style="-webkit-overflow-scrolling: touch;">
-      <div class="p-2 border">商品1</div>
-      <div class="p-2 border">商品2</div>
-      <div class="p-2 border">商品3</div>
-      <div class="p-2 border">商品4</div>
-      <div class="p-2 border">商品5</div>
-      <div class="p-2 border">商品6</div>
-      <div class="p-2 border">商品7</div>
-      <div class="p-2 border">商品8</div>
-      <div class="p-2 border">商品9</div>
-      <div class="p-2 border">商品10</div>
-      <div class="p-2 border">商品11</div>
-      <div class="p-2 border">商品12</div>
-      <div class="p-2 border">商品13</div>
-      <div class="p-2 border">商品14</div>
-      <div class="p-2 border">商品15</div>
-      <div class="p-2 border">商品17</div>
-      <div class="p-2 border">商品18</div>
-      <div class="p-2 border">商品19</div>
-      <div class="p-2 border">商品20</div>
+  <!-- === レジ1: 商品選択画面 === -->
+<div id="screen1" class="w-full flex-grow flex flex-col">
+
+  <!-- ==== ヘッダー ==== -->
+  <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
+    <h1 class="text-xl font-bold">レジ：商品選択</h1>
+    <div>
+      <!-- 商品管理ボタン（レジ4へ切替予定） -->
+      <button id="to-screen4-button"
+              class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition mr-2">
+        商品管理
+      </button>
+      <!-- 取引履歴ボタン（レジ5へ切替予定） -->
+      <button id="to-screen5-button"
+              class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition">
+        取引履歴
+      </button>
+    </div>
+  </header>
+
+  <!-- ==== メインコンテンツ ==== -->
+  <main class="flex-grow p-4 grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0 content-stretch">
+
+    <!-- === 左：商品リスト === -->
+    <div id="product-list"
+         class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-0 p-1
+                bg-gray-50 rounded-lg overflow-auto no-scrollbar min-h-0">
+      <!-- 商品はスクリプトで生成 -->
     </div>
 
-    <!-- 下部固定 -->
-    <div class="flex-shrink-0 bg-gray-400 p-2">ボタン固定</div>
-  </div>
+    <!-- === 右：ご注文内容 === -->
+    <div class="md:col-span-1 bg-gray-100 p-4 rounded-lg flex flex-col min-h-0">
 
+      <!-- 見出し -->
+      <h2 class="text-lg font-bold border-b pb-2 mb-4 flex-shrink-0">ご注文内容</h2>
+
+<!-- ご注文リスト -->
+<div id="cart-items"
+     class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0"
+     style="-webkit-overflow-scrolling: touch;">
+  <p class="text-gray-500">商品が選択されていません。</p>
+</div>
+
+<!-- 下部操作パネル（固定） -->
+<div class="mt-3 flex-shrink-0">
+  <div class="space-y-2">
+    <!-- 無料券 -->
+    <div class="flex items-center justify-between w-full bg-orange-500 text-white font-bold py-1 rounded-lg">
+      <button id="decrease-coupon-btn"
+              class="text-2xl px-4 py-1 rounded-l-lg hover:bg-orange-600 transition">-</button>
+      <span class="flex-grow text-center">無料券 <span id="coupon-count">0</span>枚</span>
+      <button id="increase-coupon-btn"
+              class="text-2xl px-4 py-1 rounded-r-lg hover:bg-orange-600 transition">+</button>
+    </div>
+
+    <!-- 削除ボタン -->
+    <button id="remove-selected-btn"
+            class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition disabled:bg-gray-400"
+            disabled>削除</button>
+
+    <!-- 合計・会計へ進む -->
+    <div class="border-t pt-4">
+      <!-- 割引行 -->
+      <div id="discount-row"
+           class="flex justify-between items-center text-lg text-red-500 hidden">
+        <span>割引 (無料券)</span>
+        <span id="discount-amount">¥0</span>
+      </div>
+
+      <!-- 合計金額 -->
+      <div class="flex justify-between items-center text-2xl font-bold">
+        <span>合計</span>
+        <span id="total-amount-display">¥0</span>
+      </div>
+
+      <!-- 会計へ進むボタン -->
+      <button id="checkout-button"
+              class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mt-4 transition">
+        会計へ進む
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 選択状態のカスタムCSS ===================== -->
+<style>
+  .cart-item.selected {
+    border: 2px solid #3b82f6;   /* 青い枠 */
+    background-color: #ebf5ff;   /* 薄い青 */
+  }
+</style>
+
+<!-- ===================== レジ1専用スクリプト ===================== -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  let cart = [];
+  let subtotal = 0, discountAmount = 0, couponCount = 0;
+  let selectedProductId = null;
+
+  // 商品データ（例）
+  const products = [
+    {id:1, name:"ポテト", flavor:"塩", price:300},
+    {id:2, name:"ポテト", flavor:"コンソメ", price:300},
+    {id:3, name:"ポテト", flavor:"バター醤油", price:300},
+    {id:4, name:"たこ焼き", flavor:"ソース", price:250},
+    {id:5, name:"たこ焼き", flavor:"しょうゆ", price:250},
+    {id:6, name:"たこ焼き", flavor:"塩", price:250},
+    {id:7, name:"ドリンク", flavor:"コーラ", price:200},
+    {id:8, name:"ドリンク", flavor:"カルピス", price:200},
+    {id:9, name:"ドリンク", flavor:"サイダー", price:200}
+  ];
+
+  // DOM取得
+  const productListContainer = document.getElementById("product-list");
+  const cartItemsContainer = document.getElementById("cart-items");
+  const totalAmountDisplay = document.getElementById("total-amount-display");
+  const couponCountDisplay = document.getElementById("coupon-count");
+  const discountRow = document.getElementById("discount-row");
+  const discountAmountDisplay = document.getElementById("discount-amount");
+  const removeSelectedBtn = document.getElementById("remove-selected-btn");
+
+  const formatCurrency = (v) => `¥${v.toLocaleString()}`;
+
+  // === 商品リスト生成 ===
+  function renderProducts(){
+    productListContainer.innerHTML = "";
+    products.forEach(p=>{
+      const btn = document.createElement("div");
+      btn.className = "bg-white p-3 rounded-lg shadow-md cursor-pointer hover:shadow-lg hover:bg-blue-50 transition-all duration-200 flex flex-col items-center justify-center text-center h-28";
+      btn.innerHTML = `
+        <div class="font-semibold text-base">${p.name}</div>
+        <div class="text-sm text-gray-600">${p.flavor}</div>
+        <div class="text-gray-600 mt-2">${formatCurrency(p.price)}</div>`;
+      btn.addEventListener("click", ()=> addProductToCart(p.id));
+      productListContainer.appendChild(btn);
+    });
+  }
+
+  // === カート更新 ===
+  function updateCartView(){
+    cartItemsContainer.innerHTML = "";
+    subtotal = 0;
+    discountAmount = 0;
+
+    if(cart.length === 0){
+      cartItemsContainer.innerHTML = '<p class="text-gray-500">商品が選択されていません。</p>';
+      totalAmountDisplay.textContent = "¥0";
+      discountRow.classList.add("hidden");
+      removeSelectedBtn.disabled = true;
+      return;
+    }
+
+    cart.forEach(item => {
+      const product = products.find(p=>p.id===item.id);
+      if(!product) return;
+      subtotal += product.price * item.quantity;
+      discountAmount += product.price * (item.freeCount || 0);
+
+      const totalPrice = product.price * item.quantity;
+
+      const row = document.createElement("div");
+      row.className = `cart-item bg-white p-3 rounded-lg ${item.id===selectedProductId ? "selected" : ""}`;
+      row.innerHTML = `
+        <div class="flex justify-between items-center">
+          <div class="font-medium">${product.name}</div>
+          <div class="text-2xl font-bold text-gray-800">${formatCurrency(totalPrice)}</div>
+        </div>
+        <div class="text-sm text-gray-500 mt-1">${product.flavor}</div>
+        <div class="flex justify-between items-center mt-2">
+          <span class="text-sm">数量 ${item.quantity}</span>
+          <div class="flex gap-2">
+            <button class="minus bg-gray-300 px-3 py-1 rounded">－</button>
+            <button class="plus bg-gray-300 px-3 py-1 rounded">＋</button>
+            <button class="remove bg-red-500 text-white px-3 py-1 rounded">×</button>
+          </div>
+        </div>
+      `;
+
+      // 数量減少
+      row.querySelector(".minus").addEventListener("click", (e) => {
+        e.stopPropagation();
+        if(item.quantity > 1) item.quantity--;
+        else cart = cart.filter(c=>c.id!==item.id);
+        if(item.freeCount > item.quantity){
+          couponCount -= (item.freeCount - item.quantity);
+          item.freeCount = item.quantity;
+        }
+        updateCartView();
+      });
+
+      // 数量増加
+      row.querySelector(".plus").addEventListener("click", (e) => {
+        e.stopPropagation();
+        item.quantity++;
+        updateCartView();
+      });
+
+      // 削除
+      row.querySelector(".remove").addEventListener("click", (e) => {
+        e.stopPropagation();
+        if(item.freeCount) couponCount -= item.freeCount;
+        cart = cart.filter(c=>c.id!==item.id);
+        if(selectedProductId === item.id) selectedProductId = null;
+        updateCartView();
+      });
+
+      // 選択切替
+      row.addEventListener("click", () => {
+        selectedProductId = item.id===selectedProductId ? null : item.id;
+        updateCartView();
+      });
+
+      cartItemsContainer.appendChild(row);
+    });
+
+    // 割引行表示
+    if(discountAmount > 0){
+      discountAmountDisplay.textContent = `-${formatCurrency(discountAmount)}`;
+      discountRow.classList.remove("hidden");
+    } else {
+      discountRow.classList.add("hidden");
+    }
+
+    totalAmountDisplay.textContent = formatCurrency(subtotal - discountAmount);
+    couponCountDisplay.textContent = couponCount;
+    removeSelectedBtn.disabled = (selectedProductId === null);
+  }
+
+  // === カートに商品追加 ===
+  function addProductToCart(id){
+    const found = cart.find(c=>c.id===id);
+    if(found) found.quantity++;
+    else cart.push({id:id, quantity:1, freeCount:0});
+    selectedProductId = id;
+    updateCartView();
+  }
+
+  // === 選択削除 ===
+  removeSelectedBtn.addEventListener("click", () => {
+    if(selectedProductId === null) return;
+    const item = cart.find(c=>c.id===selectedProductId);
+    if(item && item.freeCount) couponCount -= item.freeCount;
+    cart = cart.filter(c=>c.id!==selectedProductId);
+    selectedProductId = null;
+    updateCartView();
+  });
+
+  // === 無料券操作 ===
+  document.getElementById("increase-coupon-btn").addEventListener("click", () => {
+    if(!selectedProductId) return;
+    const item = cart.find(c=>c.id===selectedProductId);
+    if(item && item.freeCount < item.quantity){
+      item.freeCount++;
+      couponCount++;
+      updateCartView();
+    }
+  });
+  document.getElementById("decrease-coupon-btn").addEventListener("click", () => {
+    if(!selectedProductId) return;
+    const item = cart.find(c=>c.id===selectedProductId);
+    if(item && item.freeCount > 0){
+      item.freeCount--;
+      couponCount--;
+      updateCartView();
+    }
+  });
+
+  // 初期化
+  renderProducts();
+  updateCartView();
+});
+</script>
+  
+  <!-- ===== レジ2: お支払い ===== -->
+  <div id="screen2" class="hidden w-full flex-grow flex flex-col">
+    <!-- ここにレジ2のUIを書く -->
+  </div>
+  <script>
+  // レジ2専用処理を書く
+  function initScreen2() {
+    console.log("レジ2 初期化");
+    // レジ2に入るときの初期化処理
+  }
+  </script>
+
+  <!-- ===== レジ3: お会計完了 ===== -->
+  <div id="screen3" class="hidden w-full flex-grow flex flex-col">
+    <!-- ここにレジ3のUIを書く -->
+  </div>
+  <script>
+  // レジ3専用処理を書く
+  function initScreen3() {
+    console.log("レジ3 初期化");
+    // レジ3に入るときの初期化処理
+  }
+  </script>
+
+  <!-- ===== レジ4: 予備 ===== -->
+  <div id="screen4" class="hidden w-full flex-grow flex flex-col">
+    <!-- ここにレジ4のUIを書く -->
+  </div>
+  <script>
+  // レジ4専用処理を書く
+  function initScreen4() {
+    console.log("レジ4 初期化");
+    // レジ4に入るときの初期化処理
+  }
+  </script>
+
+  <!-- ===== レジ5: 予備 ===== -->
+  <div id="screen5" class="hidden w-full flex-grow flex flex-col">
+    <!-- ここにレジ5のUIを書く -->
+  </div>
+  <script>
+  // レジ5専用処理を書く
+  function initScreen5() {
+    console.log("レジ5 初期化");
+    // レジ5に入るときの初期化処理
+  }
+  </script>
+
+  <!-- ===== 共通処理 ===== -->
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("レジシステム起動");
+
+  // ===== 全画面スクロール禁止 =====
+  document.body.addEventListener("touchmove", function(e) {
+    if (!e.target.closest(".allow-scroll")) { // .allow-scroll クラスが付いた要素だけスクロール許可
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // ===== ダブルタップ拡大禁止 =====
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", function(e) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+
+  // ===== 画面切り替え =====
+  window.showScreen = function(id) {
+    ["screen1","screen2","screen3","screen4","screen5"].forEach(s => {
+      document.getElementById(s)?.classList.add("hidden");
+    });
+    document.getElementById(id)?.classList.remove("hidden");
+
+    // 初期化処理呼び出し
+    if(id === "screen1") initScreen1();
+    if(id === "screen2") initScreen2();
+    if(id === "screen3") initScreen3();
+    if(id === "screen4") initScreen4();
+    if(id === "screen5") initScreen5();
+  };
+
+  // ===== 起動時はレジ1を表示 =====
+  showScreen("screen1");
+});
+</script>
 </body>
 </html>
