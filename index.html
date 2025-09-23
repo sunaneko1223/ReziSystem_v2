@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- === レジ2専用スクリプト === -->
 <script>
 window.addEventListener("screenChanged", (e) => {
-  if (e.detail !== "screen2") return; // レジ2以外では動作しない
+  if (e.detail !== "screen2") return;
 
   const paymentDueEl = document.getElementById("payment-due");
   const tenderedEl = document.getElementById("amount-tendered-display");
@@ -407,11 +407,13 @@ window.addEventListener("screenChanged", (e) => {
 
   let tendered = "";
   let paymentDue = 0;
+  let cartData = null;
 
   // === レジ1からデータ取得 ===
   const tx = JSON.parse(localStorage.getItem("currentTransaction"));
   if (tx && tx.total) {
     paymentDue = tx.total;
+    cartData = tx.cart || [];
     paymentDueEl.textContent = "¥" + paymentDue.toLocaleString();
   }
 
@@ -446,27 +448,26 @@ window.addEventListener("screenChanged", (e) => {
     updateDisplay();
   };
 
-  // 会計処理
-calcBtn.addEventListener("click", () => {
-  const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
-  const change = Math.max(0, tenderedNum - paymentDue); // マイナス防止＆数値保証
+  // === 会計処理 ===
+  calcBtn.onclick = () => {
+    const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
+    const change = Math.max(0, tenderedNum - paymentDue);
 
-  localStorage.setItem("currentTransaction", JSON.stringify({
-    cart: data.cart,
-    total: paymentDue,   // ← ここも data.total ではなく paymentDue の方が確実
-    tendered: tenderedNum,
-    change: change,      // ← 常に数値
-  }));
+    localStorage.setItem("currentTransaction", JSON.stringify({
+      cart: cartData,          
+      total: paymentDue,
+      tendered: tenderedNum,
+      change: change,
+    }));
 
-  showScreen("screen3");
-});
+    showScreen("screen3");
+  };
 
-  // 戻るボタン
+  // 戻る
   backBtn.onclick = () => {
     showScreen("screen1");
   };
 
-  // 初期表示
   updateDisplay();
 });
 </script>    
