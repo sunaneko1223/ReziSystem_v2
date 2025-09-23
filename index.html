@@ -449,7 +449,7 @@ window.addEventListener("screenChanged", (e) => {
   };
 
   // === 会計処理 ===
-calcBtn.addEventListener("click", () => {
+function handleCheckout() {
   const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
   const change = Math.max(0, tenderedNum - paymentDue);
 
@@ -464,10 +464,18 @@ calcBtn.addEventListener("click", () => {
 
   localStorage.setItem("currentTransaction", JSON.stringify(transaction));
 
-  // デバッグ確認（Safariならアラートが確実に見える）
-  // alert("保存しました: " + JSON.stringify(transaction));
+  // 確認用（テスト終わったら削除してOK）
+  console.log("✅ 会計処理実行:", transaction);
 
-  showScreen("screen3");
+  // 強制的に画面切り替え
+  setTimeout(() => {
+    showScreen("screen3");
+  }, 50);
+}
+
+// click と touchend 両方を捕まえる
+["click", "touchend"].forEach(evt => {
+  calcBtn.addEventListener(evt, handleCheckout, { passive: false });
 });
 
   // 戻る
