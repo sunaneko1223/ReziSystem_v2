@@ -447,26 +447,9 @@ window.addEventListener("screenChanged", (e) => {
     updateDisplay();
   };
 
-  // === 会計処理（テスト用） ===
+  // === 会計処理（シンプル版） ===
 calcBtn.addEventListener("click", () => {
-  if (calcBtn.disabled) {
-    alert("❌ ボタンはまだ disabled です！");
-    return;
-  }
-
-  alert("✅ ボタンは有効です！ 処理を続けます。");
-
-  const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
-  const change = Math.max(0, tenderedNum - paymentDue);
-
-  localStorage.setItem("currentTransaction", JSON.stringify({
-    cart: (data && Array.isArray(data.cart)) ? data.cart : [],
-    total: paymentDue,
-    tendered: tenderedNum,
-    change: change,
-  }));
-
-  alert("✅ レジ3に切り替えます！");
+  alert("✅ ボタン押された！ showScreen 実行します！");
   showScreen("screen3");
 });
 
