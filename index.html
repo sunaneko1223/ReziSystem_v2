@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.1.4</title>
+  <title>レジシステムv2.1 5</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -738,6 +738,11 @@ window.addEventListener("screenChanged", (e) => {
     listEl.innerHTML = "";
     const products = loadProducts();
 
+    if (products.length === 0) {
+      listEl.innerHTML = `<p class="text-gray-500">商品が登録されていません。</p>`;
+      return;
+    }
+
     products.forEach(p => {
       const card = document.createElement("div");
       card.className = "bg-white p-3 rounded-lg shadow flex flex-col";
@@ -747,8 +752,8 @@ window.addEventListener("screenChanged", (e) => {
         <div class="flex justify-between items-center text-sm text-gray-600 mt-1">
           <span>${p.flavor || ""}</span>
           <div class="flex gap-2">
-            <button class="edit bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-xs">編集</button>
-            <button class="delete bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">削除</button>
+            <button class="edit bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-sm">編集</button>
+            <button class="delete bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">削除</button>
           </div>
         </div>
         <div class="text-gray-800 mt-1">¥${p.price.toLocaleString()}</div>
@@ -815,8 +820,7 @@ window.addEventListener("screenChanged", (e) => {
     showScreen("screen1");
   };
 });
-</script>
-    
+</script>    
     <!-- Screen 5: 取引履歴画面 -->
 <div id="screen5" class="w-full hidden flex-grow flex flex-col">
 
