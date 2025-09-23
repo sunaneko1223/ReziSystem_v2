@@ -619,7 +619,7 @@ window.addEventListener("screenChanged", (e) => {
         <input type="text" id="new-product-flavor" placeholder="味" class="flex-grow p-2 border rounded-lg">
         <input type="number" id="new-product-price" placeholder="価格 (円)" class="w-full sm:w-32 p-2 border rounded-lg">
         <button id="add-product-btn"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition">
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-5 rounded-lg text-lg transition">
           追加
         </button>
       </div>
@@ -628,8 +628,7 @@ window.addEventListener("screenChanged", (e) => {
     <!-- 商品リスト -->
     <h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">登録済み商品リスト</h2>
     <div id="product-management-list"
-         class="space-y-2 flex-grow overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg shadow-inner max-h-full">
-      <!-- 商品カードがここに入る -->
+         class="space-y-2 flex-grow overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg shadow-inner max-h-[calc(100vh-200px)]">
     </div>
   </main>
 </div>
