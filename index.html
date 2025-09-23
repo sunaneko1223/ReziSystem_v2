@@ -297,30 +297,30 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // === 会計へ進む ===
-  document.getElementById("checkout-button").addEventListener("click", () => {
-    const data = {
-      cart: cart.map(item => {
-        const product = products.find(p => p.id === item.id);
-        return {
-          id: item.id,
-          name: product.name,
-          flavor: product.flavor,
-          price: product.price,
-          quantity: item.quantity,
-          freeCount: item.freeCount
-        };
-      }),
-      couponCount,
-      subtotal,
-      discountAmount,
-      total: subtotal - discountAmount
-    };
+document.getElementById("checkout-button").addEventListener("click", () => {
+  const data = {
+    cart: cart.map(item => {
+      const product = products.find(p => p.id === item.id);
+      return {
+        id: item.id,
+        name: product.name,
+        flavor: product.flavor,
+        price: product.price,
+        quantity: item.quantity,
+        freeCount: item.freeCount
+      };
+    }),
+    couponCount,
+    subtotal,
+    discountAmount,
+    total: subtotal - discountAmount
+  };
 
-    // 進行中の会計を保存（古いデータを上書き）
-    localStorage.setItem("currentTransaction", JSON.stringify(data));
+  // ★ cartData に保存（ここがポイント）
+  localStorage.setItem("cartData", JSON.stringify(data));
 
-    showScreen("screen2");
-  });
+  showScreen("screen2");
+});
 
   renderProducts();
   updateCartView();
