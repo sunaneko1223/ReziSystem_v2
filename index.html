@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2-2</title>
+  <title>レジシステムv2-3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -357,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   <!-- ==== ヘッダー ==== -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-    <h1 class="text-xl font-bold">レジ２：お支払い</h1>
+    <h1 class="text-xl font-bold">レジ：お支払い</h1>
     <button id="back-to-screen1-button"
             class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">
       戻る
@@ -500,7 +500,7 @@ window.addEventListener("screenChanged", (e) => {
     <!-- Screen 3: お会計完了画面 -->
 <div id="screen3" class="w-full hidden flex-grow flex flex-col">
   <header class="bg-gray-800 text-white p-4 flex-shrink-0">
-    <h1 class="text-xl font-bold">レジ３：お会計完了</h1>
+    <h1 class="text-xl font-bold">レジ：お会計完了</h1>
   </header>
   <main class="flex-grow p-6 flex flex-col justify-center items-center">
     <div class="w-full max-w-md">
@@ -603,7 +603,7 @@ window.addEventListener("screenChanged", (e) => {
     <!-- Screen 4: 商品管理画面 -->
 <div id="screen4" class="w-full hidden flex-grow flex flex-col">
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-    <h1 class="text-xl font-bold">レジ４：商品管理</h1>
+    <h1 class="text-xl font-bold">レジ：商品管理</h1>
     <button id="back-to-screen1-from-manager"
             class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition">
       戻る
@@ -625,14 +625,16 @@ window.addEventListener("screenChanged", (e) => {
       </div>
     </div>
 
-    <!-- 商品リスト -->
-    <h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">商品リスト</h2>
-<div id="product-management-list"
-     class="flex-grow overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg shadow-inner allow-scroll">
-  <!-- JSで商品カードを追加 -->
+    <!-- 登録済み商品リスト -->
+<h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">商品リスト</h2>
+
+<!-- 📌 flex-grow + min-h-0 で残り高さを占有 -->
+<div class="flex-grow min-h-0">
+  <div id="product-management-list"
+       class="h-full overflow-y-auto no-scrollbar space-y-2 bg-gray-50 p-3 rounded-lg shadow allow-scroll">
+    <!-- JSで商品カードを追加 -->
+  </div>
 </div>
-    <button class="edit bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">編集</button>
-    <button class="delete bg-red-500 text-white px-4 py-2 rounded-lg text-sm">削除</button>
   </main>
 </div>
 
@@ -817,7 +819,7 @@ window.addEventListener("screenChanged", (e) => {
 
   <!-- ヘッダー -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-    <h1 class="text-xl font-bold">レジ４：取引履歴</h1>
+    <h1 class="text-xl font-bold">レジ：取引履歴</h1>
     <button id="back-to-screen1-from-history"
             class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition">
       戻る
