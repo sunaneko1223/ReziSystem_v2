@@ -626,10 +626,13 @@ window.addEventListener("screenChanged", (e) => {
     </div>
 
     <!-- 商品リスト -->
-    <h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">登録済み商品リスト</h2>
-    <div id="product-management-list"
-         class="space-y-2 flex-grow overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg shadow-inner max-h-[calc(100vh-200px)]">
-    </div>
+    <h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">商品リスト</h2>
+<div id="product-management-list"
+     class="flex-grow overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg shadow-inner allow-scroll">
+  <!-- JSで商品カードを追加 -->
+</div>
+    <button class="edit bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">編集</button>
+    <button class="delete bg-red-500 text-white px-4 py-2 rounded-lg text-sm">削除</button>
   </main>
 </div>
 
