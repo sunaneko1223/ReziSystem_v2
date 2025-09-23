@@ -568,12 +568,11 @@ window.addEventListener("screenChanged", (e) => {
 
   // === レジ2からデータ取得 ===
   const paymentData = JSON.parse(localStorage.getItem("currentTransaction"));
-  console.log("受け取ったデータ:", paymentData); // ← 確認用
 
   if (paymentData) {
-    const changeNum = (typeof paymentData.change === "number")
-      ? paymentData.change
-      : parseInt(paymentData.change, 10) || 0;
+    // 数値保証（NaNや文字列対策）
+    const changeNum = Number(paymentData.change) || 0;
+    const totalNum = Number(paymentData.total) || 0;
 
     // おつり合計
     changeAmountEl.textContent = "¥" + changeNum.toLocaleString();
@@ -598,7 +597,7 @@ window.addEventListener("screenChanged", (e) => {
 
     // ご購入内容
     orderSummaryEl.innerHTML = "";
-    if (paymentData.cart && paymentData.cart.length > 0) {
+    if (paymentData.cart && Array.isArray(paymentData.cart) && paymentData.cart.length > 0) {
       paymentData.cart.forEach(item => {
         const p = document.createElement("p");
         p.textContent = `${item.name || "商品"} × ${item.quantity}点 (無料券${item.freeCount || 0}枚)`;
@@ -609,14 +608,14 @@ window.addEventListener("screenChanged", (e) => {
     }
   }
 
-    // === 新しい会計へ ===
-  newTransactionBtn.addEventListener("click", () => {
+  // === 新しい会計へ ===
+  newTransactionBtn.onclick = () => {
     localStorage.removeItem("currentTransaction");
     showScreen("screen1");
-  });
+  };
 });
 </script>
-  
+    
     <!-- Screen 4: 商品管理画面 -->
 <div id="screen4" class="w-full hidden flex-grow flex flex-col">
 
