@@ -447,9 +447,14 @@ window.addEventListener("screenChanged", (e) => {
     updateDisplay();
   };
 
-  // === 会計処理 ===
+  // === 会計処理（テスト用） ===
 calcBtn.addEventListener("click", () => {
-  if (calcBtn.disabled) return; // 無効なら何もしない
+  if (calcBtn.disabled) {
+    alert("❌ ボタンはまだ disabled です！");
+    return;
+  }
+
+  alert("✅ ボタンは有効です！ 処理を続けます。");
 
   const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
   const change = Math.max(0, tenderedNum - paymentDue);
