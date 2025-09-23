@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステム_v2</title>
+  <title>レジシステム</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -619,10 +619,15 @@ window.addEventListener("screenChanged", (e) => {
       </div>
     </div>
 
-    <!-- 登録済み商品リスト -->
+    <!-- 商品リスト見出し -->
+<h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">
+  商品リスト
+</h2>
+
+<!-- 商品管理リスト（スクロール可能＆カード風） -->
 <div id="product-management-list"
-     class="space-y-2 overflow-y-auto allow-scroll no-scrollbar p-2 bg-gray-50 rounded-lg shadow-inner mt-4"
-     style="max-height: 300px;">
+     class="space-y-2 flex-grow overflow-y-auto no-scrollbar allow-scroll shadow mt-4 rounded-lg bg-white p-2">
+  <!-- 商品カードは JS で生成 -->
     </div>
   </main>
 </div>
