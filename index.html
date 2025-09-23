@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.0.9</title>
+  <title>レジシステムv2.1.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -606,7 +606,7 @@ window.addEventListener("screenChanged", (e) => {
 
   <!-- ヘッダー -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-    <h1 class="text-xl font-bold">レジ４：商品管理</h1>
+    <h1 class="text-xl font-bold">レジ：商品管理</h1>
     <button id="back-to-screen1-from-manager"
             class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition">
       戻る
@@ -629,15 +629,15 @@ window.addEventListener("screenChanged", (e) => {
         </button>
       </div>
     </div>
-
-    <!-- 登録済み商品リスト -->
-    <h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">登録済み商品リスト</h2>
-
-    <!-- ★ ここをスクロール許可 -->
+    
     <!-- 登録済み商品リスト（スクロール可） -->
-<div id="product-management-list"
-     class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0 allow-scroll"
-     style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
+<div class="flex flex-col flex-grow overflow-hidden">
+  <h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">登録済み商品リスト</h2>
+  <div id="product-management-list"
+       class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0 allow-scroll bg-gray-50 p-3 rounded-lg"
+       style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
+    <p class="text-gray-500">商品が登録されていません。</p>
+  </div>
 </div>
 
   </main>
