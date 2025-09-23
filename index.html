@@ -466,6 +466,7 @@ window.addEventListener("screenChanged", (e) => {
   updateDisplay();
 });
 </script>    
+    
     <!-- Screen 3: お会計完了画面 -->
 <div id="screen3" class="w-full hidden flex-grow flex flex-col">
   <header class="bg-gray-800 text-white p-4 flex-shrink-0">
@@ -504,73 +505,66 @@ window.addEventListener("screenChanged", (e) => {
 
 <!-- === レジ3専用スクリプト === -->
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("screenChanged", (e) => {
+  if (e.detail !== "screen3") return; // レジ3以外では動作しない
+
   const orderNumberEl = document.getElementById("final-order-number");
   const changeAmountEl = document.getElementById("final-change-amount");
   const breakdownEl = document.getElementById("change-breakdown");
   const orderSummaryEl = document.getElementById("final-order-summary");
   const newTransactionBtn = document.getElementById("new-transaction-button");
 
-  // === 受付番号をカウントアップ ===
+  // === データ取得 ===
+  const tx = JSON.parse(localStorage.getItem("currentTransaction"));
+  if (!tx) {
+    orderSummaryEl.innerHTML = "<p class='text-red-500'>データがありません。</p>";
+    return;
+  }
+
+  // === 受付番号（連番管理） ===
   let lastNumber = parseInt(localStorage.getItem("lastOrderNumber") || "0", 10);
   lastNumber++;
   localStorage.setItem("lastOrderNumber", lastNumber);
   orderNumberEl.textContent = lastNumber;
 
-  // === レジ2までで保存された会計データを取得 ===
-  const tx = JSON.parse(localStorage.getItem("currentTransaction"));
+  // === おつり表示 ===
+  changeAmountEl.textContent = "¥" + (tx.change || 0).toLocaleString();
 
-  if (tx) {
-    // 合計・お釣り表示
-    changeAmountEl.textContent = "¥" + (tx.change || 0).toLocaleString();
-
-    // 内訳
-    breakdownEl.innerHTML = "";
-    if (tx.change > 0) {
-      let remain = tx.change;
-      const coins = [1000, 500, 100, 50, 10];
-      coins.forEach(c => {
-        const count = Math.floor(remain / c);
-        if (count > 0) {
-          const div = document.createElement("div");
-          div.textContent = `${c}円 × ${count}`;
-          breakdownEl.appendChild(div);
-          remain -= c * count;
-        }
-      });
-    } else {
-      breakdownEl.innerHTML = "<p class='text-gray-500'>おつりがありません</p>";
-    }
-
-    // ご購入内容
-    orderSummaryEl.innerHTML = "";
-    if (tx.cart && tx.cart.length > 0) {
-      tx.cart.forEach(item => {
-        const p = document.createElement("p");
-        p.textContent = `${item.name} × ${item.quantity}点 (無料券${item.freeCount || 0}枚)`;
-        orderSummaryEl.appendChild(p);
-      });
-    } else {
-      orderSummaryEl.innerHTML = "<p class='text-gray-500'>購入商品がありません。</p>";
-    }
-
-    // === 履歴に追加 ===
-    let history = JSON.parse(localStorage.getItem("posHistory")) || [];
-    history.push({
-      ...tx,
-      orderNumber: lastNumber,
-      timestamp: new Date().toISOString()
+  // 内訳表示
+  breakdownEl.innerHTML = "";
+  if (tx.change && tx.change > 0) {
+    let remain = tx.change;
+    const coins = [1000, 500, 100, 50, 10];
+    coins.forEach(c => {
+      const count = Math.floor(remain / c);
+      if (count > 0) {
+        const div = document.createElement("div");
+        div.textContent = `${c}円 × ${count}`;
+        breakdownEl.appendChild(div);
+        remain -= c * count;
+      }
     });
-    localStorage.setItem("posHistory", JSON.stringify(history));
+  } else {
+    breakdownEl.innerHTML = "<p class='text-gray-500'>おつりがありません</p>";
+  }
 
-    // === 現在の会計データを削除 ===
-    localStorage.removeItem("currentTransaction");
+  // === ご購入内容 ===
+  orderSummaryEl.innerHTML = "";
+  if (tx.cart && tx.cart.length > 0) {
+    tx.cart.forEach(item => {
+      const p = document.createElement("p");
+      p.textContent = `${item.name || "商品"} × ${item.quantity}点 (無料券${item.freeCount || 0}枚)`;
+      orderSummaryEl.appendChild(p);
+    });
+  } else {
+    orderSummaryEl.innerHTML = "<p class='text-gray-500'>購入商品がありません。</p>";
   }
 
   // === 新しい会計へ ===
-  newTransactionBtn.addEventListener("click", () => {
+  newTransactionBtn.onclick = () => {
+    localStorage.removeItem("currentTransaction");
     showScreen("screen1");
-  });
+  };
 });
 </script>
     
