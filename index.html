@@ -449,19 +449,26 @@ window.addEventListener("screenChanged", (e) => {
   };
 
   // === 会計処理 ===
-calcBtn.onclick = () => {
+calcBtn.addEventListener("click", () => {
   const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
   const change = Math.max(0, tenderedNum - paymentDue);
 
-  localStorage.setItem("currentTransaction", JSON.stringify({
-    cart: (data && data.cart) ? data.cart : [],   // ← 安全に cart を入れる
-    total: paymentDue,
+  const cartData = (data && Array.isArray(data.cart)) ? data.cart : [];
+
+  const transaction = {
+    cart: cartData,
+    total: Number(paymentDue) || 0,
     tendered: tenderedNum,
     change: change,
-  }));
+  };
+
+  localStorage.setItem("currentTransaction", JSON.stringify(transaction));
+
+  // デバッグ確認（Safariならアラートが確実に見える）
+  // alert("保存しました: " + JSON.stringify(transaction));
 
   showScreen("screen3");
-};
+});
 
   // 戻る
   backBtn.onclick = () => {
