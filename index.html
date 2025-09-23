@@ -528,7 +528,11 @@ window.addEventListener("screenChanged", (e) => {
   orderNumberEl.textContent = lastNumber;
 
   // === おつり表示 ===
-  changeAmountEl.textContent = "¥" + (tx.change || 0).toLocaleString();
+  if (typeof tx.change === "number") {
+    changeAmountEl.textContent = "¥" + tx.change.toLocaleString();
+  } else {
+    changeAmountEl.textContent = "¥0";
+  }
 
   // 内訳表示
   breakdownEl.innerHTML = "";
