@@ -126,18 +126,24 @@ document.addEventListener('DOMContentLoaded', () => {
   let subtotal = 0, discountAmount = 0, couponCount = 0;
   let selectedProductId = null;
 
-  const products = [
-    {id:1, name:"ポテト", flavor:"塩", price:300},
-    {id:2, name:"ポテト", flavor:"コンソメ", price:300},
-    {id:3, name:"ポテト", flavor:"バター醤油", price:300},
-    {id:4, name:"たこ焼き", flavor:"ソース", price:250},
-    {id:5, name:"たこ焼き", flavor:"しょうゆ", price:250},
-    {id:6, name:"たこ焼き", flavor:"塩", price:250},
-    {id:7, name:"ドリンク", flavor:"コーラ", price:200},
-    {id:8, name:"ドリンク", flavor:"カルピス", price:200},
-    {id:9, name:"ドリンク", flavor:"サイダー", price:200}
-  ];
+  // === 商品データを取得 ===
+  function loadProducts() {
+    const defaultProducts = [
+      { id: 1, name: "ポテト", flavor: "塩", price: 300 },
+      { id: 2, name: "ポテト", flavor: "コンソメ", price: 300 },
+      { id: 3, name: "ポテト", flavor: "バター醤油", price: 300 },
+      { id: 4, name: "たこ焼き", flavor: "ソース", price: 250 },
+      { id: 5, name: "たこ焼き", flavor: "しょうゆ", price: 250 },
+      { id: 6, name: "たこ焼き", flavor: "塩", price: 250 },
+      { id: 7, name: "ドリンク", flavor: "コーラ", price: 200 },
+      { id: 8, name: "ドリンク", flavor: "カルピス", price: 200 },
+      { id: 9, name: "ドリンク", flavor: "サイダー", price: 200 }
+    ];
+    const stored = localStorage.getItem("products");
+    return stored ? JSON.parse(stored) : defaultProducts;
+  }
 
+  // DOM取得
   const productListContainer = document.getElementById("product-list");
   const cartItemsContainer = document.getElementById("cart-items");
   const totalAmountDisplay = document.getElementById("total-amount-display");
@@ -151,12 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // === 商品リスト生成 ===
   function renderProducts(){
     productListContainer.innerHTML = "";
+    const products = loadProducts();
     products.forEach(p=>{
       const btn = document.createElement("div");
       btn.className = "bg-white p-3 rounded-lg shadow-md cursor-pointer hover:shadow-lg hover:bg-blue-50 transition-all duration-200 flex flex-col items-center justify-center text-center h-28";
       btn.innerHTML = `
         <div class="font-semibold text-base">${p.name}</div>
-        <div class="text-sm text-gray-600">${p.flavor}</div>
+        <div class="text-sm text-gray-600">${p.flavor || ""}</div>
         <div class="text-gray-600 mt-2">${formatCurrency(p.price)}</div>`;
       btn.addEventListener("click", ()=> addProductToCart(p.id));
       productListContainer.appendChild(btn);
@@ -178,6 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
       couponCountDisplay.textContent = couponCount;
       return;
     }
+
+    const products = loadProducts();
 
     cart.forEach(item => {
       const product = products.find(p=>p.id===item.id);
@@ -244,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
       cartItemsContainer.appendChild(row);
     });
 
-    // 割引行
+    // 割引行表示
     if(discountAmount > 0){
       discountAmountDisplay.textContent = `-${formatCurrency(discountAmount)}`;
       discountRow.classList.remove("hidden");
@@ -297,36 +306,35 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // === 会計へ進む ===
-document.getElementById("checkout-button").addEventListener("click", () => {
-  const data = {
-    cart: cart.map(item => {
-      const product = products.find(p => p.id === item.id);
-      return {
-        id: item.id,
-        name: product.name,
-        flavor: product.flavor,
-        price: product.price,
-        quantity: item.quantity,
-        freeCount: item.freeCount
-      };
-    }),
-    couponCount,
-    subtotal,
-    discountAmount,
-    total: subtotal - discountAmount
-  };
+  document.getElementById("checkout-button").addEventListener("click", () => {
+    const products = loadProducts();
+    const data = {
+      cart: cart.map(item => {
+        const product = products.find(p => p.id === item.id);
+        return {
+          id: item.id,
+          name: product.name,
+          flavor: product.flavor,
+          price: product.price,
+          quantity: item.quantity,
+          freeCount: item.freeCount
+        };
+      }),
+      couponCount,
+      subtotal,
+      discountAmount,
+      total: subtotal - discountAmount
+    };
 
-  // ★ cartData に保存（ここがポイント）
-  localStorage.setItem("cartData", JSON.stringify(data));
+    localStorage.setItem("currentTransaction", JSON.stringify(data));
+    showScreen("screen2");
+  });
 
-  showScreen("screen2");
-});
-
+  // 初期化
   renderProducts();
   updateCartView();
 });
-</script>
-    
+</script>    
     <!-- === レジ2: お支払い画面 === -->
 <div id="screen2" class="w-full hidden flex-grow flex flex-col">
 
