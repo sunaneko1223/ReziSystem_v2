@@ -121,29 +121,45 @@
 
 <!-- === レジ1専用スクリプト === -->
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   let cart = [];
   let subtotal = 0, discountAmount = 0, couponCount = 0;
   let selectedProductId = null;
 
+  // === 共通キー ===
+  const STORAGE_KEY = "products";
+
+  // === デフォルト商品 ===
+  const defaultProducts = [
+    { id: 1, name: "ポテト", flavor: "塩", price: 300 },
+    { id: 2, name: "ポテト", flavor: "コンソメ", price: 300 },
+    { id: 3, name: "ポテト", flavor: "バター醤油", price: 300 },
+    { id: 4, name: "たこ焼き", flavor: "ソース", price: 250 },
+    { id: 5, name: "たこ焼き", flavor: "しょうゆ", price: 250 },
+    { id: 6, name: "たこ焼き", flavor: "塩", price: 250 },
+    { id: 7, name: "ドリンク", flavor: "コーラ", price: 200 },
+    { id: 8, name: "ドリンク", flavor: "カルピス", price: 200 },
+    { id: 9, name: "ドリンク", flavor: "サイダー", price: 200 }
+  ];
+
   // === 商品データを取得 ===
   function loadProducts() {
-    const defaultProducts = [
-      { id: 1, name: "ポテト", flavor: "塩", price: 300 },
-      { id: 2, name: "ポテト", flavor: "コンソメ", price: 300 },
-      { id: 3, name: "ポテト", flavor: "バター醤油", price: 300 },
-      { id: 4, name: "たこ焼き", flavor: "ソース", price: 250 },
-      { id: 5, name: "たこ焼き", flavor: "しょうゆ", price: 250 },
-      { id: 6, name: "たこ焼き", flavor: "塩", price: 250 },
-      { id: 7, name: "ドリンク", flavor: "コーラ", price: 200 },
-      { id: 8, name: "ドリンク", flavor: "カルピス", price: 200 },
-      { id: 9, name: "ドリンク", flavor: "サイダー", price: 200 }
-    ];
-    const stored = localStorage.getItem("products");
-    return stored ? JSON.parse(stored) : defaultProducts;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultProducts));
+      return defaultProducts;
+    }
   }
 
-  // DOM取得
+  // === 商品データを保存（商品管理からも使う用） ===
+  function saveProducts(products) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    renderProducts();
+  }
+
+  // === DOM取得 ===
   const productListContainer = document.getElementById("product-list");
   const cartItemsContainer = document.getElementById("cart-items");
   const totalAmountDisplay = document.getElementById("total-amount-display");
@@ -158,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderProducts(){
     productListContainer.innerHTML = "";
     const products = loadProducts();
+
     products.forEach(p=>{
       const btn = document.createElement("div");
       btn.className = "bg-white p-3 rounded-lg shadow-md cursor-pointer hover:shadow-lg hover:bg-blue-50 transition-all duration-200 flex flex-col items-center justify-center text-center h-28";
@@ -330,20 +347,21 @@ document.addEventListener('DOMContentLoaded', () => {
     showScreen("screen2");
   });
 
-  // 初期化
+  // === 初期化 ===
   renderProducts();
   updateCartView();
 });
 
-  // === 商品管理ボタン ===
+// === 商品管理ボタン ===
 document.getElementById("to-screen4-button").addEventListener("click", () => {
   showScreen("screen4");
 });
-  // === 取引履歴ボタン ===
+
+// === 取引履歴ボタン ===
 document.getElementById("to-screen5-button").addEventListener("click", () => {
   showScreen("screen5");
 });
-</script>    
+</script>
     
     <!-- === レジ2: お支払い画面 === -->
 <div id="screen2" class="w-full hidden flex-grow flex flex-col">
