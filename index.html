@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.0.7</title>
+  <title>レジシステムv2.0.8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -601,7 +601,7 @@ window.addEventListener("screenChanged", (e) => {
 });
 </script>
     
-    <!-- Screen 4: 商品管理画面 -->
+    <!-- === レジ4: 商品管理画面 === -->
 <div id="screen4" class="w-full hidden flex-grow flex flex-col">
 
   <!-- ヘッダー -->
@@ -614,10 +614,10 @@ window.addEventListener("screenChanged", (e) => {
   </header>
 
   <!-- メイン -->
-  <main class="flex-grow flex flex-col min-h-0 p-6">
+  <main class="flex-grow p-6 flex flex-col min-h-0"> <!-- ★ min-h-0 を追加 -->
 
-    <!-- 上部：入力フォーム（固定） -->
-    <div class="mb-6 p-4 bg-gray-100 rounded-lg flex-shrink-0 shadow">
+    <!-- 新しい商品を追加 -->
+    <div class="mb-6 p-4 bg-gray-100 rounded-lg flex-shrink-0">
       <h2 class="text-lg font-bold mb-2 text-gray-800">新しい商品を追加</h2>
       <div class="flex flex-col sm:flex-row gap-2">
         <input type="text" id="new-product-name" placeholder="商品名" class="flex-grow p-2 border rounded-lg">
@@ -630,12 +630,13 @@ window.addEventListener("screenChanged", (e) => {
       </div>
     </div>
 
-    <!-- 中央：商品リスト（スクロール可能） -->
+    <!-- 登録済み商品リスト -->
     <h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">登録済み商品リスト</h2>
+
+    <!-- ★ ここをスクロール許可 -->
     <div id="product-management-list"
-         class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0 bg-gray-50 p-3 rounded-lg shadow allow-scroll"
-         style="-webkit-overflow-scrolling: touch;">
-      <!-- 商品カードがここに入る -->
+         class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0">
+      <!-- JSでリストを生成 -->
     </div>
 
   </main>
