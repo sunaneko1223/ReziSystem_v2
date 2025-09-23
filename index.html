@@ -584,7 +584,7 @@ window.addEventListener("screenChanged", (e) => {
     }
   }
 
-  // === 新しい会計へ ===
+    // === 新しい会計へ ===
   newTransactionBtn.addEventListener("click", () => {
     localStorage.removeItem("currentTransaction");
     showScreen("screen1");
@@ -592,144 +592,133 @@ window.addEventListener("screenChanged", (e) => {
 });
 </script>
     
-    <!-- === レジ4: 商品管理 === -->
+ <!-- === レジ4: 商品管理画面 === -->
 <div id="screen4" class="w-full hidden flex-grow flex flex-col">
-  <!-- ヘッダー -->
+
+  <!-- ==== ヘッダー ==== -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-    <h1 class="text-xl font-bold">レジ４：商品管理</h1>
-    <button id="back-to-screen1-from-4"
-            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">
+    <h1 class="text-xl font-bold">商品管理</h1>
+    <button id="back-to-screen1-button"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition">
       戻る
     </button>
   </header>
 
-  <!-- メイン -->
-  <main class="flex-grow p-4 space-y-6 overflow-y-auto allow-scroll">
-    <!-- 商品追加フォーム -->
-    <div class="bg-gray-50 p-4 rounded-lg shadow">
-      <h2 class="text-lg font-semibold mb-2">商品を追加</h2>
-      <input id="new-product-name" type="text" placeholder="商品名"
-             class="border p-2 rounded w-full mb-2">
-      <input id="new-product-flavor" type="text" placeholder="味 (空白可)"
-             class="border p-2 rounded w-full mb-2">
-      <input id="new-product-price" type="number" placeholder="価格"
-             class="border p-2 rounded w-full mb-2">
+  <!-- ==== メインコンテンツ ==== -->
+  <main class="flex-grow p-4 overflow-y-auto no-scrollbar">
+    <div class="mb-4">
+      <h2 class="text-lg font-bold mb-2">商品追加</h2>
+      <div class="grid grid-cols-3 gap-2 mb-2">
+        <input id="new-name" type="text" placeholder="商品名"
+               class="border rounded p-2 text-sm">
+        <input id="new-flavor" type="text" placeholder="味"
+               class="border rounded p-2 text-sm">
+        <input id="new-price" type="number" placeholder="値段"
+               class="border rounded p-2 text-sm">
+      </div>
       <button id="add-product-btn"
-              class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition">
-        追加
+              class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg">
+        商品を追加
       </button>
     </div>
 
-    <!-- 商品リスト -->
-    <div class="bg-gray-50 p-4 rounded-lg shadow">
-      <h2 class="text-lg font-semibold mb-2">商品一覧</h2>
-      <div id="product-management-list" class="space-y-2">
-        <!-- JSで生成 -->
-      </div>
-    </div>
+    <h2 class="text-lg font-bold border-b pb-2 mb-2">商品リスト</h2>
+    <div id="product-management-list" class="space-y-2"></div>
   </main>
 </div>
 
-<!-- === レジ4専用スクリプト === -->
+<!-- === レジ4: 商品管理用スクリプト === -->
 <script>
 window.addEventListener("screenChanged", (e) => {
   if (e.detail !== "screen4") return;
 
-  const defaultProducts = [
-    { id: 1, name: "ポテト", flavor: "塩", price: 300 },
-    { id: 2, name: "ポテト", flavor: "コンソメ", price: 300 },
-    { id: 3, name: "ポテト", flavor: "バター醤油", price: 300 },
-    { id: 4, name: "たこ焼き", flavor: "ソース", price: 250 },
-    { id: 5, name: "たこ焼き", flavor: "しょうゆ", price: 250 },
-    { id: 6, name: "たこ焼き", flavor: "塩", price: 250 },
-    { id: 7, name: "ドリンク", flavor: "コーラ", price: 200 },
-    { id: 8, name: "ドリンク", flavor: "カルピス", price: 200 },
-    { id: 9, name: "ドリンク", flavor: "サイダー", price: 200 }
-  ];
+  const listEl = document.getElementById("product-management-list");
+  const addBtn = document.getElementById("add-product-btn");
 
-  // LocalStorage操作
-  function loadProducts() {
-    const stored = localStorage.getItem("products");
-    return stored ? JSON.parse(stored) : defaultProducts;
-  }
-  function saveProducts(products) {
-    localStorage.setItem("products", JSON.stringify(products));
-  }
+  // localStorage から商品データを取得（なければ空配列）
+  let products = JSON.parse(localStorage.getItem("products")) || [];
 
-  // 商品リスト描画
-  function renderProductManagementList() {
-    const container = document.getElementById("product-management-list");
-    container.innerHTML = "";
-    const products = loadProducts();
-
+  // 商品リストを描画
+  function renderProducts() {
+    listEl.innerHTML = "";
+    if (products.length === 0) {
+      listEl.innerHTML = "<p class='text-gray-500'>商品が登録されていません。</p>";
+      return;
+    }
     products.forEach((p, idx) => {
-      const row = document.createElement("div");
-      row.className = "flex justify-between items-center bg-white p-2 rounded shadow";
-      row.innerHTML = `
+      const div = document.createElement("div");
+      div.className = "bg-white p-3 rounded-lg shadow flex justify-between items-center";
+      div.innerHTML = `
         <div>
-          <span class="font-semibold">${p.name}</span>
-          <span class="ml-2 text-gray-600">${p.flavor || ""}</span>
-          <span class="ml-2 text-gray-800">¥${p.price}</span>
+          <div class="font-bold">${p.name}</div>
+          <div class="text-sm text-gray-500">${p.flavor || "（なし）"}</div>
+          <div class="text-sm text-gray-700">¥${p.price}</div>
         </div>
         <div class="flex gap-2">
-          <button class="edit bg-blue-500 text-white px-2 py-1 rounded" data-index="${idx}">編集</button>
-          <button class="delete bg-red-500 text-white px-2 py-1 rounded" data-index="${idx}">削除</button>
+          <button class="edit bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded">編集</button>
+          <button class="delete bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">削除</button>
         </div>
       `;
-      container.appendChild(row);
+
+      // 編集ボタン
+      div.querySelector(".edit").addEventListener("click", () => {
+        const newName = prompt("商品名を入力", p.name);
+        const newFlavor = prompt("味を入力", p.flavor);
+        const newPrice = parseInt(prompt("値段を入力", p.price), 10);
+        if (newName && !isNaN(newPrice)) {
+          products[idx] = { name: newName, flavor: newFlavor, price: newPrice };
+          save();
+        }
+      });
+
+      // 削除ボタン
+      div.querySelector(".delete").addEventListener("click", () => {
+        if (confirm(`${p.name} を削除しますか？`)) {
+          products.splice(idx, 1);
+          save();
+        }
+      });
+
+      listEl.appendChild(div);
     });
   }
 
-  // 追加処理
-  document.getElementById("add-product-btn").onclick = () => {
-    const name = document.getElementById("new-product-name").value.trim();
-    const flavor = document.getElementById("new-product-flavor").value.trim();
-    const price = parseInt(document.getElementById("new-product-price").value, 10);
+  // 保存して再描画
+  function save() {
+    localStorage.setItem("products", JSON.stringify(products));
+    renderProducts();
+  }
 
-    if (!name || isNaN(price)) return alert("商品名と価格を入力してください");
+  // 追加ボタン
+  addBtn.onclick = () => {
+    const name = document.getElementById("new-name").value.trim();
+    const flavor = document.getElementById("new-flavor").value.trim();
+    const price = parseInt(document.getElementById("new-price").value, 10);
 
-    const products = loadProducts();
-    products.push({ id: Date.now(), name, flavor, price });
-    saveProducts(products);
-    renderProductManagementList();
-
-    document.getElementById("new-product-name").value = "";
-    document.getElementById("new-product-flavor").value = "";
-    document.getElementById("new-product-price").value = "";
-  };
-
-  // 編集・削除処理
-  document.getElementById("product-management-list").onclick = (e) => {
-    const products = loadProducts();
-    if (e.target.classList.contains("delete")) {
-      const idx = e.target.dataset.index;
-      products.splice(idx, 1);
-      saveProducts(products);
-      renderProductManagementList();
-    } else if (e.target.classList.contains("edit")) {
-      const idx = e.target.dataset.index;
-      const newName = prompt("新しい商品名", products[idx].name);
-      const newFlavor = prompt("新しい味（空白可）", products[idx].flavor);
-      const newPrice = prompt("新しい価格", products[idx].price);
-      if (newName && newPrice && !isNaN(parseInt(newPrice, 10))) {
-        products[idx].name = newName;
-        products[idx].flavor = newFlavor;
-        products[idx].price = parseInt(newPrice, 10);
-        saveProducts(products);
-        renderProductManagementList();
-      }
+    if (!name || isNaN(price)) {
+      alert("商品名と価格を入力してください。");
+      return;
     }
+
+    products.push({ name, flavor, price });
+    save();
+
+    // 入力欄クリア
+    document.getElementById("new-name").value = "";
+    document.getElementById("new-flavor").value = "";
+    document.getElementById("new-price").value = "";
   };
 
-  // 戻る
-  document.getElementById("back-to-screen1-from-4").onclick = () => {
+  // 戻る → レジ1
+  document.getElementById("back-to-screen1-button").onclick = () => {
     showScreen("screen1");
   };
 
-  renderProductManagementList();
+  // 初期表示
+  renderProducts();
 });
 </script>
-
+    
     <!-- レジ5: 取引履歴 -->
     <div id="screen5" class="w-full h-full hidden flex flex-col">
       <!-- ここにレジ5の中身を入れる -->
