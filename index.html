@@ -600,37 +600,84 @@ window.addEventListener("screenChanged", (e) => {
 });
 </script>
     
-    <!-- Screen 4: 商品管理画面 -->
+    <!-- === Screen 4: 商品管理画面 === -->
 <div id="screen4" class="w-full hidden flex-grow flex flex-col">
+  <!-- ヘッダー -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-    <h1 class="text-xl font-bold">レジ４：商品管理</h1>
-    <button id="back-to-screen1-from-manager" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition">戻る</button>
+    <h1 class="text-xl font-bold">レジ4：商品管理</h1>
+    <button id="back-to-screen1-from-manager"
+            class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition">
+      戻る
+    </button>
   </header>
 
+  <!-- メイン -->
   <main class="flex-grow p-6 flex flex-col overflow-hidden">
-    <!-- 新しい商品を追加 -->
-    <div class="mb-6 p-4 bg-gray-100 rounded-lg flex-shrink-0 shadow">
+    <!-- 新規追加フォーム -->
+    <div class="mb-6 p-4 bg-gray-100 rounded-lg flex-shrink-0">
       <h2 class="text-lg font-bold mb-2 text-gray-800">新しい商品を追加</h2>
       <div class="flex flex-col sm:flex-row gap-2">
         <input type="text" id="new-product-name" placeholder="商品名" class="flex-grow p-2 border rounded-lg">
         <input type="text" id="new-product-flavor" placeholder="味 (任意)" class="flex-grow p-2 border rounded-lg">
         <input type="number" id="new-product-price" placeholder="価格 (円)" class="w-full sm:w-32 p-2 border rounded-lg">
-        <button id="add-product-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition">追加</button>
+        <button id="add-product-btn"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 rounded-lg transition">
+          追加
+        </button>
       </div>
     </div>
 
-    <!-- 商品リスト -->
-<h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">
-  商品リスト
-</h2>
-
-<div id="product-management-list"
-     class="flex-grow overflow-y-auto no-scrollbar allow-scroll space-y-2 shadow-inner mt-4">
-  <!-- JSで商品カードを生成 -->
+    <!-- 登録済み商品リスト -->
+    <h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">登録済み商品リスト</h2>
+    <div id="product-management-list"
+         class="space-y-2 flex-grow overflow-y-auto no-scrollbar allow-scroll mt-4">
+      <!-- JSで商品を描画 -->
     </div>
   </main>
 </div>
-    
+
+<!-- === カスタムアラート === -->
+<div id="custom-alert"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-80">
+    <h3 class="text-lg font-bold mb-4">確認</h3>
+    <p class="mb-6">この商品を編集しますか？</p>
+    <div class="flex justify-end gap-3">
+      <button id="alert-cancel"
+              class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">
+        いいえ
+      </button>
+      <button id="alert-confirm"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+        はい
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- === 編集フォーム === -->
+<div id="edit-form"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+    <h3 class="text-lg font-bold mb-4">商品を編集</h3>
+    <div class="flex flex-col gap-3">
+      <input type="text" id="edit-name" placeholder="商品名" class="p-2 border rounded">
+      <input type="text" id="edit-flavor" placeholder="味 (任意)" class="p-2 border rounded">
+      <input type="number" id="edit-price" placeholder="価格 (円)" class="p-2 border rounded">
+    </div>
+    <div class="flex justify-end gap-3 mt-6">
+      <button id="edit-cancel"
+              class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">
+        キャンセル
+      </button>
+      <button id="edit-save"
+              class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
+        保存
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- === レジ4専用スクリプト === -->
 <script>
 window.addEventListener("screenChanged", (e) => {
@@ -641,56 +688,71 @@ window.addEventListener("screenChanged", (e) => {
   const flavorEl = document.getElementById("new-product-flavor");
   const priceEl = document.getElementById("new-product-price");
   const addBtn = document.getElementById("add-product-btn");
-  const backBtn = document.getElementById("back-to-screen1-from-manager");
 
-  // 商品データ取得
+  // カスタムアラートと編集フォーム
+  const alertBox = document.getElementById("custom-alert");
+  const alertCancel = document.getElementById("alert-cancel");
+  const alertConfirm = document.getElementById("alert-confirm");
+  const editBox = document.getElementById("edit-form");
+  const editName = document.getElementById("edit-name");
+  const editFlavor = document.getElementById("edit-flavor");
+  const editPrice = document.getElementById("edit-price");
+  const editCancel = document.getElementById("edit-cancel");
+  const editSave = document.getElementById("edit-save");
+
+  let editTargetId = null; // 編集対象の商品ID
+
+  // 商品データのロード
   function loadProducts() {
-    const defaultProducts = [
-      { id: 1, name: "ポテト", flavor: "塩", price: 300 },
-      { id: 2, name: "ポテト", flavor: "コンソメ", price: 300 },
-      { id: 3, name: "ポテト", flavor: "バター醤油", price: 300 },
-      { id: 4, name: "たこ焼き", flavor: "ソース", price: 250 },
-      { id: 5, name: "たこ焼き", flavor: "しょうゆ", price: 250 },
-      { id: 6, name: "たこ焼き", flavor: "塩", price: 250 },
-      { id: 7, name: "ドリンク", flavor: "コーラ", price: 200 },
-      { id: 8, name: "ドリンク", flavor: "カルピス", price: 200 },
-      { id: 9, name: "ドリンク", flavor: "サイダー", price: 200 }
-    ];
     const stored = localStorage.getItem("products");
-    return stored ? JSON.parse(stored) : defaultProducts;
+    return stored ? JSON.parse(stored) : [];
   }
 
-  // 商品データ保存
+  // 商品データの保存
   function saveProducts(products) {
     localStorage.setItem("products", JSON.stringify(products));
-    // レジ1に「更新されたよ」と通知
-    window.dispatchEvent(new Event("productsUpdated"));
+    window.dispatchEvent(new Event("productsUpdated")); // レジ1に反映させる
   }
 
-  // 商品リスト描画
-  function renderList() {
+  // 商品リストを描画
+  function renderProducts() {
     const products = loadProducts();
     listEl.innerHTML = "";
 
-    products.forEach((p, idx) => {
+    if (products.length === 0) {
+      listEl.innerHTML = "<p class='text-gray-500'>商品が登録されていません。</p>";
+      return;
+    }
+
+    products.forEach(p => {
       const card = document.createElement("div");
-      card.className = "bg-white shadow-md rounded-lg p-3 flex justify-between items-center";
+      card.className = "bg-white shadow rounded-lg p-4 flex flex-col";
 
       card.innerHTML = `
-        <div>
-          <div class="font-semibold">${p.name}</div>
-          <div class="text-sm text-gray-500">${p.flavor || ""}</div>
-          <div class="text-sm text-gray-700">¥${p.price}</div>
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="font-bold">${p.name}</div>
+            <div class="text-sm text-gray-500">${p.flavor || ""}</div>
+            <div class="text-gray-700">¥${p.price}</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="edit-btn bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded">編集</button>
+            <button class="delete-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">削除</button>
+          </div>
         </div>
-        <button class="delete-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
-          削除
-        </button>
       `;
 
+      // 編集ボタン
+      card.querySelector(".edit-btn").onclick = () => {
+        editTargetId = p.id;
+        alertBox.classList.remove("hidden");
+      };
+
+      // 削除ボタン
       card.querySelector(".delete-btn").onclick = () => {
-        const updated = loadProducts().filter(prod => prod.id !== p.id);
+        const updated = products.filter(item => item.id !== p.id);
         saveProducts(updated);
-        renderList();
+        renderProducts();
       };
 
       listEl.appendChild(card);
@@ -704,29 +766,61 @@ window.addEventListener("screenChanged", (e) => {
     const price = parseInt(priceEl.value, 10);
 
     if (!name || isNaN(price)) {
-      alert("商品名と価格を入力してください");
+      alert("商品名と価格を入力してください。");
       return;
     }
 
     const products = loadProducts();
-    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+    const newId = Date.now(); // 一意なID
     products.push({ id: newId, name, flavor, price });
-
     saveProducts(products);
-    renderList();
 
     nameEl.value = "";
     flavorEl.value = "";
     priceEl.value = "";
+
+    renderProducts();
   };
 
-  // 戻るボタン
-  backBtn.onclick = () => {
-    showScreen("screen1");
+  // カスタムアラート処理
+  alertCancel.onclick = () => alertBox.classList.add("hidden");
+  alertConfirm.onclick = () => {
+    alertBox.classList.add("hidden");
+    const products = loadProducts();
+    const target = products.find(p => p.id === editTargetId);
+    if (target) {
+      editName.value = target.name;
+      editFlavor.value = target.flavor || "";
+      editPrice.value = target.price;
+      editBox.classList.remove("hidden");
+    }
   };
 
-  // 初期化
-  renderList();
+  // 編集フォーム処理
+  editCancel.onclick = () => editBox.classList.add("hidden");
+  editSave.onclick = () => {
+    const name = editName.value.trim();
+    const flavor = editFlavor.value.trim();
+    const price = parseInt(editPrice.value, 10);
+
+    if (!name || isNaN(price)) {
+      alert("商品名と価格を入力してください。");
+      return;
+    }
+
+    const products = loadProducts();
+    const target = products.find(p => p.id === editTargetId);
+    if (target) {
+      target.name = name;
+      target.flavor = flavor;
+      target.price = price;
+      saveProducts(products);
+      renderProducts();
+    }
+    editBox.classList.add("hidden");
+  };
+
+  renderProducts();
 });
 </script>
     
