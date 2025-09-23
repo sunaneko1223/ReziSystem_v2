@@ -403,20 +403,18 @@ window.addEventListener("screenChanged", (e) => {
   const keypadBtns = document.querySelectorAll(".keypad-btn");
   const clearBtn = document.getElementById("clear-keypad");
   const backspaceBtn = document.getElementById("backspace-keypad");
-  
+
   let tendered = "";
   let paymentDue = 0;
-  let cartData = null;
 
   // === レジ1からデータ取得 ===
-  const tx = JSON.parse(localStorage.getItem("currentTransaction"));
-  if (tx && tx.total) {
-    paymentDue = tx.total;
-    cartData = tx.cart || [];
+  const data = JSON.parse(localStorage.getItem("cartData"));
+  if (data && data.total) {
+    paymentDue = data.total;
     paymentDueEl.textContent = "¥" + paymentDue.toLocaleString();
   }
 
-  // === 表示更新 ===
+  // === お釣り計算 ===
   function updateDisplay() {
     const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
     tenderedEl.textContent = "¥" + tenderedNum.toLocaleString();
@@ -447,11 +445,21 @@ window.addEventListener("screenChanged", (e) => {
     updateDisplay();
   };
 
-  // === 会計処理（シンプル版） ===
-calcBtn.addEventListener("click", () => {
-  alert("✅ ボタン押された！ showScreen 実行します！");
-  showScreen("screen3");
-});
+  // === 会計処理 ===
+  calcBtn.onclick = null; // ← 古いリスナーをリセット
+  calcBtn.onclick = () => {
+    const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
+    const change = Math.max(0, tenderedNum - paymentDue);
+
+    localStorage.setItem("currentTransaction", JSON.stringify({
+      cart: (data && Array.isArray(data.cart)) ? data.cart : [],
+      total: paymentDue,
+      tendered: tenderedNum,
+      change: change,
+    }));
+
+    showScreen("screen3");
+  };
 
   // 戻る
   backBtn.onclick = () => {
