@@ -838,7 +838,149 @@ document.addEventListener("DOMContentLoaded", () => {
   </main>
 </div>
 
-  <!-- 共通スクリプト -->
+    <!--=== レジ5:取引履歴 スクリプト ===-->
+  <script>
+window.addEventListener("screenChanged", (e) => {
+  if (e.detail !== "screen5") return;
+
+  const historyListEl = document.getElementById("history-list");
+  const historySummaryEl = document.getElementById("history-summary");
+  const searchInput = document.getElementById("history-search-input");
+  const clearBtn = document.getElementById("clear-history-button");
+
+  // ▼ 追加したUI（ドロップダウン）
+  const filterTypeBtn = document.getElementById("filter-type"); // 取引/商品
+  const filterDateBtn = document.getElementById("filter-date"); // すべて/今日/日付指定
+
+  // === 履歴データをロード ===
+  function loadHistory() {
+    const stored = localStorage.getItem("transactionHistory");
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  // === 履歴を保存 ===
+  function saveHistory(data) {
+    localStorage.setItem("transactionHistory", JSON.stringify(data));
+  }
+
+  // === 履歴を追加（レジ3で会計完了時に呼ばれる想定） ===
+  function addHistory(entry) {
+    const history = loadHistory();
+    history.push(entry); // 新しい履歴を最後に追加
+    saveHistory(history);
+  }
+
+  // === フィルタリング ===
+  function applyFilters(history) {
+    let filtered = [...history];
+
+    // 検索フィルタ（受付番号）
+    const searchValue = searchInput.value.trim();
+    if (searchValue) {
+      filtered = filtered.filter(h => String(h.orderNumber).includes(searchValue));
+    }
+
+    // 種類フィルタ（取引/商品）
+    if (filterTypeBtn.dataset.value === "transaction") {
+      // 取引ベース → そのまま
+    } else if (filterTypeBtn.dataset.value === "product") {
+      // 商品ベース → 展開して商品ごとに表示
+      filtered = filtered.flatMap(h =>
+        h.cart.map(item => ({
+          ...h,
+          productName: item.name,
+          productQuantity: item.quantity,
+          productFreeCount: item.freeCount
+        }))
+      );
+    }
+
+    // 日付フィルタ
+    if (filterDateBtn.dataset.value === "today") {
+      const today = new Date().toISOString().split("T")[0];
+      filtered = filtered.filter(h => h.date && h.date.startsWith(today));
+    } else if (filterDateBtn.dataset.value === "custom") {
+      // TODO: 日付指定 UI を使う場合にここで実装
+    }
+
+    return filtered;
+  }
+
+  // === 履歴を描画 ===
+  function renderHistory() {
+    const history = loadHistory();
+    const filtered = applyFilters(history);
+
+    historyListEl.innerHTML = "";
+
+    if (filtered.length === 0) {
+      historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
+      historySummaryEl.textContent = "";
+      return;
+    }
+
+    // 集計
+    const totalSales = filtered.reduce((sum, h) => sum + (h.total || 0), 0);
+    historySummaryEl.textContent = `取引件数: ${filtered.length} 件 ／ 売上合計: ¥${totalSales.toLocaleString()}`;
+
+    // 古い順 → 新しい順（上から1,2,3）
+    filtered.forEach(h => {
+      const div = document.createElement("div");
+      div.className = "p-4 bg-white shadow rounded-lg";
+
+      // 取引表示
+      if (!h.productName) {
+        div.innerHTML = `
+          <div class="font-bold">受付番号: ${h.orderNumber}</div>
+          <div>日付: ${h.date || "-"}</div>
+          <div>合計: ¥${(h.total || 0).toLocaleString()}</div>
+        `;
+      } else {
+        // 商品表示モード
+        div.innerHTML = `
+          <div class="font-bold">商品: ${h.productName}</div>
+          <div>数量: ${h.productQuantity}点 (無料券 ${h.productFreeCount}枚)</div>
+          <div>取引番号: ${h.orderNumber}</div>
+        `;
+      }
+
+      historyListEl.appendChild(div);
+    });
+  }
+
+  // === 削除 ===
+  clearBtn.onclick = () => {
+    if (confirm("履歴をすべて削除しますか？")) {
+      localStorage.removeItem("transactionHistory");
+      renderHistory();
+    }
+  };
+
+  // === イベント登録 ===
+  searchInput.oninput = renderHistory;
+  filterTypeBtn.onclick = () => {
+    const options = ["transaction", "product"];
+    const current = filterTypeBtn.dataset.value || "transaction";
+    const next = current === "transaction" ? "product" : "transaction";
+    filterTypeBtn.dataset.value = next;
+    filterTypeBtn.textContent = next === "transaction" ? "取引" : "商品";
+    renderHistory();
+  };
+  filterDateBtn.onclick = () => {
+    const options = ["all", "today"]; // 簡易対応
+    const current = filterDateBtn.dataset.value || "all";
+    const next = current === "all" ? "today" : "all";
+    filterDateBtn.dataset.value = next;
+    filterDateBtn.textContent = next === "all" ? "すべて" : "今日のみ";
+    renderHistory();
+  };
+
+  // 初期化
+  renderHistory();
+});
+</script>
+    
+    <!-- 共通スクリプト -->
   <script>
     // 初期表示
     document.addEventListener("DOMContentLoaded", () => {
