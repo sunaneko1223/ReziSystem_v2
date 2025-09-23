@@ -593,11 +593,12 @@ window.addEventListener("screenChanged", (e) => {
 </script>
     
  <!-- === レジ4: 商品管理画面 === -->
-<div id="screen4" class="w-full hidden flex-grow flex flex-col">
+<div id="screen4" class="w-full hidden flex-grow flex-col">
 
   <!-- ==== ヘッダー ==== -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
     <h1 class="text-xl font-bold">商品管理</h1>
+    <!-- 戻るボタン（レジ1へ戻る） -->
     <button id="back-to-screen1-button"
             class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition">
       戻る
@@ -606,45 +607,56 @@ window.addEventListener("screenChanged", (e) => {
 
   <!-- ==== メインコンテンツ ==== -->
   <main class="flex-grow p-4 overflow-y-auto no-scrollbar">
+
+    <!-- === 商品追加フォーム === -->
     <div class="mb-4">
       <h2 class="text-lg font-bold mb-2">商品追加</h2>
       <div class="grid grid-cols-3 gap-2 mb-2">
+        <!-- 商品名入力 -->
         <input id="new-name" type="text" placeholder="商品名"
                class="border rounded p-2 text-sm">
+        <!-- 味入力 -->
         <input id="new-flavor" type="text" placeholder="味"
                class="border rounded p-2 text-sm">
+        <!-- 値段入力 -->
         <input id="new-price" type="number" placeholder="値段"
                class="border rounded p-2 text-sm">
       </div>
+      <!-- 商品追加ボタン -->
       <button id="add-product-btn"
               class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg">
         商品を追加
       </button>
     </div>
 
+    <!-- === 商品リスト表示エリア === -->
     <h2 class="text-lg font-bold border-b pb-2 mb-2">商品リスト</h2>
     <div id="product-management-list" class="space-y-2"></div>
   </main>
 </div>
 
-<!-- === レジ4: 商品管理用スクリプト === -->
+<!-- === レジ4専用スクリプト === -->
 <script>
 window.addEventListener("screenChanged", (e) => {
-  if (e.detail !== "screen4") return;
+  if (e.detail !== "screen4") return; // screen4以外では実行しない
 
   const listEl = document.getElementById("product-management-list");
   const addBtn = document.getElementById("add-product-btn");
 
-  // localStorage から商品データを取得（なければ空配列）
+  // localStorage から商品データを取得（存在しなければ空配列）
   let products = JSON.parse(localStorage.getItem("products")) || [];
 
-  // 商品リストを描画
+  // === 商品リスト描画 ===
   function renderProducts() {
     listEl.innerHTML = "";
+
+    // 商品が無い場合の表示
     if (products.length === 0) {
       listEl.innerHTML = "<p class='text-gray-500'>商品が登録されていません。</p>";
       return;
     }
+
+    // 商品ごとにカードを生成
     products.forEach((p, idx) => {
       const div = document.createElement("div");
       div.className = "bg-white p-3 rounded-lg shadow flex justify-between items-center";
@@ -660,21 +672,22 @@ window.addEventListener("screenChanged", (e) => {
         </div>
       `;
 
-      // 編集ボタン
+      // === 編集処理 ===
       div.querySelector(".edit").addEventListener("click", () => {
         const newName = prompt("商品名を入力", p.name);
         const newFlavor = prompt("味を入力", p.flavor);
         const newPrice = parseInt(prompt("値段を入力", p.price), 10);
+
         if (newName && !isNaN(newPrice)) {
           products[idx] = { name: newName, flavor: newFlavor, price: newPrice };
           save();
         }
       });
 
-      // 削除ボタン
+      // === 削除処理 ===
       div.querySelector(".delete").addEventListener("click", () => {
         if (confirm(`${p.name} を削除しますか？`)) {
-          products.splice(idx, 1);
+          products.splice(idx, 1); // 配列から削除
           save();
         }
       });
@@ -683,13 +696,13 @@ window.addEventListener("screenChanged", (e) => {
     });
   }
 
-  // 保存して再描画
+  // === 保存処理（localStorageへ反映） ===
   function save() {
     localStorage.setItem("products", JSON.stringify(products));
     renderProducts();
   }
 
-  // 追加ボタン
+  // === 新しい商品を追加 ===
   addBtn.onclick = () => {
     const name = document.getElementById("new-name").value.trim();
     const flavor = document.getElementById("new-flavor").value.trim();
@@ -700,21 +713,21 @@ window.addEventListener("screenChanged", (e) => {
       return;
     }
 
-    products.push({ name, flavor, price });
+    products.push({ name, flavor, price }); // 新商品追加
     save();
 
-    // 入力欄クリア
+    // 入力欄をリセット
     document.getElementById("new-name").value = "";
     document.getElementById("new-flavor").value = "";
     document.getElementById("new-price").value = "";
   };
 
-  // 戻る → レジ1
+  // === 戻るボタン → レジ1へ ===
   document.getElementById("back-to-screen1-button").onclick = () => {
     showScreen("screen1");
   };
 
-  // 初期表示
+  // 初期描画
   renderProducts();
 });
 </script>
