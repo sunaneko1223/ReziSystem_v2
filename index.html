@@ -403,13 +403,6 @@ window.addEventListener("screenChanged", (e) => {
   const keypadBtns = document.querySelectorAll(".keypad-btn");
   const clearBtn = document.getElementById("clear-keypad");
   const backspaceBtn = document.getElementById("backspace-keypad");
-
-  console.log("calcBtn:", calcBtn);
-  if (!calcBtn) {
-    alert("❌ 会計ボタンが取得できていません！");
-  } else {
-    alert("✅ 会計ボタン取得できた！");
-  }
   
   let tendered = "";
   let paymentDue = 0;
@@ -455,33 +448,20 @@ window.addEventListener("screenChanged", (e) => {
   };
 
   // === 会計処理 ===
-function handleCheckout() {
+calcBtn.addEventListener("click", () => {
+  if (calcBtn.disabled) return; // 無効なら何もしない
+
   const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
   const change = Math.max(0, tenderedNum - paymentDue);
 
-  const cartData = (data && Array.isArray(data.cart)) ? data.cart : [];
-
-  const transaction = {
-    cart: cartData,
-    total: Number(paymentDue) || 0,
+  localStorage.setItem("currentTransaction", JSON.stringify({
+    cart: (data && Array.isArray(data.cart)) ? data.cart : [],
+    total: paymentDue,
     tendered: tenderedNum,
     change: change,
-  };
+  }));
 
-  localStorage.setItem("currentTransaction", JSON.stringify(transaction));
-
-  // 確認用（テスト終わったら削除してOK）
-  console.log("✅ 会計処理実行:", transaction);
-
-  // 強制的に画面切り替え
-  setTimeout(() => {
-    showScreen("screen3");
-  }, 50);
-}
-
-// click と touchend 両方を捕まえる
-["click", "touchend"].forEach(evt => {
-  calcBtn.addEventListener(evt, handleCheckout, { passive: false });
+  showScreen("screen3");
 });
 
   // 戻る
