@@ -454,7 +454,7 @@ calcBtn.onclick = () => {
   const change = Math.max(0, tenderedNum - paymentDue);
 
   localStorage.setItem("currentTransaction", JSON.stringify({
-    cart: data.cart,        // ← 修正ポイント
+    cart: (data && data.cart) ? data.cart : [],   // ← 安全に cart を入れる
     total: paymentDue,
     tendered: tenderedNum,
     change: change,
