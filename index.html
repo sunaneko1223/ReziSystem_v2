@@ -334,7 +334,17 @@ document.addEventListener('DOMContentLoaded', () => {
   renderProducts();
   updateCartView();
 });
+
+  // === 商品管理ボタン ===
+document.getElementById("to-screen4-button").addEventListener("click", () => {
+  showScreen("screen4");
+});
+  // === 取引履歴ボタン ===
+document.getElementById("to-screen5-button").addEventListener("click", () => {
+  showScreen("screen5");
+});
 </script>    
+    
     <!-- === レジ2: お支払い画面 === -->
 <div id="screen2" class="w-full hidden flex-grow flex flex-col">
 
