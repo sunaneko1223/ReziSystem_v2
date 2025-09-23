@@ -361,6 +361,11 @@ document.getElementById("to-screen4-button").addEventListener("click", () => {
 document.getElementById("to-screen5-button").addEventListener("click", () => {
   showScreen("screen5");
 });
+
+  // === 商品管理から更新を受け取る ===
+window.addEventListener("productsUpdated", () => {
+  renderProducts();
+});
 </script>
     
     <!-- === レジ2: お支払い画面 === -->
