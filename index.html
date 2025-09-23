@@ -447,15 +447,19 @@ window.addEventListener("screenChanged", (e) => {
   };
 
   // 会計処理
-  calcBtn.onclick = () => {
-    const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
-    const change = tenderedNum - paymentDue;
+calcBtn.addEventListener("click", () => {
+  const tenderedNum = tendered === "" ? 0 : parseInt(tendered, 10);
+  const change = Math.max(0, tenderedNum - paymentDue); // マイナス防止＆数値保証
 
-    const updatedTx = { ...tx, tendered: tenderedNum, change };
-    localStorage.setItem("currentTransaction", JSON.stringify(updatedTx));
+  localStorage.setItem("currentTransaction", JSON.stringify({
+    cart: data.cart,
+    total: paymentDue,   // ← ここも data.total ではなく paymentDue の方が確実
+    tendered: tenderedNum,
+    change: change,      // ← 常に数値
+  }));
 
-    showScreen("screen3");
-  };
+  showScreen("screen3");
+});
 
   // 戻るボタン
   backBtn.onclick = () => {
