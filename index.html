@@ -637,98 +637,105 @@ window.addEventListener("screenChanged", (e) => {
          class="space-y-2 flex-grow overflow-y-auto no-scrollbar">
     </div>
   </main>
-</div>  
+</div>
 
 <!-- === レジ4専用スクリプト === -->
 <script>
 window.addEventListener("screenChanged", (e) => {
-  if (e.detail !== "screen4") return; // レジ4以外なら何もしない
+  if (e.detail !== "screen4") return;
 
-  // DOM要素の取得
-  const productList = document.getElementById("product-management-list");
+  const nameInput = document.getElementById("new-product-name");
+  const flavorInput = document.getElementById("new-product-flavor");
+  const priceInput = document.getElementById("new-product-price");
   const addBtn = document.getElementById("add-product-btn");
+  const listContainer = document.getElementById("product-management-list");
+  const backBtn = document.getElementById("back-to-screen1-from-manager");
 
-  // localStorage から商品一覧を読み込み（なければ空配列）
+  // === 商品データの読み込み ===
   let products = JSON.parse(localStorage.getItem("products")) || [];
 
-  // === 商品リスト描画 ===
+  // === 商品リストを描画 ===
   function renderProducts() {
-    productList.innerHTML = ""; // 一旦リストをクリア
+    listContainer.innerHTML = "";
 
     if (products.length === 0) {
-      productList.innerHTML = "<p class='text-gray-500'>商品が登録されていません。</p>";
+      listContainer.innerHTML = `<p class="text-gray-500">商品が登録されていません。</p>`;
       return;
     }
 
-    products.forEach((p, idx) => {
-      const div = document.createElement("div");
-      div.className = "flex justify-between items-center bg-white p-3 rounded shadow";
+    products.forEach((p, index) => {
+      const row = document.createElement("div");
+      row.className = "bg-white p-3 rounded-lg shadow flex justify-between items-center";
 
-      div.innerHTML = `
+      row.innerHTML = `
         <div>
           <div class="font-bold">${p.name}</div>
-          <div class="text-sm">¥${p.price}</div>
+          <div class="text-sm text-gray-600">${p.flavor || "（味なし）"}</div>
+          <div class="text-gray-800">¥${p.price.toLocaleString()}</div>
         </div>
         <div class="flex gap-2">
-          <button class="edit bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded">編集</button>
-          <button class="delete bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">削除</button>
+          <button class="edit-btn bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-1 px-3 rounded">編集</button>
+          <button class="delete-btn bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded">削除</button>
         </div>
       `;
 
-      // === 編集ボタン ===
-      div.querySelector(".edit").addEventListener("click", () => {
-        const newName = prompt("商品名を入力", p.name);
-        const newPrice = parseInt(prompt("値段を入力", p.price), 10);
-
-        if (newName && !isNaN(newPrice)) {
-          products[idx] = { name: newName, price: newPrice };
-          save();
-        }
-      });
-
       // === 削除ボタン ===
-      div.querySelector(".delete").addEventListener("click", () => {
-        if (confirm(`${p.name} を削除しますか？`)) {
-          products.splice(idx, 1);
-          save();
-        }
+      row.querySelector(".delete-btn").addEventListener("click", () => {
+        products.splice(index, 1);
+        saveProducts();
+        renderProducts();
       });
 
-      productList.appendChild(div);
+      // === 編集ボタン ===
+      row.querySelector(".edit-btn").addEventListener("click", () => {
+        const newName = prompt("商品名を入力", p.name);
+        if (!newName) return;
+
+        const newFlavor = prompt("味を入力（空欄可）", p.flavor);
+        const newPrice = parseInt(prompt("価格を入力", p.price), 10);
+        if (isNaN(newPrice)) return;
+
+        products[index] = { name: newName, flavor: newFlavor, price: newPrice };
+        saveProducts();
+        renderProducts();
+      });
+
+      listContainer.appendChild(row);
     });
   }
 
-  // === 保存処理（localStorage に反映して再描画） ===
-  function save() {
+  // === 保存処理 ===
+  function saveProducts() {
     localStorage.setItem("products", JSON.stringify(products));
-    renderProducts();
   }
 
-  // === 追加ボタン処理 ===
-  addBtn.onclick = () => {
-    const name = document.getElementById("new-product-name").value.trim();
-    const price = parseInt(document.getElementById("new-product-price").value, 10);
+  // === 新規商品追加 ===
+  addBtn.addEventListener("click", () => {
+    const name = nameInput.value.trim();
+    const flavor = flavorInput.value.trim();
+    const price = parseInt(priceInput.value.trim(), 10);
 
     if (!name || isNaN(price)) {
       alert("商品名と価格を入力してください。");
       return;
     }
 
-    // 新商品を追加
-    products.push({ name, price });
-    save();
+    products.push({ name, flavor, price });
+    saveProducts();
+    renderProducts();
 
-    // 入力フォームをリセット
-    document.getElementById("new-product-name").value = "";
-    document.getElementById("new-product-price").value = "";
-  };
+    // 入力欄リセット
+    nameInput.value = "";
+    flavorInput.value = "";
+    priceInput.value = "";
+  });
 
-  // === 戻るボタン（レジ1へ戻る） ===
-  document.getElementById("back-to-screen1-from-manager").onclick = () => {
+  // 戻るボタン → レジ1
+  backBtn.addEventListener("click", () => {
     showScreen("screen1");
-  };
+  });
 
-  // 初回表示
+  // 初期表示
   renderProducts();
 });
 </script>
