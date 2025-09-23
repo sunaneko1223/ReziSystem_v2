@@ -148,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const formatCurrency = (v) => `¥${v.toLocaleString()}`;
 
+  // === 商品リスト生成 ===
   function renderProducts(){
     productListContainer.innerHTML = "";
     products.forEach(p=>{
@@ -162,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // === カート更新 ===
   function updateCartView(){
     cartItemsContainer.innerHTML = "";
     subtotal = 0;
@@ -205,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
 
+      // 数量減少
       row.querySelector(".minus").addEventListener("click", (e) => {
         e.stopPropagation();
         if(item.quantity > 1) item.quantity--;
@@ -216,12 +219,14 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCartView();
       });
 
+      // 数量増加
       row.querySelector(".plus").addEventListener("click", (e) => {
         e.stopPropagation();
         item.quantity++;
         updateCartView();
       });
 
+      // 削除
       row.querySelector(".remove").addEventListener("click", (e) => {
         e.stopPropagation();
         if(item.freeCount) couponCount -= item.freeCount;
@@ -230,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCartView();
       });
 
+      // 選択切替
       row.addEventListener("click", () => {
         selectedProductId = item.id===selectedProductId ? null : item.id;
         updateCartView();
@@ -238,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
       cartItemsContainer.appendChild(row);
     });
 
+    // 割引行
     if(discountAmount > 0){
       discountAmountDisplay.textContent = `-${formatCurrency(discountAmount)}`;
       discountRow.classList.remove("hidden");
@@ -250,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     removeSelectedBtn.disabled = (selectedProductId === null);
   }
 
+  // === カートに商品追加 ===
   function addProductToCart(id){
     const found = cart.find(c=>c.id===id);
     if(found) found.quantity++;
@@ -258,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCartView();
   }
 
+  // === 選択削除 ===
   removeSelectedBtn.addEventListener("click", () => {
     if(selectedProductId === null) return;
     const item = cart.find(c=>c.id===selectedProductId);
@@ -267,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCartView();
   });
 
+  // === 無料券操作 ===
   document.getElementById("increase-coupon-btn").addEventListener("click", () => {
     if(!selectedProductId) return;
     const item = cart.find(c=>c.id===selectedProductId);
@@ -306,8 +316,9 @@ document.addEventListener('DOMContentLoaded', () => {
       total: subtotal - discountAmount
     };
 
-    // 上書き保存
+    // 進行中の会計を保存（古いデータを上書き）
     localStorage.setItem("currentTransaction", JSON.stringify(data));
+
     showScreen("screen2");
   });
 
@@ -315,6 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCartView();
 });
 </script>
+    
     <!-- === レジ2: お支払い画面 === -->
 <div id="screen2" class="w-full hidden flex-grow flex flex-col">
 
