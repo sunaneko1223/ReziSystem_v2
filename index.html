@@ -527,10 +527,12 @@ window.addEventListener("screenChanged", (e) => {
 
   // === レジ2からデータ取得 ===
   const paymentData = JSON.parse(localStorage.getItem("currentTransaction"));
+  console.log("受け取ったデータ:", paymentData); // ← 確認用
 
   if (paymentData) {
-    const changeNum = parseInt(paymentData.change, 10) || 0;
-    const totalNum = parseInt(paymentData.total, 10) || 0;
+    const changeNum = (typeof paymentData.change === "number")
+      ? paymentData.change
+      : parseInt(paymentData.change, 10) || 0;
 
     // おつり合計
     changeAmountEl.textContent = "¥" + changeNum.toLocaleString();
