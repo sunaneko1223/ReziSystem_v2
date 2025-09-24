@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.1.6</title>
+  <title>レジシステムv2.1.7</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -612,29 +612,30 @@ window.addEventListener("screenChanged", (e) => {
   </header>
 
   <main class="flex-grow p-6 flex flex-col min-h-0">
-    <!-- 新しい商品を追加 -->
-    <div class="mb-6 p-4 bg-gray-100 rounded-lg flex-shrink-0">
-      <h2 class="text-lg font-bold mb-2 text-gray-800">新しい商品を追加</h2>
-      <div class="flex flex-col sm:flex-row gap-2">
-        <input type="text" id="new-product-name" placeholder="商品名" class="flex-grow p-2 border rounded-lg">
-        <input type="text" id="new-product-flavor" placeholder="味 (任意)" class="flex-grow p-2 border rounded-lg">
-        <input type="number" id="new-product-price" placeholder="価格 (円)" class="w-full sm:w-32 p-2 border rounded-lg">
-        <button id="add-product-btn"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition">
-          追加
-        </button>
-      </div>
+  <!-- 新しい商品を追加 -->
+  <div class="mb-6 p-4 bg-gray-100 rounded-lg flex-shrink-0">
+    <h2 class="text-lg font-bold mb-2 text-gray-800">新しい商品を追加</h2>
+    <div class="flex flex-col sm:flex-row gap-2">
+      <input type="text" id="new-product-name" placeholder="商品名" class="flex-grow p-2 border rounded-lg">
+      <input type="text" id="new-product-flavor" placeholder="味 (任意)" class="flex-grow p-2 border rounded-lg">
+      <input type="number" id="new-product-price" placeholder="価格 (円)" class="w-full sm:w-32 p-2 border rounded-lg">
+      <button id="add-product-btn"
+              class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition">
+        追加
+      </button>
     </div>
-
-   <!-- 登録済み商品リスト -->
-<h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">登録済み商品リスト</h2>
-<div class="flex-grow min-h-0">
-  <div id="product-management-list"
-       class="allow-scroll space-y-2 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg h-full"
-       style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
-    <p class="text-gray-500">商品が登録されていません。</p>
   </div>
-</div>
+
+  <!-- 登録済み商品リスト -->
+  <div class="flex flex-col min-h-0 flex-grow">
+    <h2 class="text-lg font-bold mb-2 text-gray-800">登録済み商品リスト</h2>
+    <div id="product-management-list"
+         class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0 allow-scroll
+                bg-gray-50 p-3 rounded-lg"
+         style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
+      <p class="text-gray-500">商品が登録されていません。</p>
+    </div>
+  </div>
   </main>
 </div>
   
