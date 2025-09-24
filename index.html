@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.3.4</title>
+  <title>レジシステムv2.3.5</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -911,6 +911,16 @@ window.addEventListener("screenChanged", (e) => {
   if (e.detail !== "screen5") return;
 
   const historyListEl = document.getElementById("history-list");
+  const historySummaryContent = document.getElementById("history-summary-content");
+  const searchInput = document.getElementById("history-search-input");
+  const clearBtn = document.getElementById("clear-history-button");
+  const filterTypeBtn = document.getElementById("filter-type-btn");
+  const filterDateBtn = document.getElementById("filter-date-btn");
+
+  if (!historyListEl || !historySummaryContent) {
+    alert("❌ 必要な要素が見つかりません (idを確認してください)");
+    return;
+  }
 
   function loadHistory() {
     const stored = localStorage.getItem("transactionHistory");
@@ -921,18 +931,34 @@ window.addEventListener("screenChanged", (e) => {
     const history = loadHistory();
     historyListEl.innerHTML = "";
 
-    if (!history || history.length === 0) {
-      historyListEl.innerHTML = "<p>履歴がありません。</p>";
+    if (history.length === 0) {
+      historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
+      historySummaryContent.textContent = "";
       return;
     }
+
+    const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
+    historySummaryContent.textContent =
+      `取引件数: ${history.length} 件 ／ 売上合計: ¥${totalSales.toLocaleString()}`;
 
     history.forEach(h => {
       const div = document.createElement("div");
       div.className = "p-4 bg-white shadow rounded-lg";
-      div.textContent = `受付番号:${h.orderNumber} ／ 合計:¥${h.total}`;
+      div.innerHTML = `
+        <div class="font-bold">受付番号: ${h.orderNumber}</div>
+        <div>日付: ${h.date || "-"}</div>
+        <div>合計: ¥${(h.total || 0).toLocaleString()}</div>
+      `;
       historyListEl.appendChild(div);
     });
   }
+
+  clearBtn && (clearBtn.onclick = () => {
+    if (confirm("履歴をすべて削除しますか？")) {
+      localStorage.removeItem("transactionHistory");
+      renderHistory();
+    }
+  });
 
   renderHistory();
 });
