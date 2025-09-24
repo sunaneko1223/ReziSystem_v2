@@ -612,25 +612,32 @@ window.addEventListener("screenChanged", (e) => {
   </header>
 
   <main class="flex-grow p-6 flex flex-col min-h-0">
-  <main class="flex-grow p-6 flex flex-col min-h-0">
-  <!-- 新しい商品を追加 -->
-  <div class="mb-6 p-4 bg-gray-100 rounded-lg flex-shrink-0">
-    ...
-  </div>
-
-  <h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">
-    登録済み商品リスト
-  </h2>
-
-  <!-- ここがスクロール領域 -->
-  <div class="flex-grow min-h-0">
-    <div id="product-management-list"
-         class="allow-scroll overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg shadow h-full"
-         style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
-      <p class="text-gray-500">商品が登録されていません。</p>
+    <!-- 新しい商品を追加 -->
+    <div class="mb-6 p-4 bg-gray-100 rounded-lg flex-shrink-0">
+      <h2 class="text-lg font-bold mb-2 text-gray-800">新しい商品を追加</h2>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <input type="text" id="new-product-name" placeholder="商品名" class="flex-grow p-2 border rounded-lg">
+        <input type="text" id="new-product-flavor" placeholder="味 (任意)" class="flex-grow p-2 border rounded-lg">
+        <input type="number" id="new-product-price" placeholder="価格 (円)" class="w-full sm:w-32 p-2 border rounded-lg">
+        <button id="add-product-btn"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition">
+          追加
+        </button>
+      </div>
     </div>
-  </div>
-</main>
+
+    <!-- 登録済み商品リスト -->
+    <h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">登録済み商品リスト</h2>
+
+    <!-- ここがスクロール領域 -->
+    <div class="flex-grow min-h-0">
+      <div id="product-management-list"
+           class="allow-scroll overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg shadow h-full"
+           style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
+        <p class="text-gray-500">商品が登録されていません。</p>
+      </div>
+    </div>
+  </main>
 </div>
   
 <!-- === レジ4専用スクリプト === -->
