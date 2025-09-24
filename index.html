@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.4.5</title>
+  <title>レジシステムv2.4.6</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -924,15 +924,31 @@ window.addEventListener("screenChanged", (e) => {
   // === 履歴を描画テスト ===
   function renderHistory() {
   alert("renderHistory実行"); // ★ 実行確認
-  const history = loadHistory();
 
-  alert("履歴件数: " + history.length); // ★ 件数確認
+  let history = [];
+  try {
+    history = loadHistory();
+    alert("履歴ロード成功: 件数=" + history.length);
+  } catch (err) {
+    alert("履歴ロード失敗: " + err.message);
+    return;
+  }
+
+  if (!historyListEl) {
+    alert("❌ historyListEl が見つからない");
+    return;
+  }
+  if (!historySummaryContent) {
+    alert("❌ historySummaryContent が見つからない");
+    return;
+  }
 
   historyListEl.innerHTML = "";
 
   if (history.length === 0) {
     historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
     historySummaryContent.textContent = "";
+    alert("履歴なし");
     return;
   }
 
@@ -940,15 +956,18 @@ window.addEventListener("screenChanged", (e) => {
   const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
   historySummaryContent.textContent =
     `取引件数: ${history.length} 件 ／ 売上合計: ¥${totalSales.toLocaleString()}`;
+  alert("集計完了");
 
   // 古い順
   history.forEach(h => {
-    alert("描画中: " + h.orderNumber); // ★ ここで履歴ごとに表示
+    alert("描画中: " + h.orderNumber);
     const div = document.createElement("div");
     div.className = "p-4 bg-white shadow rounded-lg";
     div.textContent = "受付番号: " + h.orderNumber;
     historyListEl.appendChild(div);
   });
+
+  alert("描画完了");
 }
 
   renderHistory(); // ← ここで呼んでる
