@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.2.9</title>
+  <title>レジシステムv2.3.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -556,8 +556,13 @@ window.addEventListener("screenChanged", (e) => {
 
   if (paymentData) {
     // 数値保証（NaNや文字列対策）
-    const changeNum = Number(paymentData.change) || 0;
-    const totalNum = Number(paymentData.total) || 0;
+    const changeNum = (typeof paymentData.change === "number")
+      ? paymentData.change
+      : parseInt(paymentData.change, 10) || 0;
+
+    const totalNum = (typeof paymentData.total === "number")
+      ? paymentData.total
+      : parseInt(paymentData.total, 10) || 0;
 
     // おつり合計
     changeAmountEl.textContent = "¥" + changeNum.toLocaleString();
@@ -591,6 +596,18 @@ window.addEventListener("screenChanged", (e) => {
     } else {
       orderSummaryEl.innerHTML = "<p class='text-gray-500'>購入商品がありません。</p>";
     }
+
+    // === 履歴に保存 ===
+    const history = JSON.parse(localStorage.getItem("transactionHistory") || "[]");
+    history.push({
+      orderNumber: lastNumber,
+      date: new Date().toISOString(),
+      cart: paymentData.cart || [],
+      total: totalNum,
+      tendered: paymentData.tendered || 0,
+      change: changeNum
+    });
+    localStorage.setItem("transactionHistory", JSON.stringify(history));
   }
 
   // === 新しい会計へ ===
