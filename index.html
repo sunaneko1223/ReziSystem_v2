@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.4.2</title>
+  <title>レジシステムv2.4.3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -929,16 +929,25 @@ window.addEventListener("screenChanged", (e) => {
 
   // === 履歴を描画 ===
   function renderHistory() {
-    alert("🎨 renderHistory 実行");
-    const history = loadHistory();
+  alert("renderHistory実行開始"); // ★実行確認
+  const history = loadHistory();
+  alert("履歴件数: " + history.length); // ★件数確認
 
-    historyListEl.innerHTML = "";
+  const historyListEl = document.getElementById("history-list");
+  const historySummaryContent = document.getElementById("history-summary-content");
 
-    if (history.length === 0) {
-      historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
-      historySummaryContent.textContent = "";
-      return;
-    }
+  if (!historyListEl) {
+    alert("❌ history-list が見つからない");
+    return;
+  }
+  if (!historySummaryContent) {
+    alert("❌ history-summary-content が見つからない");
+    return;
+  }
+
+  historyListEl.innerHTML = "<p>テスト: リスト描画中</p>";
+  historySummaryContent.textContent = "テスト: 集計中";
+  }
 
     // 集計
     const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
