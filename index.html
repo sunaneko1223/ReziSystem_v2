@@ -905,7 +905,7 @@ window.addEventListener("screenChanged", (e) => {
   </main>
 </div>
 
-<!--=== レジ5:取引履歴 スクリプト ===-->
+<!--=== レジ5:取引履歴 スクリプト（デバッグ版） ===-->
 <script>
 window.addEventListener("screenChanged", (e) => {
   alert("screenChanged受信: " + e.detail); // ★ イベント確認
@@ -916,9 +916,6 @@ window.addEventListener("screenChanged", (e) => {
   const historySummaryContent = document.getElementById("history-summary-content");
   const searchInput = document.getElementById("history-search-input");
   const clearBtn = document.getElementById("clear-history-button");
-
-  const filterTypeBtn = document.getElementById("filter-type-btn");
-  const filterDateBtn = document.getElementById("filter-date-btn");
 
   // === 履歴データをロード ===
   function loadHistory() {
@@ -934,7 +931,8 @@ window.addEventListener("screenChanged", (e) => {
 
     historyListEl.innerHTML = "";
 
-    if (history.length === 0) {
+    if (!history || history.length === 0) {
+      alert("履歴0件 → 空表示");
       historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
       historySummaryContent.textContent = "";
       return;
@@ -944,9 +942,12 @@ window.addEventListener("screenChanged", (e) => {
     const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
     historySummaryContent.textContent =
       `取引件数: ${history.length} 件 ／ 売上合計: ¥${totalSales.toLocaleString()}`;
+    alert("集計OK 件数=" + history.length + " 売上=" + totalSales);
 
     // 古い順
     history.forEach(h => {
+      alert("描画する履歴: " + JSON.stringify(h)); // ★ ここで履歴内容を1件ずつ表示
+
       const div = document.createElement("div");
       div.className = "p-4 bg-white shadow rounded-lg";
 
