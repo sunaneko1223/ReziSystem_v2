@@ -539,6 +539,14 @@ window.addEventListener("screenChanged", (e) => {
 window.addEventListener("screenChanged", (e) => {
   if (e.detail !== "screen3") return;
 
+  alert("✅ レジ3に入りました");
+
+  const paymentDataRaw = localStorage.getItem("currentTransaction");
+  alert("currentTransaction(raw): " + paymentDataRaw);
+
+  const paymentData = paymentDataRaw ? JSON.parse(paymentDataRaw) : null;
+  alert("currentTransaction(parsed): " + JSON.stringify(paymentData));
+
   const orderNumberEl = document.getElementById("final-order-number");
   const changeAmountEl = document.getElementById("final-change-amount");
   const breakdownEl = document.getElementById("change-breakdown");
@@ -550,44 +558,18 @@ window.addEventListener("screenChanged", (e) => {
   lastNumber++;
   localStorage.setItem("lastOrderNumber", lastNumber);
   orderNumberEl.textContent = lastNumber;
-
-  // === レジ2からデータ取得 ===
-  const paymentData = JSON.parse(localStorage.getItem("currentTransaction"));
+  alert("受付番号: " + lastNumber);
 
   if (paymentData) {
-    // 数値保証（NaNや文字列対策）
-    const changeNum = (typeof paymentData.change === "number")
-      ? paymentData.change
-      : parseInt(paymentData.change, 10) || 0;
+    // 数値保証
+    const changeNum = Number(paymentData.change) || 0;
+    const totalNum = Number(paymentData.total) || 0;
 
-    const totalNum = (typeof paymentData.total === "number")
-      ? paymentData.total
-      : parseInt(paymentData.total, 10) || 0;
-
-    // おつり合計
-    changeAmountEl.textContent = "¥" + changeNum.toLocaleString();
-
-    // 内訳
-    breakdownEl.innerHTML = "";
-    if (changeNum > 0) {
-      let remain = changeNum;
-      const coins = [1000, 500, 100, 50, 10];
-      coins.forEach(c => {
-        const count = Math.floor(remain / c);
-        if (count > 0) {
-          const div = document.createElement("div");
-          div.textContent = `${c}円 × ${count}`;
-          breakdownEl.appendChild(div);
-          remain -= c * count;
-        }
-      });
-    } else {
-      breakdownEl.innerHTML = "<p class='text-gray-500'>おつりがありません</p>";
-    }
+    alert("合計:" + totalNum + " おつり:" + changeNum);
 
     // ご購入内容
     orderSummaryEl.innerHTML = "";
-    if (paymentData.cart && Array.isArray(paymentData.cart) && paymentData.cart.length > 0) {
+    if (paymentData.cart && paymentData.cart.length > 0) {
       paymentData.cart.forEach(item => {
         const p = document.createElement("p");
         p.textContent = `${item.name || "商品"} × ${item.quantity}点 (無料券${item.freeCount || 0}枚)`;
@@ -597,21 +579,20 @@ window.addEventListener("screenChanged", (e) => {
       orderSummaryEl.innerHTML = "<p class='text-gray-500'>購入商品がありません。</p>";
     }
 
-    // === 履歴に保存 ===  
-const history = JSON.parse(localStorage.getItem("transactionHistory") || "[]");
-history.push({  
-  orderNumber: lastNumber,  
-  date: new Date().toISOString(),  
-  cart: paymentData.cart || [],  
-  total: totalNum,  
-  tendered: paymentData.tendered || 0,  
-  change: changeNum  
-});  
-localStorage.setItem("transactionHistory", JSON.stringify(history));
+    // === 履歴に保存 ===
+    const history = JSON.parse(localStorage.getItem("transactionHistory") || "[]");
+    history.push({
+      orderNumber: lastNumber,
+      date: new Date().toISOString(),
+      cart: paymentData.cart || [],
+      total: totalNum,
+      tendered: paymentData.tendered || 0,
+      change: changeNum
+    });
+    localStorage.setItem("transactionHistory", JSON.stringify(history));
 
-// ★ 保存確認用アラート
-alert("保存後の履歴件数: " + history.length);
-alert("履歴データ:\n" + JSON.stringify(history, null, 2));
+    alert("履歴に保存しました: 件数=" + history.length);
+  }
 
   // === 新しい会計へ ===
   newTransactionBtn.onclick = () => {
