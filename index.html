@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.3.1</title>
+  <title>レジシステムv2.3.2</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -908,103 +908,55 @@ window.addEventListener("screenChanged", (e) => {
 <!--=== レジ5:取引履歴 スクリプト ===-->
 <script>
 window.addEventListener("screenChanged", (e) => {
+  alert("screenChanged受信: " + e.detail); // ★ イベント確認
   if (e.detail !== "screen5") return;
+  alert("✅ レジ5処理開始"); // ★ レジ5に入ったか確認
 
   const historyListEl = document.getElementById("history-list");
-  const summaryContentEl = document.getElementById("history-summary-content");
+  const historySummaryContent = document.getElementById("history-summary-content");
   const searchInput = document.getElementById("history-search-input");
   const clearBtn = document.getElementById("clear-history-button");
 
-  const filterTypeBtn = document.getElementById("filter-type-btn"); 
+  const filterTypeBtn = document.getElementById("filter-type-btn");
   const filterDateBtn = document.getElementById("filter-date-btn");
 
-  // === 履歴ロード ===
+  // === 履歴データをロード ===
   function loadHistory() {
     const stored = localStorage.getItem("transactionHistory");
+    alert("履歴データ(raw): " + stored); // ★ 履歴の中身確認
     return stored ? JSON.parse(stored) : [];
   }
 
-  // === 保存 ===
-  function saveHistory(data) {
-    localStorage.setItem("transactionHistory", JSON.stringify(data));
-  }
-
-  // === フィルタ処理 ===
-  function applyFilters(history) {
-    let filtered = [...history];
-
-    // 検索
-    const searchValue = searchInput.value.trim();
-    if (searchValue) {
-      filtered = filtered.filter(h => String(h.orderNumber).includes(searchValue));
-    }
-
-    // 日付
-    if (filterDateBtn.dataset.value === "today") {
-      const today = new Date().toISOString().split("T")[0];
-      filtered = filtered.filter(h => h.date && h.date.startsWith(today));
-    }
-
-    return filtered;
-  }
-
-  // === 描画 ===
+  // === 履歴を描画 ===
   function renderHistory() {
+    alert("renderHistory実行"); // ★ 実行確認
     const history = loadHistory();
-    const filtered = applyFilters(history);
 
     historyListEl.innerHTML = "";
-    summaryContentEl.innerHTML = "";
 
-    if (filtered.length === 0) {
+    if (history.length === 0) {
       historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
+      historySummaryContent.textContent = "";
       return;
     }
 
-    // 売上集計
-    const totalSales = filtered.reduce((sum, h) => sum + (h.total || 0), 0);
-    summaryContentEl.textContent = `取引件数: ${filtered.length} 件 ／ 売上合計: ¥${totalSales.toLocaleString()}`;
+    // 集計
+    const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
+    historySummaryContent.textContent =
+      `取引件数: ${history.length} 件 ／ 売上合計: ¥${totalSales.toLocaleString()}`;
 
-    // フィルタ: 取引/商品
-    if (filterTypeBtn.dataset.value === "transaction") {
-      // 取引ごと表示
-      filtered.forEach(h => {
-        const div = document.createElement("div");
-        div.className = "p-4 bg-white shadow rounded-lg";
-        div.innerHTML = `
-          <div class="font-bold">受付番号: ${h.orderNumber}</div>
-          <div>日付: ${h.date ? new Date(h.date).toLocaleString() : "-"}</div>
-          <div>合計: ¥${(h.total || 0).toLocaleString()}</div>
-        `;
-        historyListEl.appendChild(div);
-      });
-    } else {
-      // 商品ごと表示
-      const productMap = {};
-      filtered.forEach(h => {
-        (h.cart || []).forEach(item => {
-          if (!productMap[item.name]) {
-            productMap[item.name] = { totalQty: 0, totalPrice: 0, details: [] };
-          }
-          productMap[item.name].totalQty += item.quantity;
-          productMap[item.name].totalPrice += item.price * item.quantity;
-          productMap[item.name].details.push(item);
-        });
-      });
+    // 古い順
+    history.forEach(h => {
+      const div = document.createElement("div");
+      div.className = "p-4 bg-white shadow rounded-lg";
 
-      Object.entries(productMap).forEach(([name, data]) => {
-        const div = document.createElement("div");
-        div.className = "p-4 bg-white shadow rounded-lg";
-        let detailHTML = data.details.map(d =>
-          `<div>${name}${d.flavor ? ":" + d.flavor : ""} ${d.quantity}個 │ ¥${(d.price * d.quantity).toLocaleString()}</div>`
-        ).join("");
-        div.innerHTML = `
-          <div class="font-bold">${name} ${data.totalQty}個 │ ¥${data.totalPrice.toLocaleString()}</div>
-          ${detailHTML}
-        `;
-        historyListEl.appendChild(div);
-      });
-    }
+      div.innerHTML = `
+        <div class="font-bold">受付番号: ${h.orderNumber}</div>
+        <div>日付: ${h.date || "-"}</div>
+        <div>合計: ¥${(h.total || 0).toLocaleString()}</div>
+      `;
+      historyListEl.appendChild(div);
+    });
   }
 
   // === 削除 ===
@@ -1015,35 +967,11 @@ window.addEventListener("screenChanged", (e) => {
     }
   };
 
-  // === イベント ===
-  searchInput.oninput = renderHistory;
-
-  filterTypeBtn.onclick = () => {
-    filterTypeBtn.dataset.value =
-      filterTypeBtn.dataset.value === "transaction" ? "product" : "transaction";
-    filterTypeBtn.textContent =
-      filterTypeBtn.dataset.value === "transaction" ? "取引" : "商品";
-    renderHistory();
-  };
-
-  filterDateBtn.onclick = () => {
-    filterDateBtn.dataset.value =
-      filterDateBtn.dataset.value === "all" ? "today" : "all";
-    filterDateBtn.textContent =
-      filterDateBtn.dataset.value === "all" ? "すべて" : "今日のみ";
-    renderHistory();
-  };
-
-  // === 戻る ===
-  document.getElementById("back-to-screen1-from-history").onclick = () => {
-    showScreen("screen1");
-  };
-
-  // 初期表示
+  // 初期化
   renderHistory();
 });
 </script>
-    
+  
     <!-- 共通スクリプト -->
   <script>
     // 初期表示
