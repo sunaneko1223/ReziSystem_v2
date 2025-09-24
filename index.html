@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.2.8</title>
+  <title>レジシステムv2.2.9</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -749,8 +749,8 @@ window.addEventListener("screenChanged", (e) => {
         <div class="flex justify-between items-center text-sm text-gray-600 mt-1">
           <span>${p.flavor || ""}</span>
           <div class="flex gap-2">
-            <button class="edit bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-sm">編集</button>
-            <button class="delete bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">削除</button>
+            <button class="edit bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-2 rounded text-sm">編集</button>
+            <button class="delete bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-sm">削除</button>
           </div>
         </div>
         <div class="text-gray-800 mt-1">¥${p.price.toLocaleString()}</div>
