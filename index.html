@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.4.9</title>
+  <title>レジシステムv2.5.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -853,7 +853,7 @@ window.addEventListener("screenChanged", (e) => {
   </header>
 
   <!-- メインコンテンツ -->
-  <main class="flex-grow p-6 flex flex-col">
+  <main class="flex-grow p-6 flex flex-col min-h-0">
 
     <!-- 検索 & フィルター -->
     <div class="flex gap-2 items-center mb-4">
@@ -905,7 +905,8 @@ window.addEventListener("screenChanged", (e) => {
     </div>
 
     <!-- 取引履歴リスト -->
-    <div id="history-list" class="space-y-4"></div>
+    <div id="history-list" class="space-y-4 flex-grow overflow-y-auto no-scrollbar"></div>
+
   </main>
 </div>
 
