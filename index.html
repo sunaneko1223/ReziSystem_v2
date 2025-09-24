@@ -597,18 +597,21 @@ window.addEventListener("screenChanged", (e) => {
       orderSummaryEl.innerHTML = "<p class='text-gray-500'>購入商品がありません。</p>";
     }
 
-    // === 履歴に保存 ===
-    const history = JSON.parse(localStorage.getItem("transactionHistory") || "[]");
-    history.push({
-      orderNumber: lastNumber,
-      date: new Date().toISOString(),
-      cart: paymentData.cart || [],
-      total: totalNum,
-      tendered: paymentData.tendered || 0,
-      change: changeNum
-    });
-    localStorage.setItem("transactionHistory", JSON.stringify(history));
-  }
+    // === 履歴に保存 ===  
+const history = JSON.parse(localStorage.getItem("transactionHistory") || "[]");
+history.push({  
+  orderNumber: lastNumber,  
+  date: new Date().toISOString(),  
+  cart: paymentData.cart || [],  
+  total: totalNum,  
+  tendered: paymentData.tendered || 0,  
+  change: changeNum  
+});  
+localStorage.setItem("transactionHistory", JSON.stringify(history));
+
+// ★ 保存確認用アラート
+alert("保存後の履歴件数: " + history.length);
+alert("履歴データ:\n" + JSON.stringify(history, null, 2));
 
   // === 新しい会計へ ===
   newTransactionBtn.onclick = () => {
