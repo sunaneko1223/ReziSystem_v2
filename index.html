@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.1.8</title>
+  <title>レジシステムv2.1.9</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -627,23 +627,14 @@ window.addEventListener("screenChanged", (e) => {
   </div>
 
   <!-- 登録済み商品リスト -->
-  <div class="flex-grow min-h-0">
+<h2 class="text-lg font-bold mb-2 text-gray-800 flex-shrink-0">登録済み商品リスト</h2>
+<div class="flex-grow min-h-0">
   <div id="product-management-list"
-       class="allow-scroll overflow-y-auto bg-red-100 h-full"
-       style="max-height:200px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
-    <p>テスト1</p>
-    <p>テスト2</p>
-    <p>テスト3</p>
-    <p>テスト4</p>
-    <p>テスト5</p>
-    <p>テスト6</p>
-    <p>テスト7</p>
-    <p>テスト8</p>
-    <p>テスト9</p>
-    <p>テスト10</p>
-  </div>
-</div>
-  </div>
+       class="allow-scroll space-y-2 overflow-y-auto no-scrollbar bg-gray-50 p-3 rounded-lg"
+       style="max-height: 100%; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
+    <p class="text-gray-500">商品が登録されていません。</p>
+     </div>
+    </div>
   </main>
 </div>
   
