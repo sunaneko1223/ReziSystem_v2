@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.5.7</title>
+  <title>レジシステムv2.5.8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -841,9 +841,10 @@ window.addEventListener("screenChanged", (e) => {
     
   <!-- Screen 5: 取引履歴画面 -->
 <div id="screen5" class="w-full hidden flex-grow flex flex-col">
+
   <!-- ヘッダー -->
   <header class="bg-gray-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-    <h1 class="text-xl font-bold">レジ：取引履歴</h1>
+    <h1 class="text-xl font-bold">レジ５：取引履歴</h1>
     <button id="back-to-screen1-from-history"
             class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition">
       戻る
@@ -851,9 +852,10 @@ window.addEventListener("screenChanged", (e) => {
   </header>
 
   <!-- メイン -->
-  <main class="flex-grow p-6 flex flex-col space-y-4">
+  <main class="flex-grow p-6 flex flex-col">
+
     <!-- 検索 & フィルター -->
-    <div class="flex gap-2 items-center">
+    <div class="flex gap-2 items-center mb-4">
       <!-- ボタン1: 取引/商品 -->
       <div class="relative">
         <button id="filter-type-btn"
@@ -876,7 +878,7 @@ window.addEventListener("screenChanged", (e) => {
           すべて
         </button>
         <div id="filter-date-menu"
-             class="absolute mt-2 w-28 bg-white border rounded-lg shadow-lg hidden z-10">
+             class="absolute mt-2 w-32 bg-white border rounded-lg shadow-lg hidden z-10">
           <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="all">すべて</button>
           <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="today">今日のみ</button>
           <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="custom">日付指定</button>
@@ -889,29 +891,28 @@ window.addEventListener("screenChanged", (e) => {
              class="flex-grow p-2 border border-gray-300 rounded-lg">
     </div>
 
-    <!-- カレンダー（日付指定のときだけ表示） -->
-    <input type="date" id="custom-date-input"
-           class="hidden border p-2 rounded-lg w-48">
-
     <!-- 売上集計 -->
     <div id="history-summary"
-         class="p-4 bg-gray-100 rounded-lg text-gray-800 flex-shrink-0 relative">
-      <h3 class="text-lg font-semibold mb-2">売上集計</h3>
+         class="mb-4 p-4 bg-gray-100 rounded-lg text-gray-800 flex-shrink-0">
+      <h3 class="text-lg font-bold mb-2">売上集計</h3>
       <div id="history-summary-content"></div>
-
-      <!-- 履歴削除ボタン (右下固定) -->
-      <button id="clear-history-button"
-              class="absolute bottom-2 right-2 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg transition text-sm">
-        履歴を消去
-      </button>
     </div>
 
     <!-- 取引履歴リスト -->
     <div id="history-list" class="space-y-4"></div>
+
+    <!-- 履歴削除ボタン -->
+    <div class="mt-4 text-center flex-shrink-0">
+      <button id="clear-history-button"
+              class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition">
+        履歴を消去
+      </button>
+    </div>
   </main>
 </div>
  
-    <script>
+    <!-- screen5 取引履歴 script-->
+<script>
 window.addEventListener("screenChanged", (e) => {
   if (e.detail !== "screen5") return;
 
