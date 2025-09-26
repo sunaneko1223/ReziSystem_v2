@@ -859,30 +859,19 @@ window.addEventListener("screenChanged", (e) => {
       <!-- ボタン1: 取引/商品 -->
 <div class="relative inline-block">
   <button id="filter-type-btn"
-          class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-24 text-left"
+          class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-24 text-center"
           data-value="transaction">
     取引
   </button>
-  <div id="filter-type-menu"
-       class="absolute left-0 mt-1 w-24 bg-white border border-gray-200 rounded-lg shadow-lg hidden">
-    <button class="block w-full text-left px-4 py-2 text-sm hover:bg-blue-50" data-value="transaction">取引</button>
-    <button class="block w-full text-left px-4 py-2 text-sm hover:bg-blue-50" data-value="product">商品</button>
-  </div>
 </div>
 
 <!-- ボタン2: 日付フィルタ -->
 <div class="relative inline-block">
   <button id="filter-date-btn"
-          class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-28 text-left"
+          class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-28 text-center"
           data-value="all">
     すべて
   </button>
-  <div id="filter-date-menu"
-       class="absolute left-0 mt-1 w-28 bg-white border border-gray-200 rounded-lg shadow-lg hidden">
-    <button class="block w-full text-left px-4 py-2 text-sm hover:bg-blue-50" data-value="all">すべて</button>
-    <button class="block w-full text-left px-4 py-2 text-sm hover:bg-blue-50" data-value="today">今日のみ</button>
-    <button class="block w-full text-left px-4 py-2 text-sm hover:bg-blue-50" data-value="custom">日付指定</button>
-  </div>
 </div>
       
       <!-- 検索欄 -->
