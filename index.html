@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.7.0</title>
+  <title>レジシステムv2.7.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -859,30 +859,31 @@ window.addEventListener("screenChanged", (e) => {
       <!-- ボタン1: 取引/商品 -->
       <div class="relative inline-block">
         <button id="filter-type-btn"
-                class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-24 text-center"
+                class="dropdown-btn px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-24 text-center"
                 data-value="transaction">
           取引
         </button>
         <!-- ドロップダウン -->
         <div id="filter-type-menu"
-             class="absolute mt-2 w-24 bg-white border rounded-lg shadow-lg hidden z-10">
-          <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="transaction">取引</button>
-          <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="product">商品</button>
+             class="dropdown-menu absolute mt-1 w-32 bg-gray-800 text-white rounded-lg shadow-lg hidden z-50 overflow-hidden">
+          <button class="block w-full text-left px-4 py-2 hover:bg-gray-700" data-value="transaction">取引</button>
+          <button class="block w-full text-left px-4 py-2 hover:bg-gray-700" data-value="product">商品</button>
         </div>
       </div>
 
       <!-- ボタン2: 日付フィルタ -->
       <div class="relative inline-block">
         <button id="filter-date-btn"
-                class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-28 text-center"
+                class="dropdown-btn px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-28 text-center"
                 data-value="all">
           すべて
         </button>
         <!-- ドロップダウン -->
         <div id="filter-date-menu"
-             class="absolute mt-2 w-28 bg-white border rounded-lg shadow-lg hidden z-10">
-          <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="all">すべて</button>
-          <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="today">今日のみ</button>
+             class="dropdown-menu absolute mt-1 w-32 bg-gray-800 text-white rounded-lg shadow-lg hidden z-50 overflow-hidden">
+          <button class="block w-full text-left px-4 py-2 hover:bg-gray-700" data-value="all">すべて</button>
+          <button class="block w-full text-left px-4 py-2 hover:bg-gray-700" data-value="today">今日のみ</button>
+          <button class="block w-full text-left px-4 py-2 hover:bg-gray-700" data-value="custom">日付指定</button>
         </div>
       </div>
 
@@ -896,7 +897,7 @@ window.addEventListener("screenChanged", (e) => {
     <div id="history-summary"
          class="mb-4 p-4 bg-gray-100 rounded-lg text-gray-800 flex-shrink-0 relative">
       <h3 class="text-lg font-semibold mb-2">売上集計</h3>
-      <div id="history-summary-content" class="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+      <div id="history-summary-content" class="grid grid-cols-2 gap-x-6 gap-y-1 text-base">
         <div>総売上: ¥0</div>
         <div>取引件数: 0件</div>
         <div class="text-red-600">割引合計: -¥0</div>
