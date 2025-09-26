@@ -903,6 +903,44 @@ window.addEventListener("screenChanged", (e) => {
   </main>
 </div>
 
+    <!--レジ5 スタイル-->
+<style>
+/* iOS風ボタン */
+.ios-btn {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background: white;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.ios-btn.active {
+  border-color: #007aff;
+  color: #007aff;
+}
+
+/* ドロップダウン */
+.ios-dropdown {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  overflow: hidden;
+  z-index: 50;
+}
+.ios-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  text-align: left;
+  background: white;
+  border: none;
+}
+.ios-dropdown button:hover {
+  background: #f0f0f0;
+}
+</style>
+    
 <!-- === レジ5: 取引履歴スクリプト === -->
 <script>
 // ===== iOS風ドロップダウン設定 =====
@@ -1056,44 +1094,6 @@ window.addEventListener("screenChanged", (e) => {
 setupDropdown("filter-type-btn", "filter-type-menu");
 setupDropdown("filter-date-btn", "filter-date-menu");
 </script>
-
-    <!--レジ5 スタイル-->
-<style>
-/* iOS風ボタン */
-.ios-btn {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  background: white;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-.ios-btn.active {
-  border-color: #007aff;
-  color: #007aff;
-}
-
-/* ドロップダウン */
-.ios-dropdown {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  overflow: hidden;
-  z-index: 50;
-}
-.ios-dropdown button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  text-align: left;
-  background: white;
-  border: none;
-}
-.ios-dropdown button:hover {
-  background: #f0f0f0;
-}
-</style>
     
     <!-- 共通スクリプト -->
   <script>
