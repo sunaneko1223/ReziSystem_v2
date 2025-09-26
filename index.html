@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.6.0</title>
+  <title>レジシステムv2.6.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -939,10 +939,10 @@ window.addEventListener("screenChanged", (e) => {
       sum + h.cart.reduce((cSum, item) => cSum + (item.freeCount || 0), 0), 0);
 
     historySummaryEl.innerHTML = `
-      <div>総売上: ¥${totalSales.toLocaleString()}</div>
-      <div>取引件数: ${history.length}件</div>
-      <div>割引合計: ¥${totalDiscount.toLocaleString()}</div>
-      <div>クーポン使用数: ${couponUsed}枚</div>
+      <div class="text-base">総売上: <span class="font-bold">¥${totalSales.toLocaleString()}</span></div>
+      <div class="text-base">取引件数: <span class="font-bold">${history.length}件</span></div>
+      <div class="text-base text-red-600">割引合計: <span class="font-bold">-¥${totalDiscount.toLocaleString()}</span></div>
+      <div class="text-base">クーポン使用数: <span class="font-bold">${couponUsed}枚</span></div>
     `;
   }
 
