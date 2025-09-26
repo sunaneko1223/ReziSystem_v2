@@ -979,7 +979,7 @@ window.addEventListener("screenChanged", (e) => {
   }
 // === 表示 ===
 function renderHistory() {
-  // 補助：通貨フォーマット（数値を受け取り '¥1,234' 形式を返す）
+  // 補助
   const fmt = (v) => `¥${Number(v || 0).toLocaleString()}`;
 
   // 履歴取得 → フィルタ適用
@@ -1026,7 +1026,7 @@ function renderHistory() {
         <div class="mt-2 space-y-1">
           ${itemsHtml}
         </div>
-        <div class="flex justify-between mt-2 text-sm">
+        <div class="flex justify-end mt-2 text-sm">
           <span>預り: ${fmt(tenderedNum)}</span>
           <span>おつり: ${fmt(changeNum)}</span>
         </div>
@@ -1036,7 +1036,7 @@ function renderHistory() {
 
   } else {
     // 商品モード：商品ごとに合計数量／合計金額を出し、明細は下に並べる
-    const productMap = {}; // key:name → { totalQty, totalPrice, details: [{flavor, qty, subtotal}] }
+    const productMap = {}; 
 
     filtered.forEach(h => {
       (h.cart || []).forEach(item => {
