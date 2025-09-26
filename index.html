@@ -934,7 +934,13 @@ window.addEventListener("screenChanged", (e) => {
   // === 売上集計 ===
   function updateSummary(history) {
     const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
-    const totalDiscount = history.reduce((sum, h) => sum + (h.discount || 0), 0);
+
+    // クーポンによる割引合計を計算
+    const totalDiscount = history.reduce((sum, h) => {
+      return sum + h.cart.reduce((cSum, item) =>
+        cSum + ((item.freeCount || 0) * (item.price || 0)), 0);
+    }, 0);
+
     const couponUsed = history.reduce((sum, h) =>
       sum + h.cart.reduce((cSum, item) => cSum + (item.freeCount || 0), 0), 0);
 
