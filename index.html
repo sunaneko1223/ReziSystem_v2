@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.6.2</title>
+  <title>レジシステムv2.6.3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -960,7 +960,7 @@ window.addEventListener("screenChanged", (e) => {
     );
 
     summaryEl.innerHTML = `
-      <div class="grid grid-cols-2 gap-2 text-sm text-gray-700">
+      <div class="grid grid-cols-2 gap-2 text-sm text-gray-700 text-base">
         <div>総売上: <span class="font-bold">¥${totalSales.toLocaleString()}</span></div>
         <div>取引件数: <span class="font-bold">${history.length}件</span></div>
         <div>割引合計: <span class="font-bold text-red-500">-¥${discountSum.toLocaleString()}</span></div>
@@ -998,24 +998,38 @@ window.addEventListener("screenChanged", (e) => {
 
     // === 商品モード ===
     else if (type === "product") {
-      const productMap = {};
+      // 商品ごとにまとめる
+      const grouped = {};
       history.forEach(h => {
         h.cart.forEach(item => {
-          const key = `${item.name}${item.flavor ? ":" + item.flavor : ""}`;
-          if (!productMap[key]) {
-            productMap[key] = { quantity: 0, price: 0 };
+          if (!grouped[item.name]) {
+            grouped[item.name] = { totalQty: 0, totalPrice: 0, flavors: {} };
           }
-          productMap[key].quantity += item.quantity;
-          productMap[key].price += item.quantity * (item.price || 0);
+          grouped[item.name].totalQty += item.quantity;
+          grouped[item.name].totalPrice += item.quantity * (item.price || 0);
+          if (!grouped[item.name].flavors[item.flavor || "なし"]) {
+            grouped[item.name].flavors[item.flavor || "なし"] = { qty: 0, price: 0 };
+          }
+          grouped[item.name].flavors[item.flavor || "なし"].qty += item.quantity;
+          grouped[item.name].flavors[item.flavor || "なし"].price += item.quantity * (item.price || 0);
         });
       });
 
-      Object.entries(productMap).forEach(([name, data]) => {
+      Object.entries(grouped).forEach(([name, data]) => {
         const div = document.createElement("div");
-        div.className = "p-3 bg-white rounded-lg shadow flex justify-between";
+        div.className = "p-4 bg-white rounded-lg shadow";
+
         div.innerHTML = `
-          <span class="font-semibold">${name}</span>
-          <span>${data.quantity}個 │ ¥${data.price.toLocaleString()}</span>
+          <div class="flex justify-between items-center">
+            <span class="text-blue-600 font-bold">${name}</span>
+            <span class="font-semibold">${data.totalQty}個 │ ¥${data.totalPrice.toLocaleString()}</span>
+          </div>
+          <hr class="my-2">
+          <div class="mt-1 text-sm">
+            ${Object.entries(data.flavors).map(([flavor, fdata]) =>
+              `<div>${name}:${flavor} × ${fdata.qty}個 │ ¥${fdata.price.toLocaleString()}</div>`
+            ).join("")}
+          </div>
         `;
         listEl.appendChild(div);
       });
@@ -1038,8 +1052,6 @@ window.addEventListener("screenChanged", (e) => {
       filterTypeBtn.dataset.value === "transaction" ? "取引" : "商品";
     renderHistory();
   };
-
-  // 日付フィルタは後で追加予定
 
   // === 戻るボタン ===
   backBtn.onclick = () => {
