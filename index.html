@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.6.7</title>
+  <title>レジシステムv2.6.8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -1046,31 +1046,63 @@ window.addEventListener("screenChanged", (e) => {
     }
   };
 
-  // === ドロップダウン動作 ===
-  filterTypeBtn.onclick = () => {
-    filterTypeMenu.classList.toggle("hidden");
-  };
-  filterTypeMenu.querySelectorAll("button").forEach(btn => {
-    btn.onclick = () => {
-      filterTypeBtn.textContent = btn.textContent;
-      filterTypeBtn.dataset.value = btn.dataset.value;
-      filterTypeMenu.classList.add("hidden");
-      renderHistory();
+  // iOS風の選択メニューを出す関数
+function showActionSheet(button, options, callback) {
+  // 背景のオーバーレイ
+  const overlay = document.createElement("div");
+  overlay.className = "fixed inset-0 bg-black bg-opacity-40 flex items-end justify-center z-50";
+
+  // メニュー本体
+  const menu = document.createElement("div");
+  menu.className = "bg-white w-full max-w-sm rounded-t-xl overflow-hidden";
+
+  options.forEach(opt => {
+    const item = document.createElement("button");
+    item.className = "w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-100";
+    item.textContent = opt.label;
+    item.onclick = () => {
+      callback(opt.value, opt.label);
+      document.body.removeChild(overlay);
     };
+    menu.appendChild(item);
   });
 
-  filterDateBtn.onclick = () => {
-    filterDateMenu.classList.toggle("hidden");
-  };
-  filterDateMenu.querySelectorAll("button").forEach(btn => {
-    btn.onclick = () => {
-      filterDateBtn.textContent = btn.textContent;
-      filterDateBtn.dataset.value = btn.dataset.value;
-      filterDateMenu.classList.add("hidden");
-      renderHistory();
-    };
-  });
+  // キャンセルボタン
+  const cancel = document.createElement("button");
+  cancel.className = "w-full text-center px-4 py-3 text-red-500 font-semibold bg-gray-50";
+  cancel.textContent = "キャンセル";
+  cancel.onclick = () => document.body.removeChild(overlay);
+  menu.appendChild(cancel);
 
+  overlay.appendChild(menu);
+  document.body.appendChild(overlay);
+}
+
+// ボタン1: 取引/商品
+document.getElementById("filter-type-btn").onclick = function () {
+  showActionSheet(this, [
+    { value: "transaction", label: "取引" },
+    { value: "product", label: "商品" }
+  ], (value, label) => {
+    this.dataset.value = value;
+    this.textContent = label;
+    this.classList.add("border-blue-500", "text-blue-600"); // 選択時に青枠
+  });
+};
+
+// ボタン2: 日付フィルタ
+document.getElementById("filter-date-btn").onclick = function () {
+  showActionSheet(this, [
+    { value: "all", label: "すべて" },
+    { value: "today", label: "今日のみ" },
+    { value: "custom", label: "日付指定" }
+  ], (value, label) => {
+    this.dataset.value = value;
+    this.textContent = label;
+    this.classList.add("border-blue-500", "text-blue-600"); // 選択時に青枠
+  });
+};
+  
   // === 戻るボタン ===
   backBtn.onclick = () => {
     showScreen("screen1");
