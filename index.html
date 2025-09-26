@@ -967,7 +967,7 @@ window.addEventListener("screenChanged", (e) => {
       const header = document.createElement("div");
       header.className = "flex justify-between font-bold border-b pb-1 mb-2";
       header.innerHTML = `
-        <span>受付番号: ${h.orderNumber}</span>
+        <span class="text-blue-600">受付番号: ${h.orderNumber}</span>
         <span>合計: ¥${(h.total || 0).toLocaleString()}</span>
       `;
       card.appendChild(header);
