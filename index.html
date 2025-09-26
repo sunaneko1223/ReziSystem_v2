@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.6.4</title>
+  <title>レジシステムv2.6.5</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -857,33 +857,44 @@ window.addEventListener("screenChanged", (e) => {
     <!-- 検索 & フィルター -->
     <div class="flex gap-2 items-center mb-4">
       <!-- ボタン1: 取引/商品 -->
-      <div class="relative">
-        <button id="filter-type-btn"
-                class="bg-gray-300 px-4 py-2 rounded-lg w-24 text-center"
-                data-value="transaction">
-          取引
-        </button>
-        <div id="filter-type-menu"
-             class="absolute mt-2 w-24 bg-white border rounded-lg shadow-lg hidden z-10">
-          <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="transaction">取引</button>
-          <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="product">商品</button>
-        </div>
-      </div>
+<div class="relative">
+  <button id="filter-type-btn"
+          class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg w-28 text-center flex justify-between items-center">
+    取引
+    <svg class="w-4 h-4 ml-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+  <div id="filter-type-menu"
+       class="absolute mt-2 w-28 bg-white border rounded-xl shadow-lg hidden z-10 origin-top transition transform scale-95 opacity-0">
+    <button class="block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-t-xl" data-value="transaction">
+      取引
+    </button>
+    <button class="block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-b-xl" data-value="product">
+      商品
+    </button>
+  </div>
+</div>
 
-      <!-- ボタン2: すべて/今日のみ/日付指定 -->
-      <div class="relative">
-        <button id="filter-date-btn"
-                class="bg-gray-300 px-4 py-2 rounded-lg w-28 text-center"
-                data-value="all">
-          すべて
-        </button>
-        <div id="filter-date-menu"
-             class="absolute mt-2 w-28 bg-white border rounded-lg shadow-lg hidden z-10">
-          <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="all">すべて</button>
-          <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="today">今日のみ</button>
-          <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="custom">日付指定</button>
-        </div>
-      </div>
+<!-- ボタン2: すべて/今日のみ -->
+<div class="relative">
+  <button id="filter-date-btn"
+          class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg w-28 text-center flex justify-between items-center">
+    すべて
+    <svg class="w-4 h-4 ml-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+  <div id="filter-date-menu"
+       class="absolute mt-2 w-32 bg-white border rounded-xl shadow-lg hidden z-10 origin-top transition transform scale-95 opacity-0">
+    <button class="block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-t-xl" data-value="all">
+      すべて
+    </button>
+    <button class="block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-b-xl" data-value="today">
+      今日のみ
+    </button>
+  </div>
+</div>
 
       <!-- 検索欄 -->
       <input type="search" id="history-search-input"
