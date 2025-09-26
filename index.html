@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.6.9</title>
+  <title>レジシステムv2.7.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -851,34 +851,29 @@ window.addEventListener("screenChanged", (e) => {
     </button>
   </header>
 
-  <!-- メイン -->
+  <!-- メインコンテンツ -->
   <main class="flex-grow p-6 flex flex-col">
 
     <!-- 検索 & フィルター -->
     <div class="flex gap-2 items-center mb-4">
       <!-- ボタン1: 取引/商品 -->
-      <div class="relative inline-block">
-        <button id="filter-type-btn" class="ios-btn w-24" data-value="transaction">
-          取引
-        </button>
-        <div id="filter-type-menu" class="ios-dropdown hidden absolute mt-2 w-24">
-          <button data-value="transaction">取引</button>
-          <button data-value="product">商品</button>
-        </div>
-      </div>
+<div class="relative inline-block">
+  <button id="filter-type-btn"
+          class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-24 text-center"
+          data-value="transaction">
+    取引
+  </button>
+</div>
 
-      <!-- ボタン2: 日付フィルタ -->
-      <div class="relative inline-block">
-        <button id="filter-date-btn" class="ios-btn w-28" data-value="all">
-          すべて
-        </button>
-        <div id="filter-date-menu" class="ios-dropdown hidden absolute mt-2 w-28">
-          <button data-value="all">すべて</button>
-          <button data-value="today">今日のみ</button>
-          <button data-value="custom">日付指定</button>
-        </div>
-      </div>
-
+<!-- ボタン2: 日付フィルタ -->
+<div class="relative inline-block">
+  <button id="filter-date-btn"
+          class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-28 text-center"
+          data-value="all">
+    すべて
+  </button>
+</div>
+      
       <!-- 検索欄 -->
       <input type="search" id="history-search-input"
              placeholder="受付番号で検索"
@@ -889,7 +884,12 @@ window.addEventListener("screenChanged", (e) => {
     <div id="history-summary"
          class="mb-4 p-4 bg-gray-100 rounded-lg text-gray-800 flex-shrink-0 relative">
       <h3 class="text-lg font-semibold mb-2">売上集計</h3>
-      <div id="history-summary-content"></div>
+      <div id="history-summary-content" class="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+        <div>総売上: ¥0</div>
+        <div>取引件数: 0件</div>
+        <div>割引合計: ¥0</div>
+        <div>クーポン使用数: 0枚</div>
+      </div>
 
       <!-- 履歴削除ボタン -->
       <button id="clear-history-button"
@@ -903,77 +903,23 @@ window.addEventListener("screenChanged", (e) => {
   </main>
 </div>
 
-    <!--レジ5 スタイル-->
-<style>
-/* iOS風ボタン */
-.ios-btn {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  background: white;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-.ios-btn.active {
-  border-color: #007aff;
-  color: #007aff;
-}
 
-/* ドロップダウン */
-.ios-dropdown {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  overflow: hidden;
-  z-index: 50;
-}
-.ios-dropdown button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  text-align: left;
-  background: white;
-  border: none;
-}
-.ios-dropdown button:hover {
-  background: #f0f0f0;
-}
-</style>
-    
-<!-- === レジ5: 取引履歴スクリプト === -->
+<!-- === レジ5専用スクリプト === -->
 <script>
-// ===== iOS風ドロップダウン設定 =====
-function setupDropdown(btnId, menuId) {
-  const btn = document.getElementById(btnId);
-  const menu = document.getElementById(menuId);
-
-  btn.addEventListener("click", () => {
-    menu.classList.toggle("hidden");
-  });
-
-  menu.querySelectorAll("button").forEach(item => {
-    item.addEventListener("click", () => {
-      btn.textContent = item.textContent;
-      btn.classList.add("active");
-      btn.dataset.value = item.dataset.value;
-      menu.classList.add("hidden");
-      renderHistory(); // 選択後に再描画
-    });
-  });
-}
-
-// ===== 履歴管理 =====
 window.addEventListener("screenChanged", (e) => {
   if (e.detail !== "screen5") return;
 
-  const historyListEl = document.getElementById("history-list");
+  const listEl = document.getElementById("history-list");
   const historySummaryEl = document.getElementById("history-summary-content");
   const searchInput = document.getElementById("history-search-input");
   const clearBtn = document.getElementById("clear-history-button");
   const filterTypeBtn = document.getElementById("filter-type-btn");
   const filterDateBtn = document.getElementById("filter-date-btn");
+  const filterTypeMenu = document.getElementById("filter-type-menu");
+  const filterDateMenu = document.getElementById("filter-date-menu");
+  const backBtn = document.getElementById("back-to-screen1-from-history");
 
+  // === 履歴を取得 ===
   function loadHistory() {
     const stored = localStorage.getItem("transactionHistory");
     return stored ? JSON.parse(stored) : [];
@@ -982,90 +928,112 @@ window.addEventListener("screenChanged", (e) => {
   // === 売上集計 ===
   function updateSummary(history) {
     const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
-    const totalDiscount = history.reduce((sum, h) =>
-      sum + h.cart.reduce((cSum, item) =>
-        cSum + ((item.freeCount || 0) * (item.price || 0)), 0), 0);
+    const totalDiscount = history.reduce((sum, h) => {
+      return sum + h.cart.reduce((cSum, item) =>
+        cSum + ((item.freeCount || 0) * (item.price || 0)), 0);
+    }, 0);
     const couponUsed = history.reduce((sum, h) =>
       sum + h.cart.reduce((cSum, item) => cSum + (item.freeCount || 0), 0), 0);
 
     historySummaryEl.innerHTML = `
-      <div class="text-lg">総売上: <span class="font-bold">¥${totalSales.toLocaleString()}</span></div>
-      <div class="text-lg">取引件数: <span class="font-bold">${history.length}件</span></div>
-      <div class="text-lg text-red-600">割引合計: <span class="font-bold">-¥${totalDiscount.toLocaleString()}</span></div>
-      <div class="text-lg">クーポン使用数: <span class="font-bold">${couponUsed}枚</span></div>
+      <div class="text-base">総売上: <span class="font-bold">¥${totalSales.toLocaleString()}</span></div>
+      <div class="text-base">取引件数: <span class="font-bold">${history.length}件</span></div>
+      <div class="text-base text-red-600">割引合計: <span class="font-bold">-¥${totalDiscount.toLocaleString()}</span></div>
+      <div class="text-base">クーポン使用数: <span class="font-bold">${couponUsed}枚</span></div>
     `;
   }
 
-  // === 履歴描画 ===
-  function renderHistory() {
-    let history = loadHistory();
-
-    // 検索
-    const searchValue = searchInput.value.trim();
-    if (searchValue) {
-      history = history.filter(h => String(h.orderNumber).includes(searchValue));
-    }
+  // === フィルタ適用 ===
+  function applyFilters(history) {
+    let filtered = [...history];
 
     // 日付フィルタ
     if (filterDateBtn.dataset.value === "today") {
       const today = new Date().toISOString().split("T")[0];
-      history = history.filter(h => h.date && h.date.startsWith(today));
+      filtered = filtered.filter(h => h.date && h.date.startsWith(today));
     }
 
-    historyListEl.innerHTML = "";
-    if (history.length === 0) {
-      historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
+    return filtered;
+  }
+
+  // === 履歴を描画 ===
+  function renderHistory() {
+    const history = applyFilters(loadHistory());
+    if (!history || history.length === 0) {
+      listEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
       historySummaryEl.textContent = "";
       return;
     }
 
+    // 集計を反映
     updateSummary(history);
 
-    // モード切り替え
-    if (filterTypeBtn.dataset.value === "transaction") {
-      // 取引モード
+    listEl.innerHTML = "";
+
+    // フィルタ種別
+    const type = filterTypeBtn.dataset.value || "transaction";
+
+    // === 取引モード ===
+    if (type === "transaction") {
       history.forEach(h => {
         const div = document.createElement("div");
-        div.className = "p-4 bg-white shadow rounded-lg";
+        div.className = "p-4 bg-white rounded-lg shadow";
 
         div.innerHTML = `
-          <div class="font-bold text-blue-600">受付番号: ${h.orderNumber} │ 合計: ¥${(h.total || 0).toLocaleString()}</div>
+          <div class="flex justify-between items-center">
+            <span class="text-blue-600 font-bold">受付番号: ${h.orderNumber}</span>
+            <span class="font-semibold">¥${h.total.toLocaleString()}</span>
+          </div>
           <hr class="my-2">
-          <div class="text-sm">時間: ${h.date || "-"}</div>
-          ${h.cart.map(item => `
-            <div class="flex justify-between text-sm">
-              <span>${item.name} : ${item.flavor || ""} × ${item.quantity}</span>
-              <span>預り: ¥${(h.tendered || 0).toLocaleString()} / おつり: ¥${(h.change || 0).toLocaleString()}</span>
-            </div>
-          `).join("")}
+          <div class="text-sm text-gray-600">${new Date(h.date).toLocaleString()}</div>
+          <div class="mt-1 text-sm">
+            ${h.cart.map(item =>
+              `<div>${item.name}${item.flavor ? ":" + item.flavor : ""} × ${item.quantity}個</div>`
+            ).join("")}
+          </div>
+          <div class="flex justify-end text-xs text-gray-500 mt-1">
+            預り: ¥${h.tendered.toLocaleString()} ／ おつり: ¥${h.change.toLocaleString()}
+          </div>
         `;
-        historyListEl.appendChild(div);
+        listEl.appendChild(div);
       });
-    } else {
-      // 商品モード
-      const productMap = {};
+    }
+
+    // === 商品モード ===
+    else if (type === "product") {
+      const grouped = {};
       history.forEach(h => {
         h.cart.forEach(item => {
-          const key = item.name;
-          if (!productMap[key]) {
-            productMap[key] = { name: item.name, totalQty: 0, totalPrice: 0, flavors: [] };
+          if (!grouped[item.name]) {
+            grouped[item.name] = { totalQty: 0, totalPrice: 0, flavors: {} };
           }
-          productMap[key].totalQty += item.quantity;
-          productMap[key].totalPrice += item.price * item.quantity;
-          productMap[key].flavors.push(`${item.flavor || ""} × ${item.quantity} │ ¥${(item.price * item.quantity).toLocaleString()}`);
+          grouped[item.name].totalQty += item.quantity;
+          grouped[item.name].totalPrice += item.quantity * (item.price || 0);
+          if (!grouped[item.name].flavors[item.flavor || "なし"]) {
+            grouped[item.name].flavors[item.flavor || "なし"] = { qty: 0, price: 0 };
+          }
+          grouped[item.name].flavors[item.flavor || "なし"].qty += item.quantity;
+          grouped[item.name].flavors[item.flavor || "なし"].price += item.quantity * (item.price || 0);
         });
       });
 
-      Object.values(productMap).forEach(p => {
+      Object.entries(grouped).forEach(([name, data]) => {
         const div = document.createElement("div");
-        div.className = "p-4 bg-white shadow rounded-lg";
+        div.className = "p-4 bg-white rounded-lg shadow";
 
         div.innerHTML = `
-          <div class="font-bold text-blue-600">${p.name} │ ${p.totalQty}個 │ ¥${p.totalPrice.toLocaleString()}</div>
+          <div class="flex justify-between items-center">
+            <span class="text-blue-600 font-bold">${name}</span>
+            <span class="font-semibold">${data.totalQty}個 │ ¥${data.totalPrice.toLocaleString()}</span>
+          </div>
           <hr class="my-2">
-          ${p.flavors.map(f => `<div class="text-sm">${f}</div>`).join("")}
+          <div class="mt-1 text-sm">
+            ${Object.entries(data.flavors).map(([flavor, fdata]) =>
+              `<div>${name}:${flavor} × ${fdata.qty}個 │ ¥${fdata.price.toLocaleString()}</div>`
+            ).join("")}
+          </div>
         `;
-        historyListEl.appendChild(div);
+        listEl.appendChild(div);
       });
     }
   }
@@ -1078,22 +1046,40 @@ window.addEventListener("screenChanged", (e) => {
     }
   };
 
-  // イベント
-  searchInput.oninput = renderHistory;
+  // === ドロップダウン動作 ===
+  filterTypeBtn.onclick = () => {
+    filterTypeMenu.classList.toggle("hidden");
+  };
+  filterTypeMenu.querySelectorAll("button").forEach(btn => {
+    btn.onclick = () => {
+      filterTypeBtn.textContent = btn.textContent;
+      filterTypeBtn.dataset.value = btn.dataset.value;
+      filterTypeMenu.classList.add("hidden");
+      renderHistory();
+    };
+  });
 
-  // 戻る
-  document.getElementById("back-to-screen1-from-history").onclick = () => {
+  filterDateBtn.onclick = () => {
+    filterDateMenu.classList.toggle("hidden");
+  };
+  filterDateMenu.querySelectorAll("button").forEach(btn => {
+    btn.onclick = () => {
+      filterDateBtn.textContent = btn.textContent;
+      filterDateBtn.dataset.value = btn.dataset.value;
+      filterDateMenu.classList.add("hidden");
+      renderHistory();
+    };
+  });
+
+  // === 戻るボタン ===
+  backBtn.onclick = () => {
     showScreen("screen1");
   };
 
-  // 初期化
+  // 初期描画
   renderHistory();
 });
-
-// ===== ドロップダウン初期化 =====
-setupDropdown("filter-type-btn", "filter-type-menu");
-setupDropdown("filter-date-btn", "filter-date-menu");
-</script>
+</script>  
     
     <!-- 共通スクリプト -->
   <script>
