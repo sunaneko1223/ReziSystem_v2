@@ -851,7 +851,7 @@ window.addEventListener("screenChanged", (e) => {
     </button>
   </header>
 
-  <!-- メイン -->
+  <!-- メインコンテンツ -->
   <main class="flex-grow p-6 flex flex-col">
 
     <!-- 検索 & フィルター -->
@@ -870,7 +870,7 @@ window.addEventListener("screenChanged", (e) => {
         </div>
       </div>
 
-      <!-- ボタン2: すべて/今日/日付指定 -->
+      <!-- ボタン2: すべて/今日のみ/日付指定 -->
       <div class="relative">
         <button id="filter-date-btn"
                 class="bg-gray-300 px-4 py-2 rounded-lg w-28 text-center"
@@ -883,9 +883,6 @@ window.addEventListener("screenChanged", (e) => {
           <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="today">今日のみ</button>
           <button class="block w-full text-left px-4 py-2 hover:bg-blue-100" data-value="custom">日付指定</button>
         </div>
-        <!-- 日付指定入力 -->
-        <input type="date" id="filter-date-picker"
-               class="mt-2 hidden border p-1 rounded w-40">
       </div>
 
       <!-- 検索欄 -->
@@ -898,7 +895,12 @@ window.addEventListener("screenChanged", (e) => {
     <div id="history-summary"
          class="mb-4 p-4 bg-gray-100 rounded-lg text-gray-800 flex-shrink-0 relative">
       <h3 class="text-lg font-semibold mb-2">売上集計</h3>
-      <div id="history-summary-content"></div>
+      <div id="history-summary-content" class="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+        <div>総売上: ¥0</div>
+        <div>取引件数: 0件</div>
+        <div>割引合計: ¥0</div>
+        <div>クーポン使用数: 0枚</div>
+      </div>
 
       <!-- 履歴削除ボタン -->
       <button id="clear-history-button"
