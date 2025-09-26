@@ -921,116 +921,86 @@ window.addEventListener("screenChanged", (e) => {
   if (e.detail !== "screen5") return;
 
   const historyListEl = document.getElementById("history-list");
-  const summaryEl = document.getElementById("history-summary-content");
+  const historySummaryEl = document.getElementById("history-summary-content");
   const searchInput = document.getElementById("history-search-input");
   const clearBtn = document.getElementById("clear-history-button");
 
-  const filterTypeBtn = document.getElementById("filter-type-btn");
-  const filterDateBtn = document.getElementById("filter-date-btn");
-  const filterDatePicker = document.getElementById("filter-date-picker");
-
-  // 履歴ロード
+  // === 履歴データロード ===
   function loadHistory() {
     const stored = localStorage.getItem("transactionHistory");
     return stored ? JSON.parse(stored) : [];
   }
 
-  // 履歴保存
-  function saveHistory(data) {
-    localStorage.setItem("transactionHistory", JSON.stringify(data));
+  // === 売上集計 ===
+  function updateSummary(history) {
+    const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
+    const totalDiscount = history.reduce((sum, h) => sum + (h.discount || 0), 0);
+    const couponUsed = history.reduce((sum, h) =>
+      sum + h.cart.reduce((cSum, item) => cSum + (item.freeCount || 0), 0), 0);
+
+    historySummaryEl.innerHTML = `
+      <div>総売上: ¥${totalSales.toLocaleString()}</div>
+      <div>取引件数: ${history.length}件</div>
+      <div>割引合計: ¥${totalDiscount.toLocaleString()}</div>
+      <div>クーポン使用数: ${couponUsed}枚</div>
+    `;
   }
 
-  // フィルタ適用
-  function applyFilters(history) {
-    let filtered = [...history];
-
-    // 検索（受付番号）
-    const searchValue = searchInput.value.trim();
-    if (searchValue) {
-      filtered = filtered.filter(h => String(h.orderNumber).includes(searchValue));
-    }
-
-    // 種類フィルタ
-    if (filterTypeBtn.dataset.value === "product") {
-      // 商品ごとに展開
-      filtered = filtered.flatMap(h =>
-        h.cart.map(item => ({
-          ...h,
-          productName: item.name,
-          productFlavor: item.flavor,
-          productQuantity: item.quantity,
-          productPrice: item.price,
-          productFreeCount: item.freeCount || 0
-        }))
-      );
-    }
-
-    // 日付フィルタ
-    if (filterDateBtn.dataset.value === "today") {
-      const today = new Date().toISOString().split("T")[0];
-      filtered = filtered.filter(h => h.date && h.date.startsWith(today));
-    } else if (filterDateBtn.dataset.value === "custom") {
-      const selectedDate = filterDatePicker.value;
-      if (selectedDate) {
-        filtered = filtered.filter(h => h.date && h.date.startsWith(selectedDate));
-      }
-    }
-
-    return filtered;
-  }
-
-  // 履歴描画
+  // === 履歴リスト描画 ===
   function renderHistory() {
     const history = loadHistory();
-    const filtered = applyFilters(history);
-
     historyListEl.innerHTML = "";
 
-    if (filtered.length === 0) {
+    if (history.length === 0) {
       historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
-      summaryEl.innerHTML = "";
+      updateSummary([]);
       return;
     }
 
-    // 集計
-    const totalSales = filtered.reduce((sum, h) => sum + (h.total || 0), 0);
-    const totalDiscount = filtered.reduce((sum, h) => sum + (h.discountAmount || 0), 0);
-    const transactionCount = filtered.length;
-    const totalCoupons = filtered.reduce((sum, h) => sum + (h.couponCount || 0), 0);
+    updateSummary(history);
 
-    summaryEl.innerHTML = `
-      <p>総売上: ¥${totalSales.toLocaleString()}</p>
-      <p>割引合計: ¥${totalDiscount.toLocaleString()}</p>
-      <p>取引件数: ${transactionCount} 件</p>
-      <p>クーポン使用数: ${totalCoupons} 枚</p>
-    `;
+    history.forEach(h => {
+      const card = document.createElement("div");
+      card.className = "bg-white p-4 rounded-lg shadow";
 
-    // 古い順に表示
-    filtered.forEach(h => {
-      const div = document.createElement("div");
-      div.className = "p-4 bg-white shadow rounded-lg";
+      // ヘッダー（受付番号・合計）
+      const header = document.createElement("div");
+      header.className = "flex justify-between font-bold border-b pb-1 mb-2";
+      header.innerHTML = `
+        <span>受付番号: ${h.orderNumber}</span>
+        <span>合計: ¥${(h.total || 0).toLocaleString()}</span>
+      `;
+      card.appendChild(header);
 
-      if (filterTypeBtn.dataset.value === "transaction") {
-        // 取引モード
-        div.innerHTML = `
-          <div class="font-bold">受付番号: ${h.orderNumber}</div>
-          <div>日付: ${h.date || "-"}</div>
-          <div>合計: ¥${(h.total || 0).toLocaleString()}</div>
-        `;
-      } else {
-        // 商品モード
-        div.innerHTML = `
-          <div class="font-bold">${h.productName}</div>
-          <div>${h.productFlavor || ""} × ${h.productQuantity}点 (無料券${h.productFreeCount})</div>
-          <div>小計: ¥${(h.productPrice * h.productQuantity).toLocaleString()}</div>
-        `;
+      // 日付
+      const date = document.createElement("div");
+      date.className = "text-sm text-gray-600 mb-2";
+      date.textContent = h.date ? new Date(h.date).toLocaleString() : "-";
+      card.appendChild(date);
+
+      // 商品リスト
+      if (h.cart && Array.isArray(h.cart)) {
+        h.cart.forEach(item => {
+          const p = document.createElement("div");
+          p.className = "text-sm text-gray-800";
+          p.textContent =
+            `${item.name}${item.flavor ? ":" + item.flavor : ""} ×${item.quantity}`;
+          card.appendChild(p);
+        });
       }
 
-      historyListEl.appendChild(div);
+      // フッター（預り金・おつり）
+      const footer = document.createElement("div");
+      footer.className = "text-sm text-gray-700 mt-2 text-right";
+      footer.textContent =
+        `預り: ¥${(h.tendered || 0).toLocaleString()} / おつり: ¥${(h.change || 0).toLocaleString()}`;
+      card.appendChild(footer);
+
+      historyListEl.appendChild(card);
     });
   }
 
-  // === 削除 ===
+  // === 履歴削除 ===
   clearBtn.onclick = () => {
     if (confirm("履歴をすべて削除しますか？")) {
       localStorage.removeItem("transactionHistory");
@@ -1038,43 +1008,7 @@ window.addEventListener("screenChanged", (e) => {
     }
   };
 
-  // === イベント ===
-  searchInput.oninput = renderHistory;
-
-  // 種類切り替え
-  filterTypeBtn.onclick = () => {
-    const current = filterTypeBtn.dataset.value;
-    const next = current === "transaction" ? "product" : "transaction";
-    filterTypeBtn.dataset.value = next;
-    filterTypeBtn.textContent = next === "transaction" ? "取引" : "商品";
-    renderHistory();
-  };
-
-  // 日付切り替え
-  filterDateBtn.onclick = () => {
-    const current = filterDateBtn.dataset.value;
-    let next;
-    if (current === "all") next = "today";
-    else if (current === "today") next = "custom";
-    else next = "all";
-
-    filterDateBtn.dataset.value = next;
-    filterDateBtn.textContent =
-      next === "all" ? "すべて" : (next === "today" ? "今日のみ" : "日付指定");
-
-    filterDatePicker.classList.toggle("hidden", next !== "custom");
-
-    renderHistory();
-  };
-
-  filterDatePicker.onchange = renderHistory;
-
-  // 戻るボタン
-  document.getElementById("back-to-screen1-from-history").onclick = () => {
-    showScreen("screen1");
-  };
-
-  // 初期化
+  // 初期描画
   renderHistory();
 });
 </script>
