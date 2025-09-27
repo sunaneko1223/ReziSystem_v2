@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.7.7</title>
+  <title>レジシステムv2.7.8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -985,7 +985,7 @@ window.addEventListener("screenChanged", (e) => {
   const filterTypeMenu = document.getElementById("filter-type-menu");
   const filterDateBtn = document.getElementById("filter-date-btn");
   const filterDateMenu = document.getElementById("filter-date-menu");
-  const customDateInput = document.getElementById("custom-date-input"); // カレンダー入力
+  const customDateInput = document.getElementById("custom-date-input");
 
   // === 履歴ロード ===
   function loadHistory() {
@@ -996,12 +996,9 @@ window.addEventListener("screenChanged", (e) => {
   // === 売上集計 ===
   function updateSummary(history) {
     const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
-
-    const totalDiscount = history.reduce((sum, h) => {
-      return sum + h.cart.reduce((cSum, item) =>
-        cSum + ((item.freeCount || 0) * (item.price || 0)), 0);
-    }, 0);
-
+    const totalDiscount = history.reduce((sum, h) =>
+      sum + h.cart.reduce((cSum, item) =>
+        cSum + ((item.freeCount || 0) * (item.price || 0)), 0), 0);
     const couponUsed = history.reduce((sum, h) =>
       sum + h.cart.reduce((cSum, item) => cSum + (item.freeCount || 0), 0), 0);
 
@@ -1016,100 +1013,72 @@ window.addEventListener("screenChanged", (e) => {
   // === フィルタリング ===
   function applyFilters(history) {
     let filtered = [...history];
-
     const searchValue = searchInput.value.trim();
     if (searchValue) {
       filtered = filtered.filter(h => String(h.orderNumber).includes(searchValue));
     }
-
     if (filterDateBtn.dataset.value === "today") {
       const today = new Date().toISOString().split("T")[0];
       filtered = filtered.filter(h => h.date && h.date.startsWith(today));
     } else if (filterDateBtn.dataset.value === "custom") {
       const selected = customDateInput.value;
-      if (selected) {
-        filtered = filtered.filter(h => h.date && h.date.startsWith(selected));
-      }
+      if (selected) filtered = filtered.filter(h => h.date && h.date.startsWith(selected));
     }
-
     return filtered;
   }
 
   // === 履歴表示 ===
   function renderHistory() {
     const fmt = (v) => `¥${Number(v || 0).toLocaleString()}`;
-
     const history = loadHistory();
     const filtered = applyFilters(history);
 
     historyListEl.innerHTML = "";
-
     if (filtered.length === 0) {
       historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
       updateSummary([]);
       return;
     }
-
     updateSummary(filtered);
 
     if (filterTypeBtn.dataset.value === "transaction") {
-      // 取引モード
       filtered.forEach(h => {
-        const orderNum = h.orderNumber ?? "-";
-        const totalNum = Number(h.total || 0);
-        const tenderedNum = Number(h.tendered || 0);
-        const changeNum = Number(h.change || 0);
-
         const div = document.createElement("div");
         div.className = "p-4 bg-white shadow rounded-lg";
-
         const itemsHtml = (h.cart || []).map(item => {
-          const nameLabel = `${item.name}${item.flavor ? ":" + item.flavor : ""} × ${item.quantity}個`;
+          const label = `${item.name}${item.flavor ? ":" + item.flavor : ""} × ${item.quantity}個`;
           const price = (item.price || 0) * (item.quantity || 0);
-          return `<div class="flex justify-between text-sm"><div>${escapeHtml(nameLabel)}</div><div>${fmt(price)}</div></div>`;
+          return `<div class="flex justify-between text-sm"><div>${escapeHtml(label)}</div><div>${fmt(price)}</div></div>`;
         }).join("");
-
         div.innerHTML = `
           <div class="flex justify-between items-center">
-            <div class="font-bold text-blue-600">受付番号: ${escapeHtml(String(orderNum))}</div>
-            <div class="font-bold">合計: ${fmt(totalNum)}</div>
+            <div class="font-bold text-blue-600">受付番号: ${escapeHtml(String(h.orderNumber))}</div>
+            <div class="font-bold">合計: ${fmt(h.total)}</div>
           </div>
           <hr class="my-1 border-gray-200">
           <div class="text-sm text-gray-600">${h.date ? new Date(h.date).toLocaleString() : "-"}</div>
           <div class="mt-2 space-y-1">${itemsHtml}</div>
           <div class="flex justify-end mt-2 text-sm space-x-4">
-            <span>預り: ${fmt(tenderedNum)}</span>
-            <span>おつり: ${fmt(changeNum)}</span>
+            <span>預り: ${fmt(h.tendered)}</span>
+            <span>おつり: ${fmt(h.change)}</span>
           </div>
         `;
         historyListEl.appendChild(div);
       });
-
     } else {
-      // 商品モード
       const productMap = {};
-      filtered.forEach(h => {
-        (h.cart || []).forEach(item => {
-          const key = item.name || "商品";
-          if (!productMap[key]) productMap[key] = { totalQty: 0, totalPrice: 0, details: [] };
-
-          const qty = Number(item.quantity || 0);
-          const price = Number(item.price || 0);
-          productMap[key].totalQty += qty;
-          productMap[key].totalPrice += price * qty;
-          productMap[key].details.push({
-            flavor: item.flavor || "",
-            qty,
-            subtotal: price * qty
-          });
-        });
-      });
-
+      filtered.forEach(h => (h.cart || []).forEach(item => {
+        const key = item.name || "商品";
+        if (!productMap[key]) productMap[key] = { totalQty: 0, totalPrice: 0, details: [] };
+        const qty = Number(item.quantity || 0), price = Number(item.price || 0);
+        productMap[key].totalQty += qty;
+        productMap[key].totalPrice += price * qty;
+        productMap[key].details.push({ flavor: item.flavor || "", qty, subtotal: price * qty });
+      }));
       Object.keys(productMap).forEach(name => {
         const data = productMap[name];
         const div = document.createElement("div");
         div.className = "p-4 bg-white shadow rounded-lg";
-
         div.innerHTML = `
           <div class="flex justify-between items-center">
             <div class="font-bold text-blue-600">${escapeHtml(name)}</div>
@@ -1125,62 +1094,55 @@ window.addEventListener("screenChanged", (e) => {
     }
   }
 
-  // HTMLエスケープ
   function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+    return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
   }
 
-  // === ドロップダウン制御 ===
-  filterTypeBtn.addEventListener("click", () => {
-    filterTypeMenu.classList.toggle("hidden");
-  });
-  filterTypeMenu.querySelectorAll("button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      filterTypeBtn.textContent = btn.textContent;
-      filterTypeBtn.dataset.value = btn.dataset.value;
-      filterTypeMenu.classList.add("hidden");
-      renderHistory();
-    });
-  });
-
-  filterDateBtn.addEventListener("click", () => {
-    filterDateMenu.classList.toggle("hidden");
-  });
-  filterDateMenu.querySelectorAll("button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      filterDateBtn.textContent = btn.textContent;
-      filterDateBtn.dataset.value = btn.dataset.value;
-      filterDateMenu.classList.add("hidden");
-
-      if (btn.dataset.value === "custom") {
-        customDateInput.classList.remove("hidden");
-      } else {
-        customDateInput.classList.add("hidden");
+  // === ドロップダウンを安定化 ===
+  function setupDropdown(btn, menu) {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = !menu.classList.contains("hidden");
+      document.querySelectorAll(".ios-menu").forEach(m => m.classList.add("hidden"));
+      document.querySelectorAll(".dropdown-btn").forEach(b => b.classList.remove("active-button"));
+      if (!isOpen) {
+        menu.classList.remove("hidden");
+        btn.classList.add("active-button");
       }
-
-      renderHistory();
     });
-  });
+    menu.querySelectorAll("button").forEach(option => {
+      option.addEventListener("click", () => {
+        btn.textContent = option.textContent;
+        btn.dataset.value = option.dataset.value;
+        menu.classList.add("hidden");
+        btn.classList.remove("active-button");
+        if (btn === filterDateBtn) {
+          if (option.dataset.value === "custom") customDateInput.classList.remove("hidden");
+          else customDateInput.classList.add("hidden");
+        }
+        renderHistory();
+      });
+    });
+    document.addEventListener("click", () => {
+      menu.classList.add("hidden");
+      btn.classList.remove("active-button");
+    });
+  }
 
-  // カレンダー選択イベント
-  customDateInput.addEventListener("change", renderHistory);
+  setupDropdown(filterTypeBtn, filterTypeMenu);
+  setupDropdown(filterDateBtn, filterDateMenu);
 
-  // === その他イベント ===
+  // イベント
   searchInput.addEventListener("input", renderHistory);
+  customDateInput.addEventListener("change", renderHistory);
   clearBtn.addEventListener("click", () => {
     if (confirm("履歴をすべて削除しますか？")) {
       localStorage.removeItem("transactionHistory");
       renderHistory();
     }
   });
-  backBtn.addEventListener("click", () => {
-    showScreen("screen1");
-  });
+  backBtn.addEventListener("click", () => showScreen("screen1"));
 
   // 初期表示
   renderHistory();
