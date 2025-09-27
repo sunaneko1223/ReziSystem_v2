@@ -946,6 +946,18 @@ window.addEventListener("screenChanged", (e) => {
   color: #2563eb;
   box-shadow: 0 0 0 2px #3b82f6;
 }
+  #filter-type-menu button.selected::after,
+#filter-date-menu button.selected::after {
+  content: "✓";
+  float: right;
+  color: white;
+  font-weight: bold;
+}
+#filter-type-menu button.selected,
+#filter-date-menu button.selected {
+  background-color: #2563eb; /* 青背景 */
+  color: white;
+}
 </style>
     
    <!-- === レジ5専用スクリプト === -->
