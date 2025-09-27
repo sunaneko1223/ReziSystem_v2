@@ -914,6 +914,40 @@ window.addEventListener("screenChanged", (e) => {
   </main>
 </div>
 
+    <!-- === レジ5専用スタイル === -->
+<style>
+/* iOS風メニュー */
+.ios-menu {
+  background: linear-gradient(to bottom, #3a3a3a, #1e1e1e);
+  color: white;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  font-size: 16px;
+}
+
+.ios-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.ios-menu-item:last-child {
+  border-bottom: none;
+}
+
+.ios-menu-item:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* ボタンアクティブ時 */
+.dropdown-btn.active {
+  border-color: #3b82f6;
+  color: #2563eb;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+</style>
+    
    <!-- === レジ5専用スクリプト === -->
 <script>
 window.addEventListener("screenChanged", (e) => {
