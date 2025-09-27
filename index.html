@@ -998,23 +998,28 @@ window.addEventListener("screenChanged", (e) => {
   // === 表示 ===
 function renderHistory() {
   const fmt = (v) => `¥${Number(v || 0).toLocaleString()}`;
+  alert("renderHistory 実行開始");
 
   const history = loadHistory();
+  alert("履歴件数: " + history.length);
+
   const filtered = applyFilters(history);
+  alert("フィルタ後件数: " + filtered.length);
 
   historyListEl.innerHTML = "";
 
   if (filtered.length === 0) {
     historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
     updateSummary([]);
+    alert("履歴なしで終了");
     return;
   }
 
-  // 集計
   updateSummary(filtered);
 
   if (filterType.value === "transaction") {
-    // === 取引モード ===
+    alert("取引モードで描画開始");
+
     filtered.forEach(h => {
       const orderNum = h.orderNumber ?? "-";
       const totalNum = Number(h.total || 0);
@@ -1028,33 +1033,33 @@ function renderHistory() {
         const nameLabel = `${item.name}${item.flavor ? ":" + item.flavor : ""} × ${item.quantity}個 (無料券${item.freeCount || 0}枚)`;
         const subtotal = (item.price || 0) * (item.quantity || 0);
         return `<div class="flex justify-between text-sm">
-                  <div>${escapeHtml(nameLabel)}</div>
+                  <div>${nameLabel}</div>
                   <div>${fmt(subtotal)}</div>
                 </div>`;
       }).join("");
 
       div.innerHTML = `
         <div class="flex justify-between items-center">
-          <div class="font-bold text-blue-600">受付番号: ${escapeHtml(String(orderNum))}</div>
+          <div class="font-bold text-blue-600">受付番号: ${orderNum}</div>
           <div class="font-bold">合計: ${fmt(totalNum)}</div>
         </div>
         <hr class="my-1 border-gray-200">
         <div class="text-sm text-gray-600">${h.date ? new Date(h.date).toLocaleString() : "-"}</div>
-        <div class="mt-2 space-y-1">
-          ${itemsHtml}
-        </div>
+        <div class="mt-2 space-y-1">${itemsHtml}</div>
         <div class="flex justify-end mt-2 text-sm space-x-4">
           <span>預り: ${fmt(tenderedNum)}</span>
           <span>おつり: ${fmt(changeNum)}</span>
         </div>
       `;
+
       historyListEl.appendChild(div);
     });
+    alert("取引モード描画完了");
 
   } else {
-    // === 商品モード ===
-    const productMap = {}; 
+    alert("商品モードで描画開始");
 
+    const productMap = {}; 
     filtered.forEach(h => {
       (h.cart || []).forEach(item => {
         const key = item.name || "商品";
@@ -1079,23 +1084,25 @@ function renderHistory() {
 
       div.innerHTML = `
         <div class="flex justify-between items-center">
-          <div class="font-bold text-blue-600">${escapeHtml(name)}</div>
+          <div class="font-bold text-blue-600">${name}</div>
           <div class="font-bold">${data.totalQty}個 │ ${fmt(data.totalPrice)}</div>
         </div>
         <hr class="my-1 border-gray-200">
         <div class="mt-1 space-y-1">
           ${data.details.map(d => 
             `<div class="flex justify-between text-sm">
-              <div>${escapeHtml(name + (d.flavor ? ":"+d.flavor : ""))} × ${d.qty}個</div>
+              <div>${name + (d.flavor ? ":"+d.flavor : "")} × ${d.qty}個</div>
               <div>${fmt(d.subtotal)}</div>
             </div>`).join("")}
         </div>
       `;
       historyListEl.appendChild(div);
     });
+    alert("商品モード描画完了");
   }
-}
-  
+
+  alert("renderHistory 実行終了");
+}  
   // === イベント登録 ===
   searchInput.oninput = renderHistory;
   filterType.onchange = renderHistory;
