@@ -865,7 +865,7 @@ window.addEventListener("screenChanged", (e) => {
   </button>
   <div id="filter-type-menu"
        class="ios-menu hidden absolute left-0 mt-2 w-32 rounded-2xl overflow-hidden z-20">
-    <button class="ios-menu-item" data-value="transaction">✔ 取引</button>
+    <button class="ios-menu-item" data-value="transaction">取引</button>
     <button class="ios-menu-item" data-value="product">商品</button>
   </div>
 </div>
@@ -879,7 +879,7 @@ window.addEventListener("screenChanged", (e) => {
   </button>
   <div id="filter-date-menu"
        class="ios-menu hidden absolute left-0 mt-2 w-40 rounded-2xl overflow-hidden z-20">
-    <button class="ios-menu-item" data-value="all">✔ すべて</button>
+    <button class="ios-menu-item" data-value="all">すべて</button>
     <button class="ios-menu-item" data-value="today">今日のみ</button>
     <button class="ios-menu-item" data-value="custom">日付指定</button>
   </div>
@@ -946,8 +946,8 @@ window.addEventListener("screenChanged", (e) => {
   color: #2563eb;
   box-shadow: 0 0 0 2px #3b82f6;
 }
-  #filter-type-menu button.selected::after,
-#filter-date-menu button.selected::after {
+  #filter-type-menu button.selected::before,
+#filter-date-menu button.selected::before {
   content: "✓";
   float: right;
   color: white;
