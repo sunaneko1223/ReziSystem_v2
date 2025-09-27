@@ -903,55 +903,21 @@ window.addEventListener("screenChanged", (e) => {
 
     <!-- === レジ5専用スタイル === -->
 <style>
-  .ios-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 16px; /* ← 少し広め */
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background-color: #fff;
-    color: #374151;
-    font-size: 14px;
-    cursor: pointer;
-    position: relative;
-    z-index: 20; /* ← ボタンを最前面に */
-    transition: all 0.15s ease-in-out;
-  }
-
-  .ios-button.active-button {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-  }
-
-  .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 4px;
-    min-width: 100%;
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    z-index: 10;
-  }
-
-  .dropdown-menu.hidden {
-    display: none;
-  }
-
-  .dropdown-menu button {
-    width: 100%;
-    text-align: left;
-    padding: 8px 12px;
-    font-size: 14px;
-    background: #fff;
-  }
-
-  .dropdown-menu button:hover {
-    background: #e0f2fe; /* 薄い青 */
-  }
+.ios-select {
+  appearance: none;          /* 矢印を消す */
+  -webkit-appearance: none;  /* Safari用 */
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #007aff; /* iOSっぽい青文字 */
+}
+.ios-select:focus {
+  outline: none;
+  border-color: #007aff;
+  box-shadow: 0 0 0 2px rgba(0,122,255,0.2);
+}
 </style>
     
    <!-- === レジ5専用スクリプト === -->
