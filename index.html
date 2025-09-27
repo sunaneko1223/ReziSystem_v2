@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.9.4</title>
+  <title>レジシステムv2.9.5</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -1125,54 +1125,54 @@ window.addEventListener("screenChanged", (e) => {
   filterDateInput.addEventListener("change", renderHistory);
 
   // === サーバー送信ボタン処理 ===
-  sendServerBtn.addEventListener("click", async () => {
-    if (!navigator.onLine) {
-      alert("オフラインのためこの機能は使用できません。インターネットに接続してください。");
+const sendServerBtn = document.getElementById("send-server-button");
+
+sendServerBtn.onclick = async () => {
+  if (!navigator.onLine) {
+    alert("オフラインのためこの機能は使用できません。インターネットに接続してください。");
+    return;
+  }
+
+  if (!confirm("データをサーバーに送信しますか？")) return;
+
+  // 端末IDチェック
+  let deviceId = localStorage.getItem("deviceId");
+  if (!deviceId) {
+    deviceId = prompt("端末IDを入力してください。A〜Zのアルファベット1文字です", "");
+    if (!deviceId || !/^[A-Z]$/.test(deviceId)) {
+      alert("正しい端末IDを入力してください。");
       return;
     }
-
-    if (!confirm("データをサーバーに送信しますか？")) return;
-
-    let deviceId = localStorage.getItem("deviceId");
-    if (!deviceId) {
-      deviceId = prompt("端末IDを入力してください。A〜Zのアルファベット1文字です", "");
-      if (!deviceId || !/^[A-Z]$/.test(deviceId)) {
-        alert("正しい端末IDを入力してください。");
-        return;
-      }
-      localStorage.setItem("deviceId", deviceId);
-    }
-
+    localStorage.setItem("deviceId", deviceId);
+  } else {
     const change = confirm(`現在の端末IDは「${deviceId}」です。変更しますか？`);
     if (change) {
       const newId = prompt("新しい端末IDを入力してください。A〜Zのアルファベット1文字です", deviceId);
       if (newId && /^[A-Z]$/.test(newId)) {
         deviceId = newId;
         localStorage.setItem("deviceId", deviceId);
-      } else {
-        alert("正しい端末IDが入力されなかったため、変更をスキップしました。");
       }
     }
+  }
 
-    alert("データをサーバー送信します…");
+  // サーバー送信
+  try {
+    const history = JSON.parse(localStorage.getItem("transactionHistory") || "[]");
+    const payload = { deviceId, history };
 
-    try {
-      const history = JSON.parse(localStorage.getItem("transactionHistory") || "[]");
-      const payload = { deviceId, history };
+    await fetch("http://localhost:3000/api/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-      await fetch("http://localhost:3000/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      alert("送信完了");
-    } catch (err) {
-      console.error(err);
-      alert("送信に失敗しました");
-    }
-  });
-
+    alert("送信完了");
+  } catch (err) {
+    console.error(err);
+    alert("送信に失敗しました");
+  }
+};
+  
   // === 初期表示 ===
   renderHistory();
 });
