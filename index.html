@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.9.3</title>
+  <title>レジシステムv2.9.4</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -934,7 +934,7 @@ window.addEventListener("screenChanged", (e) => {
 }
 </style>
     
-   <!-- === レジ5専用スクリプト（window.addEventListener が先頭） === -->
+   <!-- === レジ5専用スクリプト === -->
 <script>
 window.addEventListener("screenChanged", (e) => {
   if (e.detail !== "screen5") return;
@@ -943,8 +943,8 @@ window.addEventListener("screenChanged", (e) => {
   const historySummaryEl = document.getElementById("history-summary-content");
   const searchInput = document.getElementById("history-search-input");
   const clearBtn = document.getElementById("clear-history-button");
-  const sendBtn = document.getElementById("send-server-button");
   const backBtn = document.getElementById("back-to-screen1-from-history");
+  const sendServerBtn = document.getElementById("send-server-button");
 
   const filterType = document.getElementById("filter-type");
   const filterDate = document.getElementById("filter-date");
@@ -958,13 +958,13 @@ window.addEventListener("screenChanged", (e) => {
 
   // === 売上集計 ===
   function updateSummary(history) {
-    const totalSales = history.reduce((s,h)=>s+(h.total||0),0);
-    const totalDiscount = history.reduce((s,h)=>
-      s + (h.cart||[]).reduce((cs,it)=> cs+((it.freeCount||0)*(it.price||0)),0)
-    ,0);
-    const couponUsed = history.reduce((s,h)=>
-      s + (h.cart||[]).reduce((cs,it)=> cs+(it.freeCount||0),0)
-    ,0);
+    const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
+    const totalDiscount = history.reduce((sum, h) => {
+      return sum + h.cart.reduce((cSum, item) =>
+        cSum + ((item.freeCount || 0) * (item.price || 0)), 0);
+    }, 0);
+    const couponUsed = history.reduce((sum, h) =>
+      sum + h.cart.reduce((cSum, item) => cSum + (item.freeCount || 0), 0), 0);
 
     historySummaryEl.innerHTML = `
       <div>総売上: <span class="font-bold">¥${totalSales.toLocaleString()}</span></div>
@@ -989,132 +989,191 @@ window.addEventListener("screenChanged", (e) => {
       const today = new Date().toISOString().split("T")[0];
       filtered = filtered.filter(h => h.date && h.date.startsWith(today));
     } else if (filterDate.value === "custom" && filterDateInput.value) {
-      filtered = filtered.filter(h => h.date && h.date.startsWith(filterDateInput.value));
+      const target = filterDateInput.value;
+      filtered = filtered.filter(h => h.date && h.date.startsWith(target));
     }
 
     return filtered;
   }
 
   // === 表示 ===
-function renderHistory() {
-  const fmt = (v) => `¥${Number(v || 0).toLocaleString()}`;
+  function renderHistory() {
+    const fmt = (v) => `¥${Number(v || 0).toLocaleString()}`;
 
-  const history = loadHistory();
-  
-  const filtered = applyFilters(history);
-  
-  historyListEl.innerHTML = "";
+    const history = loadHistory();
+    const filtered = applyFilters(history);
 
-  if (filtered.length === 0) {
-    historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
-    updateSummary([]);
-    return;
-  }
+    historyListEl.innerHTML = "";
 
-  updateSummary(filtered);
+    if (filtered.length === 0) {
+      historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
+      updateSummary([]);
+      return;
+    }
 
-  if (filterType.value === "transaction") {
-    filtered.forEach(h => {
-      const orderNum = h.orderNumber ?? "-";
-      const totalNum = Number(h.total || 0);
-      const tenderedNum = Number(h.tendered || 0);
-      const changeNum = Number(h.change || 0);
+    updateSummary(filtered);
 
-      const div = document.createElement("div");
-      div.className = "p-4 bg-white shadow rounded-lg border border-gray-200";
+    if (filterType.value === "transaction") {
+      // 取引モード
+      filtered.forEach(h => {
+        const orderNum = h.orderNumber ?? "-";
+        const totalNum = Number(h.total || 0);
+        const tenderedNum = Number(h.tendered || 0);
+        const changeNum = Number(h.change || 0);
 
-      const itemsHtml = (h.cart || []).map(item => {
-        const nameLabel = `${item.name}${item.flavor ? ":" + item.flavor : ""} × ${item.quantity}個 (無料券${item.freeCount || 0}枚)`;
-        const subtotal = (item.price || 0) * (item.quantity || 0);
-        return `<div class="flex justify-between text-sm">
-                  <div>${nameLabel}</div>
-                  <div>${fmt(subtotal)}</div>
-                </div>`;
-      }).join("");
+        const div = document.createElement("div");
+        div.className = "p-4 bg-white shadow rounded-lg border border-gray-200";
 
-      div.innerHTML = `
-        <div class="flex justify-between items-center">
-          <div class="font-bold text-blue-600">受付番号: ${orderNum}</div>
-          <div class="font-bold">合計: ${fmt(totalNum)}</div>
-        </div>
-        <hr class="my-1 border-gray-200">
-        <div class="text-sm text-gray-600">${h.date ? new Date(h.date).toLocaleString() : "-"}</div>
-        <div class="mt-2 space-y-1">${itemsHtml}</div>
-        <div class="flex justify-end mt-2 text-sm space-x-4">
-          <span>預り: ${fmt(tenderedNum)}</span>
-          <span>おつり: ${fmt(changeNum)}</span>
-        </div>
-      `;
+        const itemsHtml = (h.cart || []).map(item => {
+          const nameLabel = `${item.name}${item.flavor ? ":" + item.flavor : ""} × ${item.quantity}個 (無料券${item.freeCount || 0}枚)`;
+          const subtotal = (item.price || 0) * (item.quantity || 0);
+          return `<div class="flex justify-between text-sm">
+                    <div>${escapeHtml(nameLabel)}</div>
+                    <div>${fmt(subtotal)}</div>
+                  </div>`;
+        }).join("");
 
-      historyListEl.appendChild(div);
-    });
+        div.innerHTML = `
+          <div class="flex justify-between items-center">
+            <div class="font-bold text-blue-600">受付番号: ${escapeHtml(String(orderNum))}</div>
+            <div class="font-bold">合計: ${fmt(totalNum)}</div>
+          </div>
+          <hr class="my-1 border-gray-200">
+          <div class="text-sm text-gray-600">${h.date ? new Date(h.date).toLocaleString() : "-"}</div>
+          <div class="mt-2 space-y-1">
+            ${itemsHtml}
+          </div>
+          <div class="flex justify-end mt-2 text-sm space-x-4">
+            <span>預り: ${fmt(tenderedNum)}</span>
+            <span>おつり: ${fmt(changeNum)}</span>
+          </div>
+        `;
+        historyListEl.appendChild(div);
+      });
 
-  } else {
-    const productMap = {}; 
-    filtered.forEach(h => {
-      (h.cart || []).forEach(item => {
-        const key = item.name || "商品";
-        if (!productMap[key]) productMap[key] = { totalQty: 0, totalPrice: 0, details: [] };
+    } else {
+      // 商品モード
+      const productMap = {};
+      filtered.forEach(h => {
+        (h.cart || []).forEach(item => {
+          const key = item.name || "商品";
+          if (!productMap[key]) productMap[key] = { totalQty: 0, totalPrice: 0, details: [] };
 
-        const qty = Number(item.quantity || 0);
-        const price = Number(item.price || 0);
-        productMap[key].totalQty += qty;
-        productMap[key].totalPrice += price * qty;
-        productMap[key].details.push({
-          flavor: item.flavor || "",
-          qty,
-          subtotal: price * qty
+          const qty = Number(item.quantity || 0);
+          const price = Number(item.price || 0);
+          productMap[key].totalQty += qty;
+          productMap[key].totalPrice += price * qty;
+          productMap[key].details.push({
+            flavor: item.flavor || "",
+            qty,
+            subtotal: price * qty
+          });
         });
       });
-    });
 
-    Object.keys(productMap).forEach(name => {
-      const data = productMap[name];
-      const div = document.createElement("div");
-      div.className = "p-4 bg-white shadow rounded-lg border border-gray-200";
+      Object.keys(productMap).forEach(name => {
+        const data = productMap[name];
+        const div = document.createElement("div");
+        div.className = "p-4 bg-white shadow rounded-lg border border-gray-200";
 
-      div.innerHTML = `
-        <div class="flex justify-between items-center">
-          <div class="font-bold text-blue-600">${name}</div>
-          <div class="font-bold">${data.totalQty}個 │ ${fmt(data.totalPrice)}</div>
-        </div>
-        <hr class="my-1 border-gray-200">
-        <div class="mt-1 space-y-1">
-          ${data.details.map(d => 
-            `<div class="flex justify-between text-sm">
-              <div>${name + (d.flavor ? ":"+d.flavor : "")} × ${d.qty}個</div>
-              <div>${fmt(d.subtotal)}</div>
-            </div>`).join("")}
-        </div>
-      `;
-      historyListEl.appendChild(div);
-    });
-  }
-}  
-  // === イベント登録 ===
-  searchInput.oninput = renderHistory;
-  filterType.onchange = renderHistory;
-  filterDate.onchange = () => {
-    if (filterDate.value === "custom") {
-      filterDateInput.classList.remove("hidden");
-    } else {
-      filterDateInput.classList.add("hidden");
+        div.innerHTML = `
+          <div class="flex justify-between items-center">
+            <div class="font-bold text-blue-600">${escapeHtml(name)}</div>
+            <div class="font-bold">${data.totalQty}個 │ ${fmt(data.totalPrice)}</div>
+          </div>
+          <hr class="my-1 border-gray-200">
+          <div class="mt-1 space-y-1">
+            ${data.details.map(d =>
+              `<div class="flex justify-between text-sm">
+                <div>${escapeHtml(name + (d.flavor ? ":"+d.flavor : ""))} × ${d.qty}個</div>
+                <div>${fmt(d.subtotal)}</div>
+              </div>`).join("")}
+          </div>
+        `;
+        historyListEl.appendChild(div);
+      });
     }
-    renderHistory();
-  };
-  filterDateInput.onchange = renderHistory;
+  }
 
-  clearBtn.onclick = () => {
+  // === HTMLエスケープ ===
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // === イベント登録 ===
+  searchInput.addEventListener("input", renderHistory);
+  clearBtn.addEventListener("click", () => {
     if (confirm("履歴をすべて削除しますか？")) {
       localStorage.removeItem("transactionHistory");
-      localStorage.setItem("lastOrderNumber", "0");
+      localStorage.setItem("lastOrderNumber", "0"); // 受付番号リセット
       renderHistory();
     }
-  };
-  sendBtn.onclick = () => alert("サーバー送信（未実装）");
-  backBtn.onclick = () => showScreen("screen1");
+  });
+  backBtn.addEventListener("click", () => {
+    showScreen("screen1");
+  });
+  filterType.addEventListener("change", renderHistory);
+  filterDate.addEventListener("change", () => {
+    filterDateInput.classList.toggle("hidden", filterDate.value !== "custom");
+    renderHistory();
+  });
+  filterDateInput.addEventListener("change", renderHistory);
 
-  // 初期表示
+  // === サーバー送信ボタン処理 ===
+  sendServerBtn.addEventListener("click", async () => {
+    if (!navigator.onLine) {
+      alert("オフラインのためこの機能は使用できません。インターネットに接続してください。");
+      return;
+    }
+
+    if (!confirm("データをサーバーに送信しますか？")) return;
+
+    let deviceId = localStorage.getItem("deviceId");
+    if (!deviceId) {
+      deviceId = prompt("端末IDを入力してください。A〜Zのアルファベット1文字です", "");
+      if (!deviceId || !/^[A-Z]$/.test(deviceId)) {
+        alert("正しい端末IDを入力してください。");
+        return;
+      }
+      localStorage.setItem("deviceId", deviceId);
+    }
+
+    const change = confirm(`現在の端末IDは「${deviceId}」です。変更しますか？`);
+    if (change) {
+      const newId = prompt("新しい端末IDを入力してください。A〜Zのアルファベット1文字です", deviceId);
+      if (newId && /^[A-Z]$/.test(newId)) {
+        deviceId = newId;
+        localStorage.setItem("deviceId", deviceId);
+      } else {
+        alert("正しい端末IDが入力されなかったため、変更をスキップしました。");
+      }
+    }
+
+    alert("データをサーバー送信します…");
+
+    try {
+      const history = JSON.parse(localStorage.getItem("transactionHistory") || "[]");
+      const payload = { deviceId, history };
+
+      await fetch("http://localhost:3000/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      alert("送信完了");
+    } catch (err) {
+      console.error(err);
+      alert("送信に失敗しました");
+    }
+  });
+
+  // === 初期表示 ===
   renderHistory();
 });
 </script>
