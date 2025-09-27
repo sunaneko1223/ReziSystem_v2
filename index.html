@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.9.2</title>
+  <title>レジシステムv2.9.3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -998,28 +998,22 @@ window.addEventListener("screenChanged", (e) => {
   // === 表示 ===
 function renderHistory() {
   const fmt = (v) => `¥${Number(v || 0).toLocaleString()}`;
-  alert("renderHistory 実行開始");
 
   const history = loadHistory();
-  alert("履歴件数: " + history.length);
-
+  
   const filtered = applyFilters(history);
-  alert("フィルタ後件数: " + filtered.length);
-
+  
   historyListEl.innerHTML = "";
 
   if (filtered.length === 0) {
     historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
     updateSummary([]);
-    alert("履歴なしで終了");
     return;
   }
 
   updateSummary(filtered);
 
   if (filterType.value === "transaction") {
-    alert("取引モードで描画開始");
-
     filtered.forEach(h => {
       const orderNum = h.orderNumber ?? "-";
       const totalNum = Number(h.total || 0);
@@ -1054,11 +1048,8 @@ function renderHistory() {
 
       historyListEl.appendChild(div);
     });
-    alert("取引モード描画完了");
 
   } else {
-    alert("商品モードで描画開始");
-
     const productMap = {}; 
     filtered.forEach(h => {
       (h.cart || []).forEach(item => {
@@ -1098,10 +1089,7 @@ function renderHistory() {
       `;
       historyListEl.appendChild(div);
     });
-    alert("商品モード描画完了");
   }
-
-  alert("renderHistory 実行終了");
 }  
   // === イベント登録 ===
   searchInput.oninput = renderHistory;
