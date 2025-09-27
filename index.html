@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.8.</title>
+  <title>レジシステムv2.8.5</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -937,10 +937,8 @@ window.addEventListener("screenChanged", (e) => {
    <!-- === レジ5専用スクリプト（window.addEventListener が先頭） === -->
 <script>
 window.addEventListener("screenChanged", (e) => {
-  // screen5 以外は何もしない
   if (e.detail !== "screen5") return;
 
-  // --- DOM 要素 ---
   const historyListEl = document.getElementById("history-list");
   const historySummaryEl = document.getElementById("history-summary-content");
   const searchInput = document.getElementById("history-search-input");
@@ -948,59 +946,62 @@ window.addEventListener("screenChanged", (e) => {
   const sendBtn = document.getElementById("send-server-button");
   const backBtn = document.getElementById("back-to-screen1-from-history");
 
-  const filterTypeBtn = document.getElementById("filter-type-btn");
-  const filterTypeMenu = document.getElementById("filter-type-menu");
-  const filterDateBtn = document.getElementById("filter-date-btn");
-  const filterDateMenu = document.getElementById("filter-date-menu");
+  const filterType = document.getElementById("filter-type");
+  const filterDate = document.getElementById("filter-date");
+  const filterDateInput = document.getElementById("filter-date-input");
 
-  // --- ユーティリティ ---
+  // === 履歴ロード ===
   function loadHistory() {
     const stored = localStorage.getItem("transactionHistory");
-    try { return stored ? JSON.parse(stored) : []; }
-    catch (err) { return []; }
+    return stored ? JSON.parse(stored) : [];
   }
-  function fmtYen(v){ return `¥${Number(v || 0).toLocaleString()}`; }
-  function escapeHtml(str){ return String(str||"")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
 
-  // --- 売上集計更新 ---
-  function updateSummary(history){
-    const totalSales = history.reduce((s,h)=> s + (h.total||0), 0);
+  // === 売上集計 ===
+  function updateSummary(history) {
+    const totalSales = history.reduce((s,h)=>s+(h.total||0),0);
     const totalDiscount = history.reduce((s,h)=>
-      s + (Array.isArray(h.cart)? h.cart.reduce((cs,it)=> cs + ((it.freeCount||0)*(it.price||0)),0) : 0)
+      s + (h.cart||[]).reduce((cs,it)=> cs+((it.freeCount||0)*(it.price||0)),0)
     ,0);
     const couponUsed = history.reduce((s,h)=>
-      s + (Array.isArray(h.cart)? h.cart.reduce((cs,it)=> cs + (it.freeCount||0),0) : 0)
+      s + (h.cart||[]).reduce((cs,it)=> cs+(it.freeCount||0),0)
     ,0);
 
     historySummaryEl.innerHTML = `
-      <div>総売上: <span class="font-bold">${fmtYen(totalSales)}</span></div>
+      <div>総売上: <span class="font-bold">¥${totalSales.toLocaleString()}</span></div>
       <div>取引件数: <span class="font-bold">${history.length}件</span></div>
-      <div class="text-red-600">割引合計: <span class="font-bold">-${fmtYen(totalDiscount).replace('¥','')}</span></div>
+      <div class="text-red-600">割引合計: <span class="font-bold">-¥${totalDiscount.toLocaleString()}</span></div>
       <div>クーポン使用数: <span class="font-bold">${couponUsed}枚</span></div>
     `;
   }
 
-  // --- フィルタ適用 ---
-  function applyFilters(history){
+  // === フィルタリング ===
+  function applyFilters(history) {
     let filtered = [...history];
-    const searchValue = (searchInput && searchInput.value || "").trim();
-    if (searchValue) filtered = filtered.filter(h => String(h.orderNumber).includes(searchValue));
-    if (filterDateBtn && filterDateBtn.dataset && filterDateBtn.dataset.value === "today"){
+
+    // 検索
+    const searchValue = searchInput.value.trim();
+    if (searchValue) {
+      filtered = filtered.filter(h => String(h.orderNumber).includes(searchValue));
+    }
+
+    // 日付フィルタ
+    if (filterDate.value === "today") {
       const today = new Date().toISOString().split("T")[0];
       filtered = filtered.filter(h => h.date && h.date.startsWith(today));
+    } else if (filterDate.value === "custom" && filterDateInput.value) {
+      filtered = filtered.filter(h => h.date && h.date.startsWith(filterDateInput.value));
     }
+
     return filtered;
   }
 
-  // --- 履歴レンダ ---
-  function renderHistory(){
+  // === 表示 ===
+  function renderHistory() {
     const history = loadHistory();
     const filtered = applyFilters(history);
-    historyListEl.innerHTML = "";
 
-    if (!filtered || filtered.length === 0){
+    historyListEl.innerHTML = "";
+    if (filtered.length === 0) {
       historyListEl.innerHTML = "<p class='text-gray-500'>履歴がありません。</p>";
       updateSummary([]);
       return;
@@ -1008,161 +1009,83 @@ window.addEventListener("screenChanged", (e) => {
 
     updateSummary(filtered);
 
-    // transaction モード（受付番号ベース）
-    if (filterTypeBtn.dataset.value === "transaction"){
+    if (filterType.value === "transaction") {
+      // 取引モード
       filtered.forEach(h => {
         const div = document.createElement("div");
         div.className = "p-4 bg-white shadow rounded-lg";
 
-        const itemsHtml = (h.cart || []).map(item => {
-          const nameLabel = `${escapeHtml(item.name || "商品")}${item.flavor ? ":" + escapeHtml(item.flavor) : ""} × ${item.quantity}個`;
-          const price = (item.price || 0) * (item.quantity || 0);
-          return `<div class="flex justify-between text-sm"><div>${nameLabel}</div><div>${fmtYen(price)}</div></div>`;
-        }).join("");
-
         div.innerHTML = `
           <div class="flex justify-between items-center">
-            <div class="font-bold text-blue-600">受付番号: ${escapeHtml(String(h.orderNumber || "-"))}</div>
-            <div class="font-bold">合計: ${fmtYen(h.total)}</div>
+            <div class="font-bold text-blue-600">受付番号: ${h.orderNumber}</div>
+            <div class="font-bold">合計: ¥${(h.total||0).toLocaleString()}</div>
           </div>
           <hr class="my-1 border-gray-200">
           <div class="text-sm text-gray-600">${h.date ? new Date(h.date).toLocaleString() : "-"}</div>
-          <div class="mt-2 space-y-1">${itemsHtml}</div>
+          ${(h.cart||[]).map(item => 
+            `<div class="flex justify-between text-sm"><div>${item.name}${item.flavor?":"+item.flavor:""} × ${item.quantity}個</div><div>¥${(item.price*item.quantity).toLocaleString()}</div></div>`
+          ).join("")}
           <div class="flex justify-end mt-2 text-sm space-x-4">
-            <span>預り: ${fmtYen(h.tendered)}</span>
-            <span>おつり: ${fmtYen(h.change)}</span>
+            <span>預り: ¥${(h.tendered||0).toLocaleString()}</span>
+            <span>おつり: ¥${(h.change||0).toLocaleString()}</span>
           </div>
         `;
         historyListEl.appendChild(div);
       });
     } else {
-      // product モード：商品ごと集計表示
+      // 商品モード
       const productMap = {};
-      filtered.forEach(h => {
-        (h.cart || []).forEach(item => {
-          const key = `${item.name || "商品"}`; // flavor は details に
-          if (!productMap[key]) productMap[key] = { totalQty:0, totalPrice:0, details: [] };
-          const qty = Number(item.quantity || 0);
-          const price = Number(item.price || 0);
-          productMap[key].totalQty += qty;
-          productMap[key].totalPrice += price * qty;
-          productMap[key].details.push({ flavor: item.flavor || "", qty, subtotal: price*qty });
+      filtered.forEach(h=>{
+        (h.cart||[]).forEach(item=>{
+          const key = item.name;
+          if (!productMap[key]) productMap[key] = {qty:0,price:0,details:[]};
+          productMap[key].qty += item.quantity;
+          productMap[key].price += item.price*item.quantity;
+          productMap[key].details.push(`${item.flavor?item.flavor:""} ×${item.quantity}個`);
         });
       });
 
-      Object.keys(productMap).forEach(name => {
-        const data = productMap[name];
+      Object.keys(productMap).forEach(name=>{
+        const d = productMap[name];
         const div = document.createElement("div");
         div.className = "p-4 bg-white shadow rounded-lg";
-
         div.innerHTML = `
           <div class="flex justify-between items-center">
-            <div class="font-bold text-blue-600">${escapeHtml(name)}</div>
-            <div class="font-bold">${data.totalQty}個 │ ${fmtYen(data.totalPrice)}</div>
+            <div class="font-bold text-blue-600">${name}</div>
+            <div class="font-bold">${d.qty}個 │ ¥${d.price.toLocaleString()}</div>
           </div>
           <hr class="my-1 border-gray-200">
-          <div class="mt-1 space-y-1">
-            ${data.details.map(d => `<div class="flex justify-between text-sm"><div>${escapeHtml(name + (d.flavor ? ":"+d.flavor : ""))} × ${d.qty}個</div><div>${fmtYen(d.subtotal)}</div></div>`).join("")}
-          </div>
+          <div class="mt-1 text-sm">${d.details.join("<br>")}</div>
         `;
         historyListEl.appendChild(div);
       });
     }
   }
 
-  // --- ドロップダウンセットアップ（登録は一度だけ） ---
-  function setupDropdown(btn, menu){
-    if (!btn || !menu) return;
-    // guard: 既にセット済みなら何もしない
-    if (btn.dataset.dropdownBound) return;
-    btn.dataset.dropdownBound = "1";
-
-    btn.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      const isOpen = !menu.classList.contains("hidden");
-      // 閉じる（他のメニュー）
-      const otherMenus = document.querySelectorAll("#filter-type-menu, #filter-date-menu");
-      otherMenus.forEach(m => m.classList.add("hidden"));
-      // remove active from both buttons
-      const btns = document.querySelectorAll("#filter-type-btn, #filter-date-btn");
-      btns.forEach(b => b.classList.remove("active-button"));
-
-      if (!isOpen){
-        menu.classList.remove("hidden");
-        btn.classList.add("active-button");
-      } else {
-        menu.classList.add("hidden");
-        btn.classList.remove("active-button");
-      }
-    });
-
-    // メニュー内ボタン
-    menu.querySelectorAll("button").forEach(opt => {
-      // guard to avoid double-bind
-      if (opt.dataset.optBound) return;
-      opt.dataset.optBound = "1";
-      opt.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        btn.textContent = opt.textContent;
-        btn.dataset.value = opt.dataset.value;
-        menu.classList.add("hidden");
-        btn.classList.remove("active-button");
-        renderHistory();
-      });
-    });
-
-    // 外クリックで閉じる（初回のみドキュメントに登録）
-    if (!window._historyDropdownGlobalClose) {
-      document.addEventListener("click", () => {
-        const menus = document.querySelectorAll("#filter-type-menu, #filter-date-menu");
-        menus.forEach(m => m.classList.add("hidden"));
-        const btns = document.querySelectorAll("#filter-type-btn, #filter-date-btn");
-        btns.forEach(b => b.classList.remove("active-button"));
-      });
-      window._historyDropdownGlobalClose = true;
+  // === イベント登録 ===
+  searchInput.oninput = renderHistory;
+  filterType.onchange = renderHistory;
+  filterDate.onchange = () => {
+    if (filterDate.value === "custom") {
+      filterDateInput.classList.remove("hidden");
+    } else {
+      filterDateInput.classList.add("hidden");
     }
-  }
+    renderHistory();
+  };
+  filterDateInput.onchange = renderHistory;
 
-  // --- イベント登録（重複ガード付き） ---
-  if (!clearBtn.dataset.bound) {
-    clearBtn.addEventListener("click", () => {
-      if (confirm("履歴をすべて削除しますか？")) {
-        localStorage.removeItem("transactionHistory");
-        localStorage.setItem("lastOrderNumber", "0");
-        renderHistory();
-      }
-    });
-    clearBtn.dataset.bound = "1";
-  }
+  clearBtn.onclick = () => {
+    if (confirm("履歴をすべて削除しますか？")) {
+      localStorage.removeItem("transactionHistory");
+      localStorage.setItem("lastOrderNumber", "0");
+      renderHistory();
+    }
+  };
+  sendBtn.onclick = () => alert("サーバー送信（未実装）");
+  backBtn.onclick = () => showScreen("screen1");
 
-  if (!sendBtn.dataset.bound) {
-    sendBtn.addEventListener("click", () => {
-      alert("サーバー送信（未実装）");
-    });
-    sendBtn.dataset.bound = "1";
-  }
-
-  if (!backBtn.dataset.bound) {
-    backBtn.addEventListener("click", () => {
-      showScreen("screen1");
-    });
-    backBtn.dataset.bound = "1";
-  }
-
-  if (!searchInput.dataset.bound) {
-    searchInput.addEventListener("input", () => renderHistory());
-    searchInput.dataset.bound = "1";
-  }
-
-  // dropdown set (一度だけ)
-  setupDropdown(filterTypeBtn, filterTypeMenu);
-  setupDropdown(filterDateBtn, filterDateMenu);
-
-  // デフォルト値確保（念のため）
-  if (!filterTypeBtn.dataset.value) filterTypeBtn.dataset.value = "transaction";
-  if (!filterDateBtn.dataset.value) filterDateBtn.dataset.value = "all";
-
-  // 初期レンダ
+  // 初期表示
   renderHistory();
 });
 </script>
