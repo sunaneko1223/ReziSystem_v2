@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.8.6</title>
+  <title>レジシステムv2.8.7</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -997,10 +997,8 @@ window.addEventListener("screenChanged", (e) => {
 
   // === 表示 ===
 function renderHistory() {
-  // 補助
   const fmt = (v) => `¥${Number(v || 0).toLocaleString()}`;
 
-  // 履歴取得 → フィルタ適用
   const history = loadHistory();
   const filtered = applyFilters(history);
 
@@ -1012,10 +1010,8 @@ function renderHistory() {
     return;
   }
 
-  // 集計はフィルタ済みのデータで表示
   updateSummary(filtered);
 
-  // 表示
   if (filterTypeBtn.value === "transaction") {
     // 取引モード
     filtered.forEach(h => {
@@ -1025,9 +1021,9 @@ function renderHistory() {
       const changeNum = Number(h.change || 0);
 
       const div = document.createElement("div");
-      div.className = "p-4 bg-white shadow rounded-lg";
+      // ✅ カード風スタイルを保持
+      div.className = "p-4 bg-white shadow rounded-lg border border-gray-200";
 
-      // 各商品行
       const itemsHtml = (h.cart || []).map(item => {
         const nameLabel = `${item.name}${item.flavor ? ":" + item.flavor : ""} × ${item.quantity}個 (無料券${item.freeCount || 0}枚)`;
         const subtotal = (item.price || 0) * (item.quantity || 0);
@@ -1056,7 +1052,7 @@ function renderHistory() {
     });
 
   } else {
-    // 商品モード：商品ごとに合計数量／合計金額を出し、明細は下に並べる
+    // 商品モード
     const productMap = {}; 
 
     filtered.forEach(h => {
@@ -1079,9 +1075,9 @@ function renderHistory() {
     Object.keys(productMap).forEach(name => {
       const data = productMap[name];
       const div = document.createElement("div");
-      div.className = "p-4 bg-white shadow rounded-lg";
+      // ✅ カード風スタイルを保持
+      div.className = "p-4 bg-white shadow rounded-lg border border-gray-200";
 
-      // ヘッダ行：商品名（左）／合計(個数│金額)（右）
       div.innerHTML = `
         <div class="flex justify-between items-center">
           <div class="font-bold text-blue-600">${escapeHtml(name)}</div>
