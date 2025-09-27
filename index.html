@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.8.2</title>
+  <title>レジシステムv2.8.3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -934,8 +934,8 @@ window.addEventListener("screenChanged", (e) => {
   const clearBtn = document.getElementById("clear-history-button");
   const backBtn = document.getElementById("back-to-screen1-from-history");
 
-  const filterTypeBtn = document.getElementById("filter-type-btn");
-  const filterDateBtn = document.getElementById("filter-date-btn");
+  const filterType = document.getElementById("filter-type");
+  const filterDate = document.getElementById("filter-date");
   const customDateInput = document.getElementById("custom-date-input");
 
   // === 履歴ロード ===
@@ -947,12 +947,9 @@ window.addEventListener("screenChanged", (e) => {
   // === 売上集計 ===
   function updateSummary(history) {
     const totalSales = history.reduce((sum, h) => sum + (h.total || 0), 0);
-
-    const totalDiscount = history.reduce((sum, h) => {
-      return sum + h.cart.reduce((cSum, item) =>
-        cSum + ((item.freeCount || 0) * (item.price || 0)), 0);
-    }, 0);
-
+    const totalDiscount = history.reduce((sum, h) =>
+      sum + h.cart.reduce((cSum, item) =>
+        cSum + ((item.freeCount || 0) * (item.price || 0)), 0), 0);
     const couponUsed = history.reduce((sum, h) =>
       sum + h.cart.reduce((cSum, item) => cSum + (item.freeCount || 0), 0), 0);
 
@@ -973,10 +970,10 @@ window.addEventListener("screenChanged", (e) => {
       filtered = filtered.filter(h => String(h.orderNumber).includes(searchValue));
     }
 
-    if (filterDateBtn.dataset.value === "today") {
+    if (filterDate.value === "today") {
       const today = new Date().toISOString().split("T")[0];
       filtered = filtered.filter(h => h.date && h.date.startsWith(today));
-    } else if (filterDateBtn.dataset.value === "custom") {
+    } else if (filterDate.value === "custom") {
       const selected = customDateInput.value;
       if (selected) {
         filtered = filtered.filter(h => h.date && h.date.startsWith(selected));
@@ -1002,11 +999,10 @@ window.addEventListener("screenChanged", (e) => {
 
     updateSummary(filtered);
 
-    if (filterTypeBtn.dataset.value === "transaction") {
+    if (filterType.value === "transaction") {
       filtered.forEach(h => {
         const div = document.createElement("div");
         div.className = "p-4 bg-white shadow rounded-lg";
-
         const itemsHtml = (h.cart || []).map(item => {
           const nameLabel = `${item.name}${item.flavor ? ":" + item.flavor : ""} × ${item.quantity}個`;
           const price = (item.price || 0) * (item.quantity || 0);
@@ -1034,7 +1030,6 @@ window.addEventListener("screenChanged", (e) => {
         (h.cart || []).forEach(item => {
           const key = item.name || "商品";
           if (!productMap[key]) productMap[key] = { totalQty: 0, totalPrice: 0, details: [] };
-
           const qty = Number(item.quantity || 0);
           const price = Number(item.price || 0);
           productMap[key].totalQty += qty;
@@ -1051,7 +1046,6 @@ window.addEventListener("screenChanged", (e) => {
         const data = productMap[name];
         const div = document.createElement("div");
         div.className = "p-4 bg-white shadow rounded-lg";
-
         div.innerHTML = `
           <div class="flex justify-between items-center">
             <div class="font-bold text-blue-600">${escapeHtml(name)}</div>
@@ -1084,8 +1078,15 @@ window.addEventListener("screenChanged", (e) => {
       renderHistory();
     }
   });
-  backBtn.addEventListener("click", () => {
-    showScreen("screen1");
+  backBtn.addEventListener("click", () => showScreen("screen1"));
+  filterType.addEventListener("change", renderHistory);
+  filterDate.addEventListener("change", () => {
+    if (filterDate.value === "custom") {
+      customDateInput.classList.remove("hidden");
+    } else {
+      customDateInput.classList.add("hidden");
+    }
+    renderHistory();
   });
   customDateInput.addEventListener("change", renderHistory);
 
