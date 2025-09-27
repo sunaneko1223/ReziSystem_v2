@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.8.9</title>
+  <title>レジシステムv2.9.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -1010,10 +1010,11 @@ function renderHistory() {
     return;
   }
 
+  // 集計はフィルタ済みのデータで表示
   updateSummary(filtered);
 
-  if (filterTypeBtn.dataset.value === "transaction") {
-    // 取引モード
+  if (filterType.value === "transaction") {
+    // === 取引モード ===
     filtered.forEach(h => {
       const orderNum = h.orderNumber ?? "-";
       const totalNum = Number(h.total || 0);
@@ -1051,8 +1052,8 @@ function renderHistory() {
     });
 
   } else {
-    // 商品モード
-    const productMap = {};
+    // === 商品モード ===
+    const productMap = {}; 
 
     filtered.forEach(h => {
       (h.cart || []).forEach(item => {
@@ -1094,6 +1095,7 @@ function renderHistory() {
     });
   }
 }
+  
   // === イベント登録 ===
   searchInput.oninput = renderHistory;
   filterType.onchange = renderHistory;
