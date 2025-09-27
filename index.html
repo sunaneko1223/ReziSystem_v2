@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.8.3</title>
+  <title>レジシステムv2.8.4</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -585,13 +585,18 @@ window.addEventListener("screenChanged", (e) => {
       }
     }
 
-    // ご購入内容
+    // ご購入内容（商品名:味 × 数量点 (無料券〇枚)）
     if (orderSummaryEl) {
       orderSummaryEl.innerHTML = "";
       if (Array.isArray(paymentData.cart) && paymentData.cart.length > 0) {
         paymentData.cart.forEach(item => {
           const p = document.createElement("p");
-          p.textContent = `${item.name || "商品"} × ${item.quantity}点 (無料券${item.freeCount || 0}枚)`;
+          const name = item.name || "商品";
+          const flavor = item.flavor ? `:${item.flavor}` : "";
+          const qty = item.quantity || 0;
+          const free = item.freeCount || 0;
+
+          p.textContent = `${name}${flavor} × ${qty}点 (無料券${free}枚)`;
           orderSummaryEl.appendChild(p);
         });
       } else {
@@ -619,7 +624,7 @@ window.addEventListener("screenChanged", (e) => {
       showScreen("screen1");
     };
   }
-});
+})
 </script>
     
     <!-- Screen 4: 商品管理画面 -->
