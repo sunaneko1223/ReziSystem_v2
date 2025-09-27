@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.7.8</title>
+  <title>レジシステムv2.7.9</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -855,45 +855,29 @@ window.addEventListener("screenChanged", (e) => {
   <main class="flex-grow p-6 flex flex-col">
 
     <!-- 検索 & フィルター -->
-    <div class="flex gap-2 items-center mb-4">
-      <!-- ボタン1: 取引/商品 -->
-<div class="relative inline-block">
-  <button id="filter-type-btn"
-          class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-24 text-center dropdown-btn"
-          data-value="transaction">
-    取引
-  </button>
-  <div id="filter-type-menu"
-       class="ios-menu hidden absolute left-0 mt-2 w-32 rounded-2xl overflow-hidden z-20">
-    <button class="ios-menu-item" data-value="transaction">取引</button>
-    <button class="ios-menu-item" data-value="product">商品</button>
-  </div>
-</div>
+<div class="flex gap-2 items-center mb-4">
+  <!-- ボタン1: 取引/商品 -->
+  <select id="filter-type" class="ios-select">
+    <option value="transaction">取引</option>
+    <option value="product">商品</option>
+  </select>
 
-<!-- ボタン2: 日付フィルタ -->
-<div class="relative inline-block">
-  <button id="filter-date-btn"
-          class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm w-28 text-center dropdown-btn"
-          data-value="all">
-    すべて
-  </button>
-  <div id="filter-date-menu"
-       class="ios-menu hidden absolute left-0 mt-2 w-40 rounded-2xl overflow-hidden z-20">
-    <button class="ios-menu-item" data-value="all">すべて</button>
-    <button class="ios-menu-item" data-value="today">今日のみ</button>
-    <button class="ios-menu-item" data-value="custom">日付指定</button>
-  </div>
+  <!-- ボタン2: 日付フィルタ -->
+  <select id="filter-date" class="ios-select">
+    <option value="all">すべて</option>
+    <option value="today">今日のみ</option>
+    <option value="custom">日付指定</option>
+  </select>
+
+  <!-- 検索欄 -->
+  <input type="search" id="history-search-input"
+         placeholder="受付番号で検索"
+         class="flex-grow p-2 border border-gray-300 rounded-lg">
 </div>
 
       <!-- 日付入力（最初は非表示） -->
 <input type="date" id="custom-date-input" class="hidden border p-2 rounded-lg mt-2 w-40">
       
-      <!-- 検索欄 -->
-      <input type="search" id="history-search-input"
-             placeholder="受付番号で検索"
-             class="flex-grow p-2 border border-gray-300 rounded-lg">
-    </div>
-
     <!-- 売上集計 -->
     <div id="history-summary"
          class="mb-4 p-4 bg-gray-100 rounded-lg text-gray-800 flex-shrink-0 relative">
