@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.7.5</title>
+  <title>レジシステムv2.7.6</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -884,6 +884,9 @@ window.addEventListener("screenChanged", (e) => {
     <button class="ios-menu-item" data-value="custom">日付指定</button>
   </div>
 </div>
+
+      <!-- 日付入力（最初は非表示） -->
+<input type="date" id="custom-date-input" class="hidden border p-2 rounded-lg mt-2 w-40">
       
       <!-- 検索欄 -->
       <input type="search" id="history-search-input"
