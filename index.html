@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.7.4</title>
+  <title>レジシステムv2.7.5</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -1085,7 +1085,7 @@ window.addEventListener("screenChanged", (e) => {
       .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
   }
 
-  // === ドロップダウン制御 ===
+  // === ドロップダウン制御（チェックマーク付） ===
   function setupDropdown(btn, menu) {
     btn.addEventListener("click", () => {
       const isHidden = menu.classList.contains("hidden");
@@ -1100,6 +1100,11 @@ window.addEventListener("screenChanged", (e) => {
       item.addEventListener("click", () => {
         btn.textContent = item.textContent;
         btn.dataset.value = item.dataset.value;
+
+        // チェックマーク更新
+        menu.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
+        item.classList.add("selected");
+
         menu.classList.add("hidden");
         btn.classList.remove("active");
         renderHistory();
