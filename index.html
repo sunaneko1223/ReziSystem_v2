@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.10.2</title>
+  <title>レジシステムv2.10.3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -908,8 +908,9 @@ window.addEventListener("screenChanged", (e) => {
       </button>
     </div>
 
-    <!-- 取引履歴リスト（レジ4と同じ構造：灰色背景＋スクロール） -->
-<div class="flex-grow bg-gray-100 rounded-lg p-4 overflow-hidden min-h-0">
+<!-- 取引履歴リスト（スクロール可能：レジ4と同じ高さ制御） -->
+<div class="flex-grow bg-gray-100 rounded-lg p-4 overflow-hidden min-h-0"
+     style="max-height: calc(100vh - 280px);">
   <div id="history-list"
        class="space-y-4 overflow-y-auto no-scrollbar h-full"
        style="-webkit-overflow-scrolling: touch;">
