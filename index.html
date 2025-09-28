@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.9.6</title>
+  <title>レジシステムv2.9.7</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -618,13 +618,13 @@ window.addEventListener("screenChanged", (e) => {
   }
 
   // === 新しい会計へ ===
-  if (newTransactionBtn) {
-    newTransactionBtn.onclick = () => {
-      localStorage.removeItem("currentTransaction");
-      showScreen("screen1");
-    };
-  }
-})
+if (newTransactionBtn) {
+  newTransactionBtn.onclick = () => {
+    localStorage.removeItem("currentTransaction");
+    localStorage.setItem("cart", JSON.stringify([]));
+    showScreen("screen1");
+  };
+}
 </script>
     
     <!-- Screen 4: 商品管理画面 -->
