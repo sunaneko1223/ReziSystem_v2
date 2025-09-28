@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.9.8</title>
+  <title>レジシステムv2.9.9</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -858,25 +858,25 @@ window.addEventListener("screenChanged", (e) => {
   </header>
 
   <!-- メインコンテンツ -->
-  <main class="flex-grow p-6 flex flex-col">
+  <main class="flex-grow flex flex-col p-6 space-y-4">
 
     <!-- 検索 & フィルター -->
-    <div class="flex gap-2 items-center mb-4">
+    <div class="flex gap-2 items-center flex-shrink-0">
       <!-- ボタン1: 取引/商品 -->
-<select id="filter-type" class="ios-select w-28">
-  <option value="transaction" selected>取引</option>
-  <option value="product">商品</option>
-</select>
+      <select id="filter-type" class="ios-select w-28">
+        <option value="transaction" selected>取引</option>
+        <option value="product">商品</option>
+      </select>
 
-<!-- ボタン2: 日付フィルタ -->
-<select id="filter-date" class="ios-select w-32">
-  <option value="all" selected>すべて</option>
-  <option value="today">今日のみ</option>
-  <option value="custom">日付指定</option>
-</select>
+      <!-- ボタン2: 日付フィルタ -->
+      <select id="filter-date" class="ios-select w-32">
+        <option value="all" selected>すべて</option>
+        <option value="today">今日のみ</option>
+        <option value="custom">日付指定</option>
+      </select>
 
-<!-- カレンダー入力（「日付指定」を選んだ時だけ表示） -->
-<input type="date" id="filter-date-input" class="ios-select hidden">
+      <!-- カレンダー入力（「日付指定」を選んだ時だけ表示） -->
+      <input type="date" id="filter-date-input" class="ios-select hidden">
 
       <!-- 検索欄 -->
       <input type="search" id="history-search-input"
@@ -886,7 +886,7 @@ window.addEventListener("screenChanged", (e) => {
 
     <!-- 売上集計 -->
     <div id="history-summary"
-         class="mb-4 p-4 bg-gray-100 rounded-lg text-gray-800 flex-shrink-0 relative">
+         class="p-4 bg-gray-100 rounded-lg text-gray-800 flex-shrink-0 relative">
       <h3 class="text-lg font-semibold mb-2">売上集計</h3>
       <div id="history-summary-content" class="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
         <div>総売上: ¥0</div>
@@ -910,9 +910,9 @@ window.addEventListener("screenChanged", (e) => {
 
     <!-- 取引履歴リスト（スクロール可能） -->
     <div id="history-list"
-     class="flex-grow overflow-y-auto no-scrollbar bg-white rounded-lg p-2"
-     style="min-height: 0; -webkit-overflow-scrolling: touch;">
-   </div>
+         class="flex-grow overflow-y-auto no-scrollbar space-y-4 rounded-lg p-2 bg-white"
+         style="min-height: 0; -webkit-overflow-scrolling: touch;">
+    </div>
   </main>
 </div>
 
