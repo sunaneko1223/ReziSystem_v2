@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>レジシステムv2.10.0</title>
+  <title>レジシステムv2.10.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -858,7 +858,7 @@ window.addEventListener("screenChanged", (e) => {
   </header>
 
   <!-- メインコンテンツ -->
-  <main class="flex-grow p-6 flex flex-col">
+  <main class="flex-grow p-6 flex flex-col bg-white">
 
     <!-- 検索 & フィルター -->
     <div class="flex gap-2 items-center mb-4">
@@ -875,7 +875,7 @@ window.addEventListener("screenChanged", (e) => {
         <option value="custom">日付指定</option>
       </select>
 
-      <!-- カレンダー入力 -->
+      <!-- カレンダー入力（「日付指定」を選んだ時だけ表示） -->
       <input type="date" id="filter-date-input" class="ios-select hidden">
 
       <!-- 検索欄 -->
@@ -908,11 +908,10 @@ window.addEventListener("screenChanged", (e) => {
       </button>
     </div>
 
-    <!-- 取引履歴リスト（スクロールエリア） -->
-    <div class="bg-gray-100 rounded-lg flex-grow p-2">
+    <!-- 取引履歴リスト（レジ4と同じ構造：灰色背景＋スクロール） -->
+    <div class="flex-grow bg-gray-100 rounded-lg p-4 overflow-hidden">
       <div id="history-list"
-           class="space-y-4 overflow-y-auto no-scrollbar rounded-lg p-2 bg-white"
-           style="height: 100%; min-height: 0; -webkit-overflow-scrolling: touch;">
+           class="space-y-4 overflow-y-auto no-scrollbar h-full -webkit-overflow-scrolling: touch;">
       </div>
     </div>
   </main>
@@ -937,7 +936,6 @@ window.addEventListener("screenChanged", (e) => {
 }
 </style>
     
-   <!-- === レジ5専用スクリプト === -->
 <!-- === レジ5専用スクリプト === -->
 <script>
 // === 共通関数 ===
