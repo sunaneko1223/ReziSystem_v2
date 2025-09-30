@@ -1122,47 +1122,62 @@ window.addEventListener("DOMContentLoaded", () => {
   filterDateInput.addEventListener("change", renderHistory);
 
   sendServerBtn.onclick = async () => {
-    if (!navigator.onLine) {
-      alert("オフラインのためこの機能は使用できません。インターネットに接続してください。");
+  if (!navigator.onLine) {
+    alert("オフラインのためこの機能は使用できません。インターネットに接続してください。");
+    return;
+  }
+  if (!confirm("データをサーバーに送信しますか？")) return;
+
+  let deviceId = localStorage.getItem("deviceId");
+  if (!deviceId) {
+    deviceId = prompt("端末IDを入力してください。A〜Zのアルファベット1文字です", "");
+    if (!deviceId || !/^[A-Z]$/.test(deviceId)) {
+      alert("正しい端末IDを入力してください。");
       return;
     }
-    if (!confirm("データをサーバーに送信しますか？")) return;
-
-    let deviceId = localStorage.getItem("deviceId");
-    if (!deviceId) {
-      deviceId = prompt("端末IDを入力してください。A〜Zのアルファベット1文字です", "");
-      if (!deviceId || !/^[A-Z]$/.test(deviceId)) {
-        alert("正しい端末IDを入力してください。");
-        return;
-      }
-      localStorage.setItem("deviceId", deviceId);
-    } else {
-      const change = confirm(`現在の端末IDは「${deviceId}」です。変更しますか？`);
-      if (change) {
-        const newId = prompt("新しい端末IDを入力してください。A〜Zのアルファベット1文字です", deviceId);
-        if (newId && /^[A-Z]$/.test(newId)) {
-          deviceId = newId;
-          localStorage.setItem("deviceId", deviceId);
-        }
+    localStorage.setItem("deviceId", deviceId);
+  } else {
+    const change = confirm(`現在の端末IDは「${deviceId}」です。変更しますか？`);
+    if (change) {
+      const newId = prompt("新しい端末IDを入力してください。A〜Zのアルファベット1文字です", deviceId);
+      if (newId && /^[A-Z]$/.test(newId)) {
+        deviceId = newId;
+        localStorage.setItem("deviceId", deviceId);
       }
     }
+  }
 
-    try {
-      const history = JSON.parse(localStorage.getItem("transactionHistory") || "[]");
-      const payload = { deviceId, history };
+  // 全履歴を取得
+  const history = JSON.parse(localStorage.getItem("transactionHistory") || "[]");
+  // 未送信のものだけ抽出
+  const unsent = history.filter(h => !h.sent);
 
-      await fetch("http://localhost:3000/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+  if (unsent.length === 0) {
+    alert("送信できる取引がありません。");
+    return;
+  }
 
-      alert("送信完了");
-    } catch (err) {
-      console.error(err);
-      alert("送信に失敗しました");
-    }
-  };
+  try {
+    const payload = { deviceId, history: unsent };
+
+    await fetch("http://localhost:3000/api/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    // 送信済みフラグを付与
+    history.forEach(h => {
+      if (unsent.includes(h)) h.sent = true;
+    });
+    localStorage.setItem("transactionHistory", JSON.stringify(history));
+
+    alert("送信完了");
+  } catch (err) {
+    console.error(err);
+    alert("送信に失敗しました");
+  }
+};
 });
 
 // === 画面切り替え時 ===
