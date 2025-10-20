@@ -314,29 +314,35 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // === 会計へ進む ===
-  document.getElementById("checkout-button").addEventListener("click", () => {
-    const products = loadProducts();
-    const data = {
-      cart: cart.map(item => {
-        const product = products.find(p => p.id === item.id);
-        return {
-          id: item.id,
-          name: product.name,
-          flavor: product.flavor,
-          price: product.price,
-          quantity: item.quantity,
-          freeCount: item.freeCount
-        };
-      }),
-      couponCount,
-      subtotal,
-      discountAmount,
-      total: subtotal - discountAmount
-    };
+document.getElementById("checkout-button").addEventListener("click", () => {
+  // カートが空ならアラートして中断
+  if (!cart || cart.length === 0) {
+    alert("商品を選択してください。");
+    return;
+  }
 
-    localStorage.setItem("currentTransaction", JSON.stringify(data));
-    showScreen("screen2");
-  });
+  const products = loadProducts();
+  const data = {
+    cart: cart.map(item => {
+      const product = products.find(p => p.id === item.id);
+      return {
+        id: item.id,
+        name: product.name,
+        flavor: product.flavor,
+        price: product.price,
+        quantity: item.quantity,
+        freeCount: item.freeCount
+      };
+    }),
+    couponCount,
+    subtotal,
+    discountAmount,
+    total: subtotal - discountAmount
+  };
+
+  localStorage.setItem("currentTransaction", JSON.stringify(data));
+  showScreen("screen2");
+});
 
   // === 商品管理からの更新を受け取る ===
   window.addEventListener("productsUpdated", () => {
