@@ -623,13 +623,34 @@ window.addEventListener("screenChanged", (e) => {
   }
 
   // === 新しい会計へ ===
-if (newTransactionBtn) {
-  newTransactionBtn.onclick = () => {
-    localStorage.removeItem("currentTransaction");
-    localStorage.setItem("cart", JSON.stringify([]));
-    showScreen("screen1");
-  };
-}
+  if (newTransactionBtn) {
+    newTransactionBtn.onclick = () => {
+      // 現在の会計データを削除
+      localStorage.removeItem("currentTransaction");
+      localStorage.setItem("cart", JSON.stringify([]));
+
+      // 画面をレジ1に戻す
+      showScreen("screen1");
+
+      // --- レジ1の表示リセット ---
+      const cartItemsEl = document.getElementById("cart-items");
+      if (cartItemsEl) {
+        cartItemsEl.innerHTML = "<p class='text-gray-500'>商品が選択されていません。</p>";
+      }
+
+      // 合計金額リセット
+      const totalEl = document.getElementById("total-amount-display");
+      if (totalEl) totalEl.textContent = "¥0";
+
+      // 無料券リセット
+      const couponEl = document.getElementById("coupon-count");
+      if (couponEl) couponEl.textContent = "0";
+
+      // 割引行を非表示
+      const discountRow = document.getElementById("discount-row");
+      if (discountRow) discountRow.classList.add("hidden");
+    };
+  }
 });
 </script>
     
