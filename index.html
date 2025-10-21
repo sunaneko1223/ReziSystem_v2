@@ -129,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === 商品データを取得 ===
   function loadProducts() {
+    localStorage.removeItem("products")
     const defaultProducts = [
  { id: 1, name: "わらび餅", flavor: "", price: 300 },
  { id: 2, name: "ベビーカステラ", flavor: "", price: 200 },
