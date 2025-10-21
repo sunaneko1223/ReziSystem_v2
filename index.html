@@ -353,6 +353,15 @@ document.getElementById("checkout-button").addEventListener("click", () => {
     updateCartView();
   });
 
+  // === カート状態リセット用（レジ3から呼び出し） ===
+window.resetCartState = function() {
+  cart = [];
+  selectedProductId = null;
+  subtotal = 0;
+  discountAmount = 0;
+  couponCount = 0;
+};
+  
   // 初期化
   renderProducts();
   updateCartView();
