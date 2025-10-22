@@ -25,7 +25,7 @@
   <!-- 全体コンテナ -->
   <div class="w-full h-full max-w-4xl mx-auto bg-white shadow-2xl rounded-lg flex flex-col min-h-0">
 
-    <!-- === レジ1: 商品選択画面 === -->
+   <!-- === レジ1: 商品選択画面 === -->
 <div id="screen1" class="w-full flex-grow flex flex-col min-h-0">
 
   <!-- ==== ヘッダー ==== -->
@@ -49,11 +49,14 @@
   <main class="flex-grow p-4 grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0 content-stretch">
 
     <!-- === 左：商品リスト === -->
-    <div id="product-list"
-         class="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-0 p-1
-                bg-gray-50 rounded-lg overflow-auto no-scrollbar min-h-0">
-      <!-- 商品はスクリプトで生成 -->
-    </div>
+<div class="md:col-span-2 flex flex-col min-h-0">
+  <div id="product-list"
+       class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 p-1
+              bg-gray-50 rounded-lg overflow-y-auto no-scrollbar min-h-0 allow-scroll"
+       style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
+  </div>
+</div>
+
 
     <!-- === 右：ご注文内容 === -->
     <div class="md:col-span-1 bg-gray-100 p-4 rounded-lg flex flex-col min-h-0">
@@ -61,14 +64,14 @@
       <!-- 見出し -->
       <h2 class="text-lg font-bold border-b pb-2 mb-4 flex-shrink-0">ご注文内容</h2>
 
-      <!-- ご注文リスト（スクロール可） -->
+      <!-- ご注文リスト -->
       <div id="cart-items"
            class="flex-grow overflow-y-auto no-scrollbar space-y-2 min-h-0 allow-scroll"
            style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
         <p class="text-gray-500">商品が選択されていません。</p>
       </div>
 
-      <!-- 下部操作パネル（固定） -->
+      <!-- 下部操作パネル -->
       <div class="mt-3 flex-shrink-0">
         <div class="space-y-2">
           <!-- 無料券 -->
